@@ -1,153 +1,217 @@
-# ⚡ HabitX: Neural Mission Protocol  
-### Advanced Cognitive Performance & Habit Optimization Engine
+<h1 align="center">⚡ HabitX</h1>
 
-HabitX is a sophisticated, **offline-first productivity suite** engineered for elite developers and high-performers.  
+<p align="center">
+  <strong>Neural Mission Protocol • AI-Driven Cognitive Performance System</strong>
+</p>
 
-It transcends traditional habit tracking by integrating:
-- ⚡ **Storm Engine** for tactile feedback  
-- 🧠 **SHELBY AI v4.0** for real-time mission briefings and cognitive load management  
-
----
-
-## ⚡ Executive Overview
-
-> [!NOTE]  
-> **MEDIA DEPLOYMENT PENDING:**  
-> High-fidelity UI and mission flow documentation is currently under development.
+<p align="center">
+  A high-performance, offline-first productivity engine designed for developers, creators, 
+  and elite performers — powered by AI intelligence, gamified feedback systems, and 
+  real-time cognitive optimization.
+</p>
 
 ---
 
-## 📸 Visual Telemetry
+## 🏆 Badges
 
-- Dashboard Interface  
-- Neural Briefing (SHELBY)  
-- Performance Analytics  
+<p align="center">
+
+![Stars](https://img.shields.io/github/stars/Shalcontech/HabitX?style=for-the-badge)
+![Forks](https://img.shields.io/github/forks/Shalcontech/HabitX?style=for-the-badge)
+![Issues](https://img.shields.io/github/issues/Shalcontech/HabitX?style=for-the-badge)
+
+![Platform](https://img.shields.io/badge/Platform-Android-green?style=for-the-badge)
+![CI](https://img.shields.io/badge/CI-Pipeline-blue?style=for-the-badge)
+
+[![Flutter](https://img.shields.io/badge/Flutter-Framework-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![AI Engine](https://img.shields.io/badge/AI-SHELBY_v4.0-purple?style=for-the-badge)]()
+[![Offline First](https://img.shields.io/badge/Architecture-Offline--First-orange?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)]()
+
+</p>
 
 ---
 
-## 🎥 Tactical Briefing (Video)
+## 🎥 Demo (Critical Section)
 
-> *[Space Reserved for 4K System Demonstration]*  
-> Showcasing the **Storm Engine flicker logic** and **dual-notification synchronization**
+> ⚠️ Recruiters WILL look here first — add a real demo
+
+### 🎬 Suggested Demo Flow
+- Neural onboarding sequence  
+- Creating a mission (habit)  
+- Completing a mission → XP + Storm Engine  
+- AI briefing (SHELBY)  
+- Performance analytics  
+
+📌 Add your demo:
+
+![Demo](https://via.placeholder.com/900x450?text=HabitX+Real+Demo+GIF)
 
 ---
 
-## 🛠 Advanced System Capabilities
+## 📱 System Interface
+
+| Neural Init | Mission Control | AI Briefing |
+|------------|----------------|-------------|
+| ![](https://via.placeholder.com/200x400?text=Init) | ![](https://via.placeholder.com/200x400?text=Mission) | ![](https://via.placeholder.com/200x400?text=AI) |
+
+---
+
+## ⚡ Core Systems
 
 ### 🧠 SHELBY AI v4.0 (Cognitive Engine)
 
-SHELBY is a contextual logic layer that monitors performance metrics and suggests optimal **Focus Strikes**.
+A contextual intelligence layer that optimizes performance through adaptive logic.
 
-**Capabilities:**
-- ⚡ **Focus Strike Protocols**  
-  - Dynamically switches between:
-    - 10-minute sprints  
-    - 50-minute deep focus sessions  
-  - Based on real-time energy telemetry  
-
-- 📊 **Neural Status Checks**  
-  - Automated 4-phase daily briefings:
-    - Morning  
-    - Mid-day  
-    - Evening  
-    - Night  
+- ⚡ **Focus Strike Protocols**
+  - Auto-switch between 10m sprint & 50m deep work  
+- 📊 **Neural Status Checks**
+  - 4-phase daily cognitive briefings  
+- 🧠 **Behavior Analysis**
+  - Tracks patterns to optimize productivity cycles  
 
 ---
 
-### ⛈ Storm Engine (UI/UX System)
+### ⛈ Storm Engine (Sensory UX System)
 
-A gamification layer that transforms achievement into an immersive sensory experience.
+Transforms productivity into a **physical experience**.
 
-**Core Systems:**
-- ⚡ **Lightning Strike Logic**  
-  - Custom `CustomPainter` rendering jagged electrical arcs during XP gain  
-
-- 🔊 **Haptic Synchronization**  
-  - Multi-layered tactile feedback:
-    - Thunder impacts  
-    - Electrical "zap" pulses  
+- ⚡ Lightning-based XP feedback (`CustomPainter`)
+- 🔊 Multi-layer haptic simulation (Thunder + Zap)
+- 🎮 Gamified feedback loop
 
 ---
 
-### 📡 Dual-Engine Notification Framework
+### 📡 Dual Notification Engine
 
-Engineered to bypass aggressive background restrictions on Android & iOS.
+Designed to defeat OS background limitations.
 
-**Architecture:**
-- 🧱 **Persistence Layer**  
-  - `flutter_local_notifications`  
-  - Zoned timestamp scheduling  
-
-- 🚨 **Heads-Up Layer**  
-  - Custom `NotificationMaster`  
-  - High-priority tactical alerts  
+- 🧱 **Persistent Layer**
+  - `flutter_local_notifications`
+- 🚨 **Tactical Layer**
+  - Custom high-priority alerts system  
 
 ---
 
-## 🏗 Technical Stack & Architecture
+## 🧠 System Architecture
 
-Built with a strong focus on **Clean Architecture** and modular design:
+```mermaid
+flowchart TD
+    UI[Presentation Layer] --> Provider[State Engine]
+    Provider --> Logic[Mission Logic Core]
+    Logic --> Repo[Repository Layer]
+    Repo --> Storage[(Local Storage)]
 
-| Layer | Technology |
-|------|----------|
-| State Management | Provider (ChangeNotifier) |
-| Navigation | GlobalKey-based routing |
-| Persistence | SharedPreferences + Secure Storage |
-| Notifications | Custom dual-engine system |
-| Animations | Ticker + AnimationController + TweenSequences |
-
----
-
-## 🚀 Installation & Initialization
-
-### 📦 Requirements
-
-- Flutter SDK: `^3.10.0`  
-- Android: API 31+ (Target 34)  
-- iOS: 14.0+  
+    Provider --> AI[SHELBY AI Engine]
+    Provider --> Storm[Storm Engine UX]
+```
 
 ---
 
-### ⚙️ Setup
+## 🏗 Architecture Breakdown
 
+| Layer | Responsibility |
+|------|---------------|
+| Presentation | UI, animations, interaction |
+| State Engine | Provider (central logic) |
+| Logic Core | Habit rules & AI triggers |
+| Data Layer | Local persistence |
+| AI Layer | SHELBY intelligence |
+
+---
+
+## 📂 Project Structure
+
+```text
+lib/
+├── core/           # Theme, utilities, engines
+├── data/           # Models & storage
+├── presentation/   # UI + Providers
+└── main.dart
+```
+
+---
+
+## ⚙️ Setup Guide
+
+### 1. Clone Repository
 ```bash
-# Clone the repository
 git clone https://github.com/Shalcontech/HabitX.git
+```
 
-# Install dependencies
+### 2. Install Dependencies
+```bash
 flutter pub get
+```
 
-# Run the app (release mode recommended)
+### 3. Run Application
+```bash
 flutter run --release
 ```
 
 ---
 
-## 🔒 Security & Privacy Protocol
+## 🔒 Security Architecture
 
-- 🚫 **Zero Cloud Policy**  
-  - All operations run locally  
-  - No user data is transmitted externally  
-
-- 🔐 **Hardware Encryption**  
-  - Device-level encryption protects:
-    - Habit data  
-    - Behavioral patterns  
-    - Identity metadata  
+- 🚫 Zero cloud dependency  
+- 🔐 Device-level encryption  
+- 🧠 Fully local cognitive processing  
 
 ---
 
-## ⚖ License
+## 🚀 Roadmap
 
-HabitX is proprietary software developed by **Shalcontech Studio**.  
-
-**Copyright © 2026 Ashraf**  
-All rights reserved.
+- [ ] Biometric authentication (FaceID / Fingerprint)  
+- [ ] AI-generated monthly reports  
+- [ ] Deep Focus Mode (App Blocking)  
+- [ ] Multi-persona AI system  
+- [ ] Cross-device sync  
 
 ---
 
-## 🧠 Philosophy
+## 💼 Why HabitX Stands Out
 
-> **“Maintain Momentum. Secure the Future.”**
+HabitX demonstrates:
 
-Designed and engineered at **Shalcontech Studio**
+- 🧠 Advanced system design thinking  
+- ⚙️ Production-grade Flutter architecture  
+- 🤖 AI-driven feature engineering  
+- 🎮 Unique gamification engine  
+- 🔒 Privacy-first engineering  
+
+---
+
+## 🧪 Engineering Highlights
+
+- Clean Architecture implementation  
+- Offline-first system design  
+- Modular & scalable codebase  
+- Custom rendering with `CustomPainter`  
+- Advanced notification handling system  
+
+---
+
+## 👨‍💻 Author
+
+**Ashraf**  
+Flutter Engineer • AI Systems Builder  
+
+- LinkedIn  
+- Portfolio  
+- Contact  
+
+---
+
+## ⭐ Support
+
+If this project impressed you:
+
+- ⭐ Star the repo  
+- 🍴 Fork it  
+- 🚀 Share it  
+
+---
+
+<p align="center">
+  <b>“Discipline engineered. Performance amplified.”</b>
+</p>
