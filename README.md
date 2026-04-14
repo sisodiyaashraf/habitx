@@ -1,4 +1,4 @@
-<h1 align="center">⚡ HabitX</h1>
+<h1 align="center">⚡  HabitX</h1>
 
 <p align="center">
   <strong>Neural Mission Protocol • AI-Driven Cognitive Performance System</strong>
