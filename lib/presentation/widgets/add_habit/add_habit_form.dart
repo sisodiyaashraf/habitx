@@ -7,7 +7,8 @@ import '../../../domain/models/habit.dart';
 import '../../../providers/habit_provider.dart';
 
 class AddHabitForm extends StatefulWidget {
-  const AddHabitForm({super.key});
+  final Habit? habit;
+  const AddHabitForm({super.key, this.habit});
 
   @override
   State<AddHabitForm> createState() => _AddHabitFormState();
@@ -66,10 +67,25 @@ class _AddHabitFormState extends State<AddHabitForm> {
   @override
   void initState() {
     super.initState();
-    _selectedDate = context.read<HabitProvider>().selectedDate;
+    if (widget.habit != null) {
+      _nameController.text = widget.habit!.name;
+      _selectedDifficulty = widget.habit!.difficulty;
+      _selectedMinutes = widget.habit!.timerDuration;
+      _selectedDate = widget.habit!.createdAt;
+      _isReminderEnabled = widget.habit!.reminderTime != null;
+      if (_isReminderEnabled) {
+        _selectedTime = TimeOfDay.fromDateTime(widget.habit!.reminderTime!);
+      }
+      
+      if (![10, 20, 30].contains(_selectedMinutes)) {
+        _isCustomTimer = true;
+        _customTimeController.text = _selectedMinutes.toString();
+      }
+    } else {
+      _selectedDate = context.read<HabitProvider>().selectedDate;
+    }
   }
 
-  // --- Logic remain unchanged ---
   Future<void> _selectDate(BuildContext context) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final DateTime? picked = await showDatePicker(
@@ -127,19 +143,31 @@ class _AddHabitFormState extends State<AddHabitForm> {
         _selectedTime.minute,
       );
 
-      final newHabit = Habit(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text.trim(),
-        difficulty: _selectedDifficulty,
-        timerDuration: finalMinutes,
-        createdAt: scheduledDateTime,
-        reminderTime: _isReminderEnabled ? scheduledDateTime : null,
-        isCompleted: false,
-        streak: 0,
-        lastCompleted: DateTime.now(),
-      );
-
-      habitProvider.addHabit(newHabit);
+      if (widget.habit != null) {
+        // Edit Mode
+        final updatedHabit = widget.habit!.copyWith(
+          name: _nameController.text.trim(),
+          difficulty: _selectedDifficulty,
+          timerDuration: finalMinutes,
+          createdAt: scheduledDateTime,
+          reminderTime: _isReminderEnabled ? scheduledDateTime : null,
+        );
+        habitProvider.updateHabit(updatedHabit);
+      } else {
+        // Create Mode
+        final newHabit = Habit(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: _nameController.text.trim(),
+          difficulty: _selectedDifficulty,
+          timerDuration: finalMinutes,
+          createdAt: scheduledDateTime,
+          reminderTime: _isReminderEnabled ? scheduledDateTime : null,
+          isCompleted: false,
+          streak: 0,
+          lastCompleted: DateTime.now(),
+        );
+        habitProvider.addHabit(newHabit);
+      }
       Navigator.pop(context);
     }
   }
@@ -196,7 +224,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       _buildCategorySelector(isDark),
                       const SizedBox(height: 12),
                       _buildPresetGrid(isDark, textColor),
-                      const SizedBox(height: 35),
+                      const SizedBox(height: 25),
                       _buildLabel("CORE CONFIGURATION", isDark),
                       _buildGlassTextField(
                         _nameController,
@@ -219,7 +247,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               _buildSaveButton(),
             ],
           ),

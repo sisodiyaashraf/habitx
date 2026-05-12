@@ -1,4 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.shalcontech.habitx">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
@@ -10,12 +12,13 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMINDER" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:label="HabitX"
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false">
 
         <activity
             android:name=".MainActivity"
@@ -53,10 +56,29 @@
             </intent-filter>
         </receiver>
 
+        <!-- HOME WIDGET RECEIVER -->
+        <receiver android:name=".HabitWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/habit_widget_info" />
+        </receiver>
+
+        <!-- HomeWidget Background Interactivity -->
+        <receiver android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name="com.dexterous.flutter_local_notifications.ForegroundService"
             android:exported="false"
-            android:stopWithTask="false" />
+            android:stopWithTask="false"
+            android:foregroundServiceType="specialUse" />
 
         <meta-data
             android:name="flutterEmbedding"
@@ -64,21 +86,9 @@
     </application>
 
     <queries>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="https" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="mailto" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="whatsapp" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
-            <data android:mimeType="text/plain"/>
-        </intent>
+        <intent><action android:name="android.intent.action.VIEW" /><data android:scheme="https" /></intent>
+        <intent><action android:name="android.intent.action.VIEW" /><data android:scheme="mailto" /></intent>
+        <intent><action android:name="android.intent.action.VIEW" /><data android:scheme="whatsapp" /></intent>
+        <intent><action android:name="android.intent.action.PROCESS_TEXT"/><data android:mimeType="text/plain"/></intent>
     </queries>
 </manifest>

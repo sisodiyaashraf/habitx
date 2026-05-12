@@ -8,21 +8,39 @@ class StorageService {
   static const String _xpKey = 'user_xp';
   static const String _levelKey = 'user_level';
   static const String _nameKey = 'user_name';
+  static const String _ageKey = 'user_age'; // NEW
+  static const String _personaKey = 'user_persona'; // NEW
   static const String _isNewUserKey = 'is_new_user';
   static const String _achievementsKey = 'unlocked_achievements'; // NEW
   static const String _hapticsKey = 'haptics_enabled'; // NEW
 
   // --- 1. User Identity & Onboarding ---
 
-  Future<void> saveUserIdentity(String name) async {
+  Future<void> saveUserIdentity({
+    required String name,
+    required int age,
+    required String persona,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_nameKey, name);
+    await prefs.setInt(_ageKey, age);
+    await prefs.setString(_personaKey, persona);
     await prefs.setBool(_isNewUserKey, false);
   }
 
   Future<String?> getUserName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_nameKey);
+  }
+
+  Future<int?> getUserAge() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_ageKey);
+  }
+
+  Future<String?> getUserPersona() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_personaKey);
   }
 
   Future<bool> isNewUser() async {

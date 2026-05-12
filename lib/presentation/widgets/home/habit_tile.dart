@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../domain/models/habit.dart';
 import '../../../providers/habit_provider.dart';
 import '../../screens/habit_timer_screen.dart';
+import '../../screens/add_habit_screen.dart';
 
 class HabitTile extends StatelessWidget {
   final Habit habit;
@@ -211,7 +212,7 @@ class HabitTile extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => GlassmorphicContainer(
         width: double.infinity,
-        height: 200,
+        height: 250, // Increased height for the new action
         borderRadius: 30,
         blur: 20,
         alignment: Alignment.center,
@@ -242,6 +243,25 @@ class HabitTile extends StatelessWidget {
                   habit.id,
                 );
                 Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.edit_outlined,
+                color: Color(0xFFAC5DED),
+              ),
+              title: const Text(
+                "Edit Mission",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              onTap: () {
+                Navigator.pop(context); // Close sheet
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddHabitScreen(habit: habit),
+                  ),
+                );
               },
             ),
             ListTile(

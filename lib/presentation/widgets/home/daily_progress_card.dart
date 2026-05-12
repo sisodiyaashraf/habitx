@@ -31,9 +31,9 @@ class _DailyProgressCardState extends State<DailyProgressCard>
   }
 
   @override
-  Widget build(BuildContext context) {
+    Widget build(BuildContext context) {
     final provider = context.watch<HabitProvider>();
-    final habits = provider.allHabits;
+    final habits = provider.habits; // Filtered by selected date
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     int completedCount = habits.where((h) => h.isCompleted).length;

@@ -6,27 +6,23 @@ plugins {
 
 android {
     namespace = "com.shalcontech.habitx"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 
     defaultConfig {
         applicationId = "com.shalcontech.habitx"
-
-        // FIX: Hardcode to 21. This ensures the engine doesn't include
-        // 300MB of legacy 'support' libraries for ancient Android versions.
-        minSdk = flutter.minSdkVersion
-
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 24
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -35,7 +31,6 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-        // Ensure no leftover debug symbols are forced into the build
         jniLibs {
             useLegacyPackaging = false
         }
@@ -45,13 +40,9 @@ android {
         getByName("release") {
             isMinifyEnabled = false
             isShrinkResources = false
-
-            // This forces the "Strip" command to work properly on Windows
-            // which will bring your size back to 50MB
             ndk {
                 debugSymbolLevel = "NONE"
             }
-
             signingConfig = signingConfigs.getByName("debug")
         }
     }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../domain/models/habit.dart';
 import '../widgets/add_habit/add_habit_form.dart';
 import '../widgets/shared/glass_background.dart'; // Using your optimized global background
 
 class AddHabitScreen extends StatelessWidget {
-  const AddHabitScreen({super.key});
+  final Habit? habit;
+  const AddHabitScreen({super.key, this.habit});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,7 @@ class AddHabitScreen extends StatelessWidget {
                         horizontal: horizontalPadding,
                         vertical: 20,
                       ),
-                      child: const AddHabitForm(),
+                      child: AddHabitForm(habit: habit),
                     );
                   },
                 ),
@@ -67,9 +69,9 @@ class AddHabitScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const Text(
-              'New Habit',
-              style: TextStyle(
+            Text(
+              habit == null ? 'New Habit' : 'Edit Habit',
+              style: const TextStyle(
                 color: Colors.black, // Onyx visibility
                 fontSize: 20,
                 fontWeight: FontWeight.w800,

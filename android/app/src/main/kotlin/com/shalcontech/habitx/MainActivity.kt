@@ -3,6 +3,6 @@ package com.shalcontech.habitx
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity: FlutterActivity() {
-    // This is the "brain" of your Android app.
-    // It must stay in a folder path matching: com/shalcontech/habitx/
+    // Basic FlutterActivity is sufficient as home_widget handles the interactivity
+    // background setup automatically in newer versions.
 }

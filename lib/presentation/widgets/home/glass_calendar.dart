@@ -27,7 +27,7 @@ class GlassCalendar extends StatelessWidget {
               date.year == selectedDate.year;
 
           return GestureDetector(
-            onTap: () => habitProvider.selectedDate,
+            onTap: () => habitProvider.setSelectedDate(date),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8),
               child: GlassmorphicContainer(

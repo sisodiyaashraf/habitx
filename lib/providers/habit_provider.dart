@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glassmorphism/glassmorphism.dart';
-import '../../domain/models/habit.dart';
-import '../../core/utils/haptic_feedback_helper.dart';
-import '../../data/services/storage_service.dart';
-import '../core/utils/mission_timer_engine.dart';
-import '../data/services/notification_master.dart';
+import '../domain/models/habit.dart';
+import '../core/utils/haptic_feedback_helper.dart';
+import '../data/services/storage_service.dart';
+import '../data/services/home_widget_service.dart';
+import '../data/services/notifications/habit_x_notification_service.dart';
 import '../presentation/widgets/shared/level_up_overlay.dart';
 
 class HabitProvider extends ChangeNotifier {
@@ -17,6 +17,8 @@ class HabitProvider extends ChangeNotifier {
 
   // --- Identity & Achievements ---
   String _userName = "";
+  int _userAge = 18;
+  String _userPersona = "Professional";
   bool _isNewUser = true;
   List<String> _unlockedAchievementIds = []; // PERSISTENT STORAGE
 
@@ -26,8 +28,6 @@ class HabitProvider extends ChangeNotifier {
   List<DateTime> _pastWeekDates = [];
 
   // --- Timer State ---
-  late MissionTimerEngine _timerEngine;
-  int _displaySeconds = 0;
   Timer? _timer;
   int _currentSeconds = 0;
   bool _isTimerRunning = false;
@@ -46,9 +46,18 @@ class HabitProvider extends ChangeNotifier {
 
   List<Habit> get habits {
     return _allHabits.where((habit) {
-      return habit.createdAt.year == _selectedDate.year &&
-          habit.createdAt.month == _selectedDate.month &&
-          habit.createdAt.day == _selectedDate.day;
+      // Show habits that were created ON OR BEFORE the selected date
+      // This ensures habits persist across days.
+      return habit.createdAt.isBefore(
+        DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          23,
+          59,
+          59,
+        ),
+      );
     }).toList();
   }
 
@@ -57,6 +66,8 @@ class HabitProvider extends ChangeNotifier {
   int get userXP => _userXP;
   int get userLevel => _userLevel;
   String get userName => _userName;
+  int get userAge => _userAge;
+  String get userPersona => _userPersona;
   bool get isNewUser => _isNewUser;
   bool get isHapticsEnabled => _isHapticsEnabled;
   DateTime get selectedDate => _selectedDate;
@@ -65,30 +76,94 @@ class HabitProvider extends ChangeNotifier {
   bool get isTimerRunning => _isTimerRunning;
   double get levelProgress => (_userXP % 100) / 100;
 
-  double get todayProgress {
+  // 🚀 FIXED: Added getter for Home Widget and main.dart sync
+  Habit? get currentActiveHabit {
+    if (_allHabits.isEmpty) return null;
+    try {
+      // Prioritize the last incomplete habit for the current selected date
+      return habits.lastWhere((h) => !h.isCompleted);
+    } catch (_) {
+      // Fallback to the last habit of the day
+      return habits.isNotEmpty ? habits.last : null;
+    }
+  }
+
+  // 🚀 FIXED: Added consistent progress getter for Home Widget
+  double get dailyProgress {
     final dayHabits = habits;
     if (dayHabits.isEmpty) return 0.0;
     return dayHabits.where((h) => h.isCompleted).length / dayHabits.length;
   }
 
+  double get todayProgress => dailyProgress;
+
   // --- Serverless Initialization ---
 
   Future<void> init() async {
     _isNewUser = await _storage.isNewUser();
-    _userName = await _storage.getUserName() ?? "";
+    _userName = await _storage.getUserName() ?? "RECRUIT";
+    _userAge = await _storage.getUserAge() ?? 18;
+    _userPersona = await _storage.getUserPersona() ?? "Professional";
 
     final progress = await _storage.loadProgress();
     _userXP = progress['xp'] ?? 0;
     _userLevel = progress['level'] ?? 1;
 
-    // Load persistent achievements from disk
     _unlockedAchievementIds = await _storage.loadUnlockedAchievements();
 
     final loadedHabits = await _storage.loadHabits();
     _allHabits.clear();
-    _allHabits.addAll(loadedHabits);
 
+    // 🚀 DAILY RESET ENGINE: Check if habits need to be reset for a new day
+    final now = DateTime.now();
+    bool needsSave = false;
+
+    for (var habit in loadedHabits) {
+      bool isDifferentDay =
+          habit.lastCompleted.year != now.year ||
+          habit.lastCompleted.month != now.month ||
+          habit.lastCompleted.day != now.day;
+
+      if (habit.isCompleted && isDifferentDay) {
+        _allHabits.add(habit.copyWith(isCompleted: false));
+        needsSave = true;
+      } else {
+        _allHabits.add(habit);
+      }
+    }
+
+    if (needsSave) {
+      await _storage.saveHabits(_allHabits);
+    }
+
+    // Initialize notifications and schedule daily briefings
+    await HabitXNotificationService().init();
+
+    // 🚀 NEW: Re-schedule all active habits to ensure system-level persistence
+    await refreshAllNotifications();
+
+    _updateHomeWidget();
     notifyListeners();
+  }
+
+  /// 🚀 STRATEGIC RE-SYNC: Force-reschedules all habits to survive OS-level kills
+  Future<void> refreshAllNotifications() async {
+    final notificationService = HabitXNotificationService();
+
+    // Schedule reminders for all habits that have a reminderTime set
+    // The notification service now handles recurring (daily) scheduling internally.
+    final activeHabits = _allHabits.where((h) => h.reminderTime != null);
+
+    for (var habit in activeHabits) {
+      await notificationService.scheduleHabitReminder(
+        habit.id,
+        habit.name,
+        habit.reminderTime!,
+      );
+    }
+    debugPrint(
+      "HabitX: Neural Re-sync complete for ${activeHabits.length} habits.",
+    );
   }
 
   // --- Achievement & Milestone Engine ---
@@ -102,7 +177,7 @@ class HabitProvider extends ChangeNotifier {
   ) {
     if (!_unlockedAchievementIds.contains(id)) {
       _unlockedAchievementIds.add(id);
-      _applyGamification(xpReward); // Reward bonus XP
+      _applyGamification(xpReward);
       _storage.saveUnlockedAchievements(_unlockedAchievementIds);
 
       _showEliteUnlockDialog(context, title, icon);
@@ -152,23 +227,45 @@ class HabitProvider extends ChangeNotifier {
 
   // --- Identity Actions ---
 
-  Future<void> setupUser(String name) async {
+  Future<void> setupUser({
+    required String name,
+    required int age,
+    required String persona,
+  }) async {
     _userName = name;
+    _userAge = age;
+    _userPersona = persona;
     _isNewUser = false;
-    await _storage.saveUserIdentity(name);
+    await _storage.saveUserIdentity(name: name, age: age, persona: persona);
+
+    // Explicitly request permissions on first setup
+    await HabitXNotificationService().requestPermissions();
+
+    // Reschedule daily briefings with new persona
+    await HabitXNotificationService().scheduleDailyBriefings();
+
+    _updateHomeWidget();
     notifyListeners();
   }
 
   Future<void> updateName(String newName) async {
     _userName = newName;
-    await _storage.saveUserIdentity(newName);
+    await _storage.saveUserIdentity(
+      name: _userName,
+      age: _userAge,
+      persona: _userPersona,
+    );
+    _updateHomeWidget();
     notifyListeners();
   }
 
   Future<void> resetUserIdentity() async {
-    _userName = "";
+    _userName = "RECRUIT";
+    _userAge = 18;
+    _userPersona = "Professional";
     _isNewUser = true;
-    await _storage.saveUserIdentity("");
+    await _storage.saveUserIdentity(name: "", age: 18, persona: "Professional");
+    _updateHomeWidget();
     notifyListeners();
   }
 
@@ -189,6 +286,7 @@ class HabitProvider extends ChangeNotifier {
 
   void setSelectedDate(DateTime date) {
     _selectedDate = date;
+    _updateHomeWidget();
     notifyListeners();
   }
 
@@ -228,17 +326,11 @@ class HabitProvider extends ChangeNotifier {
     });
   }
 
-  // Inside HabitProvider class
-
-  // Inside HabitProvider class
-
   void sendTestNotification() {
-    // Use the updated manager without the 'id' parameter
-    HabitXNotificationManager().scheduleHabitTask(
-      habitName: "Elite Mission Test",
-      actionGoal: "Testing system response...",
+    HabitXNotificationService().showInstantNotification(
+      title: "Neural Sync Complete ⚡",
+      body: "Overlord Engine is active and monitoring.",
     );
-
     if (_isHapticsEnabled) HapticHelper.lightTap();
   }
 
@@ -258,10 +350,9 @@ class HabitProvider extends ChangeNotifier {
     stopTimer();
     if (_isHapticsEnabled) HapticHelper.success();
 
-    // Trigger immediate completion notification
-    HabitXNotificationManager().scheduleHabitTask(
-      habitName: "Timer Complete",
-      actionGoal: "Mission Accomplished!",
+    HabitXNotificationService().showInstantNotification(
+      title: "Mission Locked 🔒",
+      body: "Task complete in the queue.",
     );
 
     if (_activeHabitId != null && navigatorKey.currentContext != null) {
@@ -277,27 +368,49 @@ class HabitProvider extends ChangeNotifier {
     _storage.saveHabits(_allHabits);
 
     if (habit.reminderTime != null) {
-      // 1. Schedule the EXACT time notification
-      HabitXNotificationManager().scheduleDelayedTask(
-        habitName: habit.name,
-        targetTime: habit.reminderTime!,
-        minutesBefore: 0, // Exact time
-      );
-
-      // 2. Schedule the 2-MINUTE WARNING notification
-      HabitXNotificationManager().scheduleDelayedTask(
-        habitName: habit.name,
-        targetTime: habit.reminderTime!,
-        minutesBefore: 2, // 2 minutes before
+      final notificationService = HabitXNotificationService();
+      notificationService.scheduleHabitReminder(
+        habit.id,
+        habit.name,
+        habit.reminderTime!,
       );
     }
 
+    _updateHomeWidget();
     notifyListeners();
+  }
+
+  void updateHabit(Habit updatedHabit) {
+    final index = _allHabits.indexWhere((h) => h.id == updatedHabit.id);
+    if (index != -1) {
+      _allHabits[index] = updatedHabit;
+      _storage.saveHabits(_allHabits);
+
+      // 🚀 UPDATE NOTIFICATION: Sync reminder state
+      final notificationService = HabitXNotificationService();
+      if (updatedHabit.reminderTime != null) {
+        notificationService.scheduleHabitReminder(
+          updatedHabit.id,
+          updatedHabit.name,
+          updatedHabit.reminderTime!,
+        );
+      } else {
+        notificationService.cancelReminder(updatedHabit.id);
+      }
+
+      _updateHomeWidget();
+      notifyListeners();
+    }
   }
 
   void deleteHabit(String id) {
     _allHabits.removeWhere((h) => h.id == id);
     _storage.saveHabits(_allHabits);
+
+    // 🚀 NEW: Terminate scheduled notifications for this habit
+    HabitXNotificationService().cancelReminder(id);
+
+    _updateHomeWidget();
     notifyListeners();
   }
 
@@ -312,6 +425,12 @@ class HabitProvider extends ChangeNotifier {
       if (_isHapticsEnabled) HapticHelper.success();
       _applyGamification(habit.xpValue);
       checkMilestones(context);
+
+      // Notify user of completion
+      HabitXNotificationService().showInstantNotification(
+        title: "Mission Accomplished 🏆",
+        body: "Goal '${habit.name}' verified. XP secured.",
+      );
     } else {
       _reverseGamification(habit.xpValue);
     }
@@ -325,39 +444,43 @@ class HabitProvider extends ChangeNotifier {
     );
 
     _storage.saveHabits(_allHabits);
+    _updateHomeWidget();
     notifyListeners();
   }
-  // Inside HabitProvider.dart
 
-  // Function to set the timer directly from AI suggestions
   void setAiTimer(int minutes) {
-    // 1. Reset current seconds to the AI suggested duration
     _currentSeconds = minutes * 60;
-
-    // 2. Stop any existing timer before starting a new one
     _timer?.cancel();
-
     _isTimerRunning = true;
-
-    // 3. Start the periodic ticker
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_currentSeconds > 0) {
         _currentSeconds--;
         notifyListeners();
       } else {
-        _handleTimerCompletion(); // The method we updated earlier
+        _handleTimerCompletion();
       }
     });
-
     notifyListeners();
   }
 
-  // Function to handle "XP Report" navigation or logic
   void triggerXpReport() {
-    // You can either navigate to stats or show a quick XP summary snackbar
-    // For now, let's trigger a haptic and a specific notification
     HapticHelper.success();
     notifyListeners();
+  }
+
+  // --- Home Widget Synchronization ---
+
+  void _updateHomeWidget() {
+    final activeHabit = currentActiveHabit;
+    final dayHabits = habits;
+    final completedCount = dayHabits.where((h) => h.isCompleted).length;
+
+    HomeWidgetService.updateWidget(
+      progress: dailyProgress,
+      activeHabit: activeHabit?.name,
+      completed: completedCount,
+      total: dayHabits.length,
+    );
   }
 
   // --- Gamification Engine ---
@@ -373,11 +496,13 @@ class HabitProvider extends ChangeNotifier {
       }
     }
     _storage.saveProgress(_userXP, _userLevel);
+    _updateHomeWidget();
   }
 
   void _reverseGamification(int xp) {
     _userXP = (_userXP - xp).clamp(0, 1000000);
     _storage.saveProgress(_userXP, _userLevel);
+    _updateHomeWidget();
   }
 
   // --- Elite Achievement UI ---

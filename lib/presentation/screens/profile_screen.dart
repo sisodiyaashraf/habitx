@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:habitx/presentation/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
-import '../../data/services/notification_master.dart';
+import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../../providers/habit_provider.dart';
 import '../widgets/shared/AnimatedLevelAvatar.dart';
 import '../widgets/shared/glass_background.dart';
@@ -89,9 +89,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildSettingsGroup([
                 _settingsTile(
                   Icons.person_outline_rounded,
-                  "Edit Name",
-                  "Change how we call you",
-                  onTap: () => _showRenameDialog(context, provider),
+                  "Edit Identity",
+                  "Name: ${provider.userName}, Age: ${provider.userAge}",
+                  onTap: () => _showIdentityDialog(context, provider),
+                ),
+                _settingsTile(
+                  Icons.psychology_outlined,
+                  "Persona",
+                  "Style: ${provider.userPersona}",
+                  onTap: () => _showPersonaDialog(context, provider),
                 ),
                 _settingsTile(
                   Icons.notifications_active_rounded,
@@ -128,6 +134,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // --- Dialogs ---
   void _showNotificationSettingsDialog(BuildContext context) {
+    // Capture the service before entering the dialog builder
+    final notificationService = context.read<HabitXNotificationService>();
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -136,7 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: SingleChildScrollView(
               child: GlassmorphicContainer(
                 width: MediaQuery.of(context).size.width * 0.85,
-                height: 280, // Slightly increased to prevent text overflow
+                height: 300, // Adjusted for safe rendering on high-DPI screens
                 borderRadius: 30,
                 blur: 20,
                 alignment: Alignment.center,
@@ -163,7 +172,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const Text(
                         "DAILY MOTIVATION",
                         style: TextStyle(
-                          color: Colors.black,
+                          color: Colors
+                              .black, // Ensure this matches your ThemeMode
                           fontWeight: FontWeight.w900,
                           letterSpacing: 1.5,
                           fontSize: 14,
@@ -187,15 +197,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           value: _dailyRemindersEnabled,
                           activeColor: const Color(0xFFAC5DED),
                           onChanged: (val) {
+                            // Update both dialog and screen state
                             setStateDialog(() => _dailyRemindersEnabled = val);
                             setState(() => _dailyRemindersEnabled = val);
 
                             if (val) {
-                              // NEW: Calling the trigger from HabitXNotificationManager
-                              HabitXNotificationManager()
-                                  .triggerDailyMotivation();
+                              // TACTICAL TRIGGER: Show immediate confirmation
+                              notificationService.showInstantNotification(
+                                title: "Neural Sync Complete ⚡",
+                                body: "Overlord Engine is active and monitoring.",
+                              );
                             } else {
-                              // Add logic here if you want to clear specific channels
+                              // 2026 Logic: You could call a cancel method here
+                              // to stop the daily motivation loops entirely.
                             }
                           },
                         ),
@@ -221,9 +235,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showRenameDialog(BuildContext context, HabitProvider provider) {
+  void _showIdentityDialog(BuildContext context, HabitProvider provider) {
     final TextEditingController nameController = TextEditingController(
       text: provider.userName,
+    );
+    final TextEditingController ageController = TextEditingController(
+      text: provider.userAge.toString(),
     );
 
     showDialog(
@@ -232,7 +249,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: SingleChildScrollView(
           child: GlassmorphicContainer(
             width: MediaQuery.of(context).size.width * 0.85,
-            height: 240,
+            height: 320,
             borderRadius: 30,
             blur: 20,
             alignment: Alignment.center,
@@ -252,7 +269,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   const Text(
-                    "RENAME IDENTITY",
+                    "UPDATE IDENTITY",
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.w900,
@@ -262,19 +279,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Material(
                     color: Colors.transparent,
-                    child: TextField(
-                      controller: nameController,
-                      autofocus: true,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22,
-                      ),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Enter name...",
-                      ),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: nameController,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Enter name...",
+                          ),
+                        ),
+                        TextField(
+                          controller: ageController,
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Enter age...",
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Row(
@@ -295,8 +329,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         onPressed: () {
-                          if (nameController.text.isNotEmpty) {
-                            provider.updateName(nameController.text);
+                          if (nameController.text.isNotEmpty &&
+                              ageController.text.isNotEmpty) {
+                            provider.setupUser(
+                              name: nameController.text,
+                              age: int.tryParse(ageController.text) ?? 18,
+                              persona: provider.userPersona,
+                            );
                             Navigator.pop(context);
                           }
                         },
@@ -314,6 +353,100 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showPersonaDialog(BuildContext context, HabitProvider provider) {
+    showDialog(
+      context: context,
+      builder: (context) => Center(
+        child: GlassmorphicContainer(
+          width: MediaQuery.of(context).size.width * 0.85,
+          height: 240,
+          borderRadius: 30,
+          blur: 20,
+          alignment: Alignment.center,
+          border: 2,
+          linearGradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.2),
+              Colors.white.withOpacity(0.1),
+            ],
+          ),
+          borderGradient: const LinearGradient(
+            colors: [Color(0xFFAC5DED), Colors.white24],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                const Text(
+                  "CHOOSE PERSONA",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
+                    fontSize: 12,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildPersonaBtn(
+                        context,
+                        provider,
+                        "Professional",
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _buildPersonaBtn(context, provider, "GenZ"),
+                    ),
+                  ],
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "CLOSE",
+                    style: TextStyle(color: Colors.black45),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonaBtn(
+    BuildContext context,
+    HabitProvider provider,
+    String persona,
+  ) {
+    bool isSelected = provider.userPersona == persona;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isSelected ? const Color(0xFFAC5DED) : Colors.white24,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      ),
+      onPressed: () {
+        provider.setupUser(
+          name: provider.userName,
+          age: provider.userAge,
+          persona: persona,
+        );
+        Navigator.pop(context);
+      },
+      child: Text(
+        persona,
+        style: TextStyle(
+          color: isSelected ? Colors.white : Colors.black,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

@@ -8,8 +8,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../providers/habit_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../widgets/shared/glass_background.dart';
-import '../widgets/settings/brand_vision_view.dart';
 import '../widgets/shared/privacy_policy_dialog.dart';
 import '../widgets/shared/terms_of_service_dialog.dart';
 
@@ -121,20 +121,63 @@ class SettingsScreen extends StatelessWidget {
             _buildSettingsGroup(
               [
                 _settingsTile(
+                  FontAwesomeIcons.shield,
+                  "Verify Permissions",
+                  "Authorize tactical alerts",
+                  textColor,
+                  subTextColor,
+                  onTap: () async {
+                    final granted = await HabitXNotificationService().requestPermissions();
+                    if (!context.mounted) return;
+                    if (granted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Protocol Authorized: Notifications Active ⚡"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Permissions Denied. Please check System Settings."),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                    }
+                  },
+                ),
+                _settingsTile(
+                  FontAwesomeIcons.rotate,
+                  "Refresh All Triggers",
+                  "Force re-sync reminders",
+                  textColor,
+                  subTextColor,
+                  onTap: () async {
+                    await context.read<HabitProvider>().refreshAllNotifications();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Neural Re-sync Complete: All triggers updated."),
+                        backgroundColor: Color(0xFFAC5DED),
+                      ),
+                    );
+                  },
+                ),
+                _settingsTile(
                   FontAwesomeIcons.bug,
-                  "Test Notifications",
-                  "Trigger a test alert (5s delay)",
+                  "Test Core Sync",
+                  "Trigger instant alert (System check)",
                   textColor,
                   subTextColor,
                   onTap: () {
                     context.read<HabitProvider>().sendTestNotification();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Test alert scheduled...")),
+                      const SnackBar(content: Text("Instant trigger deployed. Check your tray.")),
                     );
                   },
                 ),
               ],
-              height: 72,
+              height: 216,
               isDark: isDark,
             ),
 

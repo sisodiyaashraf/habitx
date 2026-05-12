@@ -27,14 +27,39 @@ class NotificationMessages {
     "Greatness is found in the grind. Keep pushing.",
     "Deep work protocol: Engage now.",
     "Every checkmark is a step toward elite status.",
-    // Added for HabitX branding
     "HabitX Alert: Consistency is the only hack.",
     "Protocol 01: Execute your primary objective now.",
     "Shalcontech Intelligence: Data suggests you're due for a win.",
   ];
 
-  /// Helper to get a random motivational prompt
-  static String get randomCoachPrompt {
-    return eliteMessages[DateTime.now().millisecond % eliteMessages.length];
+  /// Gen Z style prompts - more informal, trendy, and relatable.
+  static const List<String> genZMessages = [
+    "No cap, your streak is looking fire. Keep it up! 🔥",
+    "Don't let your habits ghost you. Log them now! 💀",
+    "Main character energy only. Finish your tasks! 💅",
+    "Your future self is literally screaming. Do the work! 📢",
+    "Sending positive vibes, but also... do your habits. ✨",
+    "That habit is rent-free in your head. Just do it! 🧠",
+    "Stop doomscrolling and start habit-rolling. 📱",
+    "Lowkey, you're crushing it. Highkey, do one more. 📈",
+    "Imagine not completing your habits... couldn't be you. 💅",
+    "Giving: Productive King/Queen. Keep that energy! 👑",
+    "The grind don't stop. Validated by HabitX. ✅",
+    "Slay the day, one habit at a time. 🗡️",
+    "Your potential is giving... infinite. Lock in. ♾️",
+    "POV: You're actually reaching your goals. 📸",
+    "Don't be mid. Be elite. Check your tasks. 💯",
+    "Big brain moves only. Log your progress. 🧠",
+    "Respect the hustle. Your streak is iconic. 🛐",
+    "It's a marathon, not a sprint. Keep that aesthetic. 🏃‍♂️",
+    "No zero days, fr fr. 😤",
+    "Vibe check: Are you winning yet? 🤙",
+  ];
+
+  /// Helper to get a random motivational prompt based on persona
+  static String getRandomPrompt(String persona) {
+    final List<String> messages =
+        persona.toLowerCase() == 'genz' ? genZMessages : eliteMessages;
+    return messages[DateTime.now().microsecondsSinceEpoch % messages.length];
   }
 }

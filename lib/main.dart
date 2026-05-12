@@ -1,60 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
 
 // Core & Providers
 import 'core/app_theme.dart';
+import 'data/services/notifications/habit_x_notification_service.dart';
+// 🚀 ADDED: Import your updated HomeWidgetService
+import 'data/services/home_widget_service.dart';
 import 'providers/habit_provider.dart';
 import 'providers/theme_provider.dart';
-
-// NEW: Pointing to your new notification_master.dart file
-import 'data/services/notification_master.dart';
 
 // Screens
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';
 
 void main() async {
-  // 1. MUST be the first line
+  // 1. Framework & Engine Initialization
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. Setup System UI (Glassmorphic Optimization)
+  // 2. Tactical Resource Pre-Loading
+  final habitProvider = HabitProvider();
+  final notificationService = HabitXNotificationService();
+
+  try {
+    // 🛰️ HOME WIDGET INITIALIZATION
+    // Registers the background interactivity callback for Quick Actions
+    await HomeWidgetService.init();
+
+    // Sequential initialization: Database (Hive) must load first
+    await habitProvider.init();
+
+    // Neural Engine init: Handles Timezones and Daily Briefing loops
+    await notificationService.init();
+  } catch (e) {
+    debugPrint("HabitX Neural Init Failure: $e");
+  }
+
+  // Tactical Orientation Lock
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // 3. System UI - Edge-to-Edge Immersion
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
       systemNavigationBarColor: Colors.transparent,
       systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarDividerColor: Colors.transparent,
       systemNavigationBarContrastEnforced: false,
     ),
   );
-
-  // Enable Edge-to-Edge mode
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  // 3. Initialize Services (Using the new HabitXNotificationManager)
-  final notificationManager = HabitXNotificationManager();
-  final habitProvider = HabitProvider();
-
-  // Initialize providers and notification system in parallel
-  await Future.wait([
-    notificationManager.init(),
-    habitProvider.init(),
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
-  ]);
-
-  // 4. Handle Post-Init logic
+  // 4. Strategic Post-Init Briefing
+  // If the system is already initialized, trigger a widget update to ensure
+  // the home screen widget is perfectly synced with the latest app data.
   if (!habitProvider.isNewUser) {
-    // Trigger the rotating daily status/motivation
-    await notificationManager.triggerDailyMotivation();
+    debugPrint("HabitX: Triggering Initial Neural Sync Notification...");
+    notificationService.showInstantNotification(
+      title: "Neural Sync Complete ⚡",
+      body: "Overlord Engine is active. Local time: ${DateTime.now().hour}:${DateTime.now().minute}",
+    );
+
+    // Sync the current habit state to the Glassmorphic Widget
+    HomeWidgetService.updateWidget();
   }
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: habitProvider),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<HabitProvider>.value(value: habitProvider),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
+        Provider<HabitXNotificationService>.value(value: notificationService),
+        // Providing the HomeWidgetService as a static-style provider if needed
       ],
       child: const HabitXApp(),
     ),
@@ -66,22 +84,17 @@ class HabitXApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Watch providers for state-driven UI updates
-    final habitProvider = context.watch<HabitProvider>();
-    final themeProvider = context.watch<ThemeProvider>();
+    final themeMode = context.select((ThemeProvider p) => p.themeMode);
+    final isNewUser = context.select((HabitProvider p) => p.isNewUser);
+    final navigatorKey = context.read<HabitProvider>().navigatorKey;
 
     return MaterialApp(
       title: 'HabitX',
       debugShowCheckedModeBanner: false,
-
-      // Navigation key for Global achievement dialogs
-      navigatorKey: habitProvider.navigatorKey,
-
+      navigatorKey: navigatorKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: themeProvider.themeMode,
-
-      // Prevent OS-level font scaling from breaking Glassmorphic containers
+      themeMode: themeMode,
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(
@@ -90,11 +103,7 @@ class HabitXApp extends StatelessWidget {
           child: child!,
         );
       },
-
-      // Routing logic based on user status
-      home: habitProvider.isNewUser
-          ? const OnboardingScreen()
-          : const HomeScreen(),
+      home: isNewUser ? const OnboardingScreen() : const HomeScreen(),
     );
   }
 }
