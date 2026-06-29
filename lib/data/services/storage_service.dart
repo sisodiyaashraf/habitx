@@ -13,6 +13,7 @@ class StorageService {
   static const String _isNewUserKey = 'is_new_user';
   static const String _achievementsKey = 'unlocked_achievements'; // NEW
   static const String _hapticsKey = 'haptics_enabled'; // NEW
+  static const String _dailyMotivationKey = 'daily_motivation_enabled';
 
   // --- 1. User Identity & Onboarding ---
 
@@ -116,6 +117,17 @@ class StorageService {
   Future<bool> loadHapticPreference() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_hapticsKey) ?? true;
+  }
+
+  /// Persists daily motivation preference (Defaults to true)
+  Future<void> saveDailyMotivationPreference(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_dailyMotivationKey, enabled);
+  }
+
+  Future<bool> loadDailyMotivationPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_dailyMotivationKey) ?? true;
   }
 
   // --- 5. System Actions ---

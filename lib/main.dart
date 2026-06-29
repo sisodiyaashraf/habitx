@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 // Core & Providers
 import 'core/app_theme.dart';
 import 'data/services/notifications/habit_x_notification_service.dart';
-// 🚀 ADDED: Import your updated HomeWidgetService
 import 'data/services/home_widget_service.dart';
 import 'providers/habit_provider.dart';
 import 'providers/theme_provider.dart';
@@ -24,13 +23,13 @@ void main() async {
 
   try {
     // 🛰️ HOME WIDGET INITIALIZATION
-    // Registers the background interactivity callback for Quick Actions
+    // Registers the background group ID for the daily image rotation
     await HomeWidgetService.init();
 
     // Sequential initialization: Database (Hive) must load first
     await habitProvider.init();
 
-    // Neural Engine init: Handles Timezones and Daily Briefing loops
+    // Neural Engine init: Handles Timezones, Permissions, and Daily Briefing loops
     await notificationService.init();
   } catch (e) {
     debugPrint("HabitX Neural Init Failure: $e");
@@ -52,17 +51,18 @@ void main() async {
   );
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  // 4. Strategic Post-Init Briefing
-  // If the system is already initialized, trigger a widget update to ensure
-  // the home screen widget is perfectly synced with the latest app data.
+  // 4. Strategic Post-Init Sync
   if (!habitProvider.isNewUser) {
     debugPrint("HabitX: Triggering Initial Neural Sync Notification...");
+
+    // Greet the user with a system status check
     notificationService.showInstantNotification(
       title: "Neural Sync Complete ⚡",
-      body: "Overlord Engine is active. Local time: ${DateTime.now().hour}:${DateTime.now().minute}",
+      body: "Overlord Engine is active. System Status: ELITE.",
     );
 
-    // Sync the current habit state to the Glassmorphic Widget
+    // FIXED: Calling the updated service with zero arguments.
+    // The service now internally handles the 3-image rotation logic.
     HomeWidgetService.updateWidget();
   }
 
@@ -72,7 +72,6 @@ void main() async {
         ChangeNotifierProvider<HabitProvider>.value(value: habitProvider),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         Provider<HabitXNotificationService>.value(value: notificationService),
-        // Providing the HomeWidgetService as a static-style provider if needed
       ],
       child: const HabitXApp(),
     ),
@@ -97,6 +96,7 @@ class HabitXApp extends StatelessWidget {
       themeMode: themeMode,
       builder: (context, child) {
         return MediaQuery(
+          // Lock text scale to 1.0 to ensure the minimalist UI remains pixel-perfect
           data: MediaQuery.of(
             context,
           ).copyWith(textScaler: const TextScaler.linear(1.0)),

@@ -6,7 +6,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../../providers/habit_provider.dart';
 import '../widgets/shared/glass_background.dart';
-import 'home_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -166,40 +165,45 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Widget _buildFeatureSlide(Map<String, dynamic> data) {
     return Padding(
-      padding: const EdgeInsets.all(40.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildAnimatedIcon(data['icon'], data['color']),
-          const SizedBox(height: 50),
-          FadeTransition(
-            opacity: _typingController,
-            child: Text(
-              data['title'],
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 2,
+      padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
+      child: Center(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildAnimatedIcon(data['icon'], data['color']),
+              const SizedBox(height: 30),
+              FadeTransition(
+                opacity: _typingController,
+                child: Text(
+                  data['title'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          FadeTransition(
-            opacity: _typingController,
-            child: Text(
-              data['subtitle'],
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
-                fontSize: 16,
-                fontFamily: 'monospace',
-                height: 1.5,
+              const SizedBox(height: 16),
+              FadeTransition(
+                opacity: _typingController,
+                child: Text(
+                  data['subtitle'],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 15,
+                    fontFamily: 'monospace',
+                    height: 1.5,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

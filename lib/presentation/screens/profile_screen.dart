@@ -16,8 +16,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _dailyRemindersEnabled = true;
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HabitProvider>();
@@ -161,70 +159,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      const Icon(
-                        Icons.notifications_active_rounded,
-                        color: Color(0xFFAC5DED),
-                        size: 40,
-                      ),
-                      const Text(
-                        "DAILY MOTIVATION",
-                        style: TextStyle(
-                          color: Colors
-                              .black, // Ensure this matches your ThemeMode
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.5,
-                          fontSize: 14,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        const Icon(
+                          Icons.notifications_active_rounded,
+                          color: Color(0xFFAC5DED),
+                          size: 40,
                         ),
-                      ),
-                      const Text(
-                        "Receive high-performance reminders daily to keep you on track.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black54, fontSize: 12),
-                      ),
-                      Material(
-                        color: Colors.transparent,
-                        child: SwitchListTile.adaptive(
-                          title: const Text(
-                            "Enable Alerts",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
+                        const Text(
+                          "DAILY MOTIVATION",
+                          style: TextStyle(
+                            color: Colors
+                                .black, // Ensure this matches your ThemeMode
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                            fontSize: 14,
                           ),
-                          value: _dailyRemindersEnabled,
-                          activeColor: const Color(0xFFAC5DED),
-                          onChanged: (val) {
-                            // Update both dialog and screen state
-                            setStateDialog(() => _dailyRemindersEnabled = val);
-                            setState(() => _dailyRemindersEnabled = val);
-
-                            if (val) {
-                              // TACTICAL TRIGGER: Show immediate confirmation
-                              notificationService.showInstantNotification(
-                                title: "Neural Sync Complete ⚡",
-                                body: "Overlord Engine is active and monitoring.",
-                              );
-                            } else {
-                              // 2026 Logic: You could call a cancel method here
-                              // to stop the daily motivation loops entirely.
-                            }
+                        ),
+                        const Text(
+                          "Receive high-performance reminders daily to keep you on track.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.black54, fontSize: 12),
+                        ),
+                        Consumer<HabitProvider>(
+                          builder: (context, provider, _) {
+                            return Material(
+                              color: Colors.transparent,
+                              child: SwitchListTile.adaptive(
+                                title: const Text(
+                                  "Enable Alerts",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                value: provider.isDailyMotivationEnabled,
+                                activeColor: const Color(0xFFAC5DED),
+                                onChanged: (val) {
+                                  provider.toggleDailyMotivation(val);
+                                  if (val) {
+                                    notificationService.showInstantNotification(
+                                      title: "Neural Sync Complete ⚡",
+                                      body:
+                                          "Overlord Engine is active and monitoring daily motivation.",
+                                    );
+                                  }
+                                },
+                              ),
+                            );
                           },
                         ),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "CLOSE",
-                          style: TextStyle(
-                            color: Colors.black45,
-                            fontWeight: FontWeight.bold,
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            "CLOSE",
+                            style: TextStyle(
+                              color: Colors.black45,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -265,91 +264,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Text(
-                    "UPDATE IDENTITY",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.5,
-                      fontSize: 12,
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    const Text(
+                      "UPDATE IDENTITY",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                  Material(
-                    color: Colors.transparent,
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: nameController,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                    Material(
+                      color: Colors.transparent,
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: nameController,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Enter name...",
+                            ),
                           ),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Enter name...",
+                          TextField(
+                            controller: ageController,
+                            textAlign: TextAlign.center,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Enter age...",
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            "CANCEL",
+                            style: TextStyle(color: Colors.black45),
                           ),
                         ),
-                        TextField(
-                          controller: ageController,
-                          textAlign: TextAlign.center,
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFAC5DED),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
                           ),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Enter age...",
+                          onPressed: () {
+                            if (nameController.text.isNotEmpty &&
+                                ageController.text.isNotEmpty) {
+                              provider.setupUser(
+                                name: nameController.text,
+                                age: int.tryParse(ageController.text) ?? 18,
+                                persona: provider.userPersona,
+                              );
+                              Navigator.pop(context);
+                            }
+                          },
+                          child: const Text(
+                            "UPDATE",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "CANCEL",
-                          style: TextStyle(color: Colors.black45),
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFAC5DED),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        onPressed: () {
-                          if (nameController.text.isNotEmpty &&
-                              ageController.text.isNotEmpty) {
-                            provider.setupUser(
-                              name: nameController.text,
-                              age: int.tryParse(ageController.text) ?? 18,
-                              persona: provider.userPersona,
-                            );
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: const Text(
-                          "UPDATE",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -380,41 +382,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const Text(
-                  "CHOOSE PERSONA",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.5,
-                    fontSize: 12,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const Text(
+                    "CHOOSE PERSONA",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildPersonaBtn(
-                        context,
-                        provider,
-                        "Professional",
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildPersonaBtn(
+                          context,
+                          provider,
+                          "Professional",
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _buildPersonaBtn(context, provider, "GenZ"),
-                    ),
-                  ],
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    "CLOSE",
-                    style: TextStyle(color: Colors.black45),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildPersonaBtn(context, provider, "GenZ"),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "CLOSE",
+                      style: TextStyle(color: Colors.black45),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

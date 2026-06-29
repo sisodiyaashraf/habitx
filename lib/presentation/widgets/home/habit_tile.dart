@@ -53,6 +53,8 @@ class HabitTile extends StatelessWidget {
                     children: [
                       Text(
                         habit.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w900,
@@ -61,32 +63,36 @@ class HabitTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          _buildInfoBadge(
-                            Icons.timer_outlined,
-                            '${habit.timerDuration}m',
-                            const Color(0xFFAC5DED).withOpacity(0.1),
-                            const Color(0xFFAC5DED),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${habit.streak} 🔥',
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: [
+                            _buildInfoBadge(
+                              Icons.timer_outlined,
+                              '${habit.timerDuration}m',
+                              const Color(0xFFAC5DED).withOpacity(0.1),
+                              const Color(0xFFAC5DED),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            DateFormat('hh:mm a').format(habit.createdAt),
-                            style: const TextStyle(
-                              color: Colors.black45,
-                              fontSize: 11,
+                            const SizedBox(width: 8),
+                            Text(
+                              '${habit.streak} 🔥',
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Text(
+                              DateFormat('hh:mm a').format(habit.createdAt),
+                              style: const TextStyle(
+                                color: Colors.black45,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -226,8 +232,11 @@ class HabitTile extends StatelessWidget {
         borderGradient: const LinearGradient(
           colors: [Color(0xFFAC5DED), Colors.transparent],
         ),
-        child: Column(
-          children: [
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             ListTile(
               leading: const Icon(
                 Icons.check_circle_outline,
@@ -281,7 +290,8 @@ class HabitTile extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Color _getDifficultyColor() {

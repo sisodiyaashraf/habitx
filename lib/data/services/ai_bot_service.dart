@@ -40,7 +40,6 @@ class AiBotService {
     // 2. PERFORMANCE METRICS
     final int total = habits.length;
     final int completed = habits.where((h) => h.isCompleted).length;
-    final int remaining = total - completed;
     final double completionRate = completed / total;
 
     // 3. STREAK HEALTH

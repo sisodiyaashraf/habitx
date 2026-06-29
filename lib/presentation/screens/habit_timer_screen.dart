@@ -55,48 +55,50 @@ class HabitTimerScreen extends StatelessWidget {
       ),
       body: GlassBackground(
         child: SafeArea(
-          child: Column(
-            // FIXED: Centers everything horizontally in the Column
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 10),
 
-              // Header Status
-              _buildFocusHeader(isRunning),
+                // Header Status
+                _buildFocusHeader(isRunning),
 
-              const Spacer(),
+                const SizedBox(height: 20),
 
-              // FIXED: Explicit centering for the Dial Stack
-              Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    _buildGlowEffect(isRunning, progress),
-                    HabitTimerDial(
-                      progress: progress,
-                      displayTime: "$minutes:$seconds",
-                    ),
-                  ],
+                // FIXED: Explicit centering for the Dial Stack
+                Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      _buildGlowEffect(isRunning, progress),
+                      HabitTimerDial(
+                        progress: progress,
+                        displayTime: "$minutes:$seconds",
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const Spacer(),
+                const SizedBox(height: 20),
 
-              // FIXED: Time details text alignment
-              _buildTimeDetails(minutes, seconds),
+                // FIXED: Time details text alignment
+                _buildTimeDetails(minutes, seconds),
 
-              const SizedBox(height: 40),
+                const SizedBox(height: 24),
 
-              // FIXED: Centered Control Pod
-              Center(child: _buildPlaybackControls(provider)),
+                // FIXED: Centered Control Pod
+                Center(child: _buildPlaybackControls(provider)),
 
-              const SizedBox(height: 40),
+                const SizedBox(height: 24),
 
-              // Motivational Footer
-              _buildMotivationalQuote(),
+                // Motivational Footer
+                _buildMotivationalQuote(),
 
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

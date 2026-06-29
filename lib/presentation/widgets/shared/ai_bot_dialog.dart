@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
@@ -97,11 +96,12 @@ class _AiBotDialogState extends State<AiBotDialog>
   }
 
   void _simulateNeuralScan() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         _isAnalyzing = true;
         _analysisProgress = 0.0;
       });
+    }
     Timer.periodic(const Duration(milliseconds: 30), (timer) {
       if (_analysisProgress < 1.0) {
         if (mounted) setState(() => _analysisProgress += 0.05);
@@ -116,11 +116,12 @@ class _AiBotDialogState extends State<AiBotDialog>
   }
 
   void _startTypewriter() {
-    if (mounted)
+    if (mounted) {
       setState(() {
         _displayedText = "";
         _charIndex = 0;
       });
+    }
     _typewriterTimer?.cancel();
     _typewriterTimer = Timer.periodic(const Duration(milliseconds: 15), (
       timer,
@@ -154,10 +155,15 @@ class _AiBotDialogState extends State<AiBotDialog>
     final total = provider.allHabits.length;
     final progress = total == 0 ? 0.0 : done / total;
 
+    final screenHeight = MediaQuery.of(context).size.height;
+    final dialogHeight = (screenHeight * 0.8).clamp(450.0, 650.0);
+
     return Center(
-      child: GlassmorphicContainer(
-        width: MediaQuery.of(context).size.width * 0.94,
-        height: 600,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: GlassmorphicContainer(
+          width: MediaQuery.of(context).size.width * 0.94,
+          height: dialogHeight,
         borderRadius: 20,
         blur: 45,
         alignment: Alignment.center,
@@ -206,8 +212,9 @@ class _AiBotDialogState extends State<AiBotDialog>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildTacticalOptions(HabitProvider provider) {
     return Column(

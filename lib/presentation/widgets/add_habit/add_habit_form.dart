@@ -22,7 +22,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
   HabitDifficulty _selectedDifficulty = HabitDifficulty.easy;
   int _selectedMinutes = 10;
   bool _isCustomTimer = false;
-  bool _isWeeklySchedule = false;
   bool _isReminderEnabled = true;
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
@@ -76,7 +75,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
       if (_isReminderEnabled) {
         _selectedTime = TimeOfDay.fromDateTime(widget.habit!.reminderTime!);
       }
-      
+
       if (![10, 20, 30].contains(_selectedMinutes)) {
         _isCustomTimer = true;
         _customTimeController.text = _selectedMinutes.toString();
@@ -184,9 +183,12 @@ class _AddHabitFormState extends State<AddHabitForm> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
 
+    final screenHeight = MediaQuery.of(context).size.height;
+    final safeFormHeight = (screenHeight * 0.85).clamp(550.0, 900.0);
+
     return GlassmorphicContainer(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.9,
+      height: safeFormHeight,
       borderRadius: 40,
       blur: 35,
       alignment: Alignment.center,
@@ -554,7 +556,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
 
   Widget _buildGlassDropdown(bool isDark, Color textColor) {
     return DropdownButtonFormField<HabitDifficulty>(
-      value: _selectedDifficulty,
+      initialValue: _selectedDifficulty,
       dropdownColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
       icon: const Icon(Icons.expand_more_rounded, color: Color(0xFFAC5DED)),
       style: TextStyle(
@@ -590,29 +592,35 @@ class _AddHabitFormState extends State<AddHabitForm> {
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             ...[10, 20, 30].map(
-              (mins) => _choiceChip(
-                "$mins m",
-                !_isCustomTimer && _selectedMinutes == mins,
-                () {
-                  setState(() {
-                    _isCustomTimer = false;
-                    _selectedMinutes = mins;
-                    _customTimeController.clear();
-                  });
-                },
-                isDark,
-                textColor, // Pass textColor
+              (mins) => Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: _choiceChip(
+                    "$mins m",
+                    !_isCustomTimer && _selectedMinutes == mins,
+                    () {
+                      setState(() {
+                        _isCustomTimer = false;
+                        _selectedMinutes = mins;
+                        _customTimeController.clear();
+                      });
+                    },
+                    isDark,
+                    textColor,
+                  ),
+                ),
               ),
             ),
-            _choiceChip(
-              "CUSTOM",
-              _isCustomTimer,
-              () => setState(() => _isCustomTimer = true),
-              isDark,
-              textColor, // Pass textColor
+            Expanded(
+              child: _choiceChip(
+                "CUSTOM",
+                _isCustomTimer,
+                () => setState(() => _isCustomTimer = true),
+                isDark,
+                textColor,
+              ),
             ),
           ],
         ),
@@ -637,13 +645,14 @@ class _AddHabitFormState extends State<AddHabitForm> {
     bool selected,
     VoidCallback onSelected,
     bool isDark,
-    Color textColor, // Added this parameter
+    Color textColor,
   ) {
     return GestureDetector(
       onTap: onSelected,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: selected
               ? const Color(0xFFAC5DED)
@@ -662,13 +671,16 @@ class _AddHabitFormState extends State<AddHabitForm> {
         ),
         child: Text(
           label,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: selected
                 ? Colors.white
                 : (isDark ? Colors.white70 : Colors.black87),
             fontWeight: FontWeight.w900,
-            fontSize: 12,
-            letterSpacing: 1,
+            fontSize: 11,
+            letterSpacing: 0.5,
           ),
         ),
       ),

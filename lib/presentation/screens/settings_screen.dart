@@ -68,8 +68,9 @@ class SettingsScreen extends StatelessWidget {
       final Uri playStoreUri = Uri.parse(
         "https://play.google.com/store/apps/details?id=$_appPackageName",
       );
-      if (await canLaunchUrl(playStoreUri))
+      if (await canLaunchUrl(playStoreUri)) {
         await launchUrl(playStoreUri, mode: LaunchMode.externalApplication);
+      }
     }
   }
 
@@ -79,8 +80,9 @@ class SettingsScreen extends StatelessWidget {
     final Uri uri = Uri.parse(
       "https://wa.me/$phone?text=HabitX Support Request",
     );
-    if (await canLaunchUrl(uri))
+    if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override
@@ -127,19 +129,24 @@ class SettingsScreen extends StatelessWidget {
                   textColor,
                   subTextColor,
                   onTap: () async {
-                    final granted = await HabitXNotificationService().requestPermissions();
+                    final granted = await HabitXNotificationService()
+                        .requestPermissions();
                     if (!context.mounted) return;
                     if (granted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text("Protocol Authorized: Notifications Active ⚡"),
+                          content: Text(
+                            "Protocol Authorized: Notifications Active ⚡",
+                          ),
                           backgroundColor: Colors.green,
                         ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text("Permissions Denied. Please check System Settings."),
+                          content: Text(
+                            "Permissions Denied. Please check System Settings.",
+                          ),
                           backgroundColor: Colors.redAccent,
                         ),
                       );
@@ -153,11 +160,15 @@ class SettingsScreen extends StatelessWidget {
                   textColor,
                   subTextColor,
                   onTap: () async {
-                    await context.read<HabitProvider>().refreshAllNotifications();
+                    await context
+                        .read<HabitProvider>()
+                        .refreshAllNotifications();
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text("Neural Re-sync Complete: All triggers updated."),
+                        content: Text(
+                          "Neural Re-sync Complete: All triggers updated.",
+                        ),
                         backgroundColor: Color(0xFFAC5DED),
                       ),
                     );
@@ -172,7 +183,11 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () {
                     context.read<HabitProvider>().sendTestNotification();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Instant trigger deployed. Check your tray.")),
+                      const SnackBar(
+                        content: Text(
+                          "Instant trigger deployed. Check your tray.",
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -350,9 +365,12 @@ class SettingsScreen extends StatelessWidget {
       borderGradient: LinearGradient(
         colors: [Colors.white.withOpacity(0.1), Colors.transparent],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: tiles,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: tiles,
+        ),
       ),
     );
   }

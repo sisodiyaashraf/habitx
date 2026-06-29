@@ -1,16 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.shalcontech.habitx">
 
+    <!-- Essential Connectivity & Haptics -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- 1. Post-Notifications (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!-- 2. Neural Persistence (Reschedule after reboot) -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- 3. Exact Alarm Protocol (Android 14+) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
+    <!-- 4. Foreground Engine Requirements -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
@@ -18,7 +24,8 @@
         android:label="HabitX"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:allowBackup="false">
+        android:allowBackup="false"
+        android:enableOnBackInvokedCallback="true"> <!-- Optimizes back navigation -->
 
         <activity
             android:name=".MainActivity"
@@ -41,22 +48,25 @@
             </intent-filter>
         </activity>
 
+        <!-- Notification Receivers (flutter_local_notifications v21+ standard) -->
         <receiver
             android:exported="false"
             android:name="com.dexterous.flutter_local_notifications.ScheduledNotificationReceiver" />
-
         <receiver
-            android:exported="true"
+            android:exported="false"
+            android:name="com.dexterous.flutter_local_notifications.ActionBroadcastReceiver" />
+        <receiver
+            android:exported="false"
             android:name="com.dexterous.flutter_local_notifications.ScheduledNotificationBootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
 
-        <!-- HOME WIDGET RECEIVER -->
+        <!-- 5. Glassmorphic Widget Provider -->
         <receiver android:name=".HabitWidgetProvider"
             android:exported="true">
             <intent-filter>
@@ -66,7 +76,7 @@
                 android:resource="@xml/habit_widget_info" />
         </receiver>
 
-        <!-- HomeWidget Background Interactivity -->
+        <!-- 6. HomeWidget Background Interactivity -->
         <receiver android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
             android:exported="true">
             <intent-filter>
@@ -74,11 +84,16 @@
             </intent-filter>
         </receiver>
 
+        <!-- 7. Foreground Service Protocol (Android 14+ Compliance) -->
         <service
             android:name="com.dexterous.flutter_local_notifications.ForegroundService"
             android:exported="false"
             android:stopWithTask="false"
-            android:foregroundServiceType="specialUse" />
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="This service ensures that high-priority mission reminders and habit execution windows fire exactly on time to maintain system discipline." />
+        </service>
 
         <meta-data
             android:name="flutterEmbedding"

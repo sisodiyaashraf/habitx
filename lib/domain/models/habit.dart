@@ -17,6 +17,9 @@ class Habit {
   /// Optional specific time to trigger a local push notification
   final DateTime? reminderTime;
 
+  /// Historical list of dates when this habit was completed
+  final List<DateTime> completedDates;
+
   Habit({
     required this.id,
     required this.name,
@@ -26,8 +29,10 @@ class Habit {
     required this.lastCompleted,
     this.timerDuration = 10,
     DateTime? createdAt,
-    this.reminderTime, // Integrated into constructor
-  }) : createdAt = createdAt ?? DateTime.now();
+    this.reminderTime,
+    List<DateTime>? completedDates,
+  })  : createdAt = createdAt ?? DateTime.now(),
+        completedDates = completedDates ?? [];
 
   /// Calculates XP reward based on difficulty for the gamification engine
   int get xpValue {
@@ -55,6 +60,7 @@ class Habit {
     'createdAt': createdAt.toIso8601String(),
     // Safely encode the optional reminder time
     'reminderTime': reminderTime?.toIso8601String(),
+    'completedDates': completedDates.map((d) => d.toIso8601String()).toList(),
   };
 
   /// Reconstructs the Habit object from a Map stored on disk
@@ -75,6 +81,11 @@ class Habit {
     reminderTime: map['reminderTime'] != null
         ? DateTime.parse(map['reminderTime'])
         : null,
+    completedDates: map['completedDates'] != null
+        ? (map['completedDates'] as List)
+            .map((d) => DateTime.parse(d.toString()))
+            .toList()
+        : [],
   );
 
   // --- State Management Helpers ---
@@ -89,6 +100,7 @@ class Habit {
     int? timerDuration,
     DateTime? createdAt,
     DateTime? reminderTime,
+    List<DateTime>? completedDates,
   }) => Habit(
     id: id, // ID is never changed
     name: name ?? this.name,
@@ -99,5 +111,6 @@ class Habit {
     timerDuration: timerDuration ?? this.timerDuration,
     createdAt: createdAt ?? this.createdAt,
     reminderTime: reminderTime ?? this.reminderTime,
+    completedDates: completedDates ?? this.completedDates,
   );
 }

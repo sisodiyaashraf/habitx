@@ -9,16 +9,15 @@ import '../storage_service.dart';
 import '../../../core/constants/notification_messages.dart';
 
 @pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) {
-  debugPrint(
-    'HabitX: Background Notification Tapped [ID: ${notificationResponse.id}]',
-  );
+void notificationTapBackground(NotificationResponse details) {
+  debugPrint('HabitX Neural Engine: Background Engagement [ID: ${details.id}]');
 }
 
 class HabitXNotificationService {
   static HabitXNotificationService? _customInstance;
   static final HabitXNotificationService _instance =
       HabitXNotificationService.internal();
+
   factory HabitXNotificationService() => _customInstance ?? _instance;
   HabitXNotificationService.internal();
 
@@ -31,67 +30,62 @@ class HabitXNotificationService {
       FlutterLocalNotificationsPlugin();
   bool _isInitialized = false;
 
-  // Channel constants
-  static const String _habitChannelId = "habit_x_reminders";
-  static const String _habitChannelName = "Habit Reminders";
-  static const String _briefingChannelId = "habit_x_briefings";
-  static const String _briefingChannelName = "SHELBY AI Daily";
+  // v9: New channel ID forces the OS to re-apply the high-priority "Alarm" status
+  static const String _habitChannelId = "habit_x_neural_v9";
+  static const String _briefingChannelId = "habit_x_briefings_v9";
 
   Future<void> init() async {
     if (_isInitialized) return;
 
     try {
-      // 1. Initialize Timezones with Robust Fallback
+      debugPrint("HabitX: Starting Neural Handshake...");
+
       tz_data.initializeTimeZones();
-      try {
-        final TimezoneInfo timezoneName =
-            await FlutterTimezone.getLocalTimezone();
-        tz.setLocalLocation(tz.getLocation(timezoneName as String));
-        debugPrint("HabitX: Timezone Locked to $timezoneName");
-      } catch (e) {
-        debugPrint("HabitX: Timezone detection failed, using UTC fallback: $e");
-        tz.setLocalLocation(tz.getLocation('UTC'));
+      final TimezoneInfo info = await FlutterTimezone.getLocalTimezone();
+      String identifier = info.identifier; // Fixed: Accessed identifier string
+
+      if (identifier == "Asia/Calcutta" || identifier.contains("Calcutta")) {
+        identifier = "Asia/Kolkata";
       }
 
-      // 2. Android Settings - Using standard 'ic_launcher'
-      const AndroidInitializationSettings androidInit =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+      tz.setLocalLocation(tz.getLocation(identifier));
+      debugPrint("HabitX: Timezone Locked to $identifier");
 
-      // 3. Darwin (iOS/macOS) Settings
-      const DarwinInitializationSettings darwinInit =
-          DarwinInitializationSettings(
-            requestAlertPermission: true,
-            requestBadgePermission: true,
-            requestSoundPermission: true,
-            notificationCategories: [],
-          );
-
-      // 4. Combined Settings
-      const InitializationSettings initSettings = InitializationSettings(
-        android: androidInit,
-        iOS: darwinInit,
-        macOS: darwinInit,
+      // Points to android/app/src/main/res/drawable/ic_notif.png
+      const androidInit = AndroidInitializationSettings('ic_notif');
+      const darwinInit = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
       );
 
-      // 5. Initialize Plugin with detailed callbacks
+      // FIXED: Positional argument for InitializationSettings
       await _notifications.initialize(
-        settings: initSettings,
-        onDidReceiveNotificationResponse: (details) {
+        settings: const InitializationSettings(
+          android: androidInit,
+          iOS: darwinInit,
+        ),
+        onDidReceiveNotificationResponse: (NotificationResponse details) {
           debugPrint("HabitX: Foreground Interaction [ID: ${details.id}]");
         },
         onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
       );
 
-      // 6. Create Android Channels explicitly
       if (Platform.isAndroid) {
         await _setupAndroidChannels();
       }
 
       _isInitialized = true;
+      await requestPermissions();
+
       debugPrint("HabitX Notification Engine: ACTIVE");
 
-      // 7. Schedule recurring background tasks
-      await scheduleDailyBriefings();
+      // ⚡ TEST PULSE: If you see this, your icon and channel are working perfectly.
+      await showInstantNotification(
+        title: "Neural Engine: ONLINE ⚡",
+        body: "System handshake successful. Ready for mission.",
+        id: 888,
+      );
     } catch (e) {
       debugPrint("HabitX Critical Engine Failure: $e");
     }
@@ -103,75 +97,50 @@ class HabitXNotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >();
     if (androidPlugin != null) {
-      // Habit Reminders: High Importance + Sound
       await androidPlugin.createNotificationChannel(
         const AndroidNotificationChannel(
           _habitChannelId,
-          _habitChannelName,
-          description: 'Tactical triggers for habit execution',
-          importance: Importance.max,
+          'Critical Habit Missions',
+          importance: Importance.max, // Wakes the device
           enableVibration: true,
           playSound: true,
           showBadge: true,
         ),
       );
 
-      // Daily Briefings: High Importance
       await androidPlugin.createNotificationChannel(
         const AndroidNotificationChannel(
           _briefingChannelId,
-          _briefingChannelName,
-          description: 'Strategic daily coaching briefings',
+          'SHELBY AI Daily',
           importance: Importance.high,
-          playSound: true,
           showBadge: true,
         ),
       );
-      debugPrint("HabitX: Android Channels Synchronized");
     }
   }
 
-  /// 🚀 STRATEGIC PERMISSION HANDLER
-  /// Handles the complex requirements for Android 13 (Notifications)
-  /// and Android 14 (Exact Alarms).
   Future<bool> requestPermissions() async {
-    debugPrint("HabitX: Initiating Permission Protocol...");
-
     if (Platform.isAndroid) {
-      // 1. Notification Permission (Android 13+)
-      PermissionStatus status = await Permission.notification.status;
-      if (status.isDenied) {
-        status = await Permission.notification.request();
-      }
+      await Permission.notification.request();
 
-      // 2. Exact Alarm Permission (Android 14+)
-      // This is critical for habit reminders that MUST fire at a specific time.
+      final androidPlugin = _notifications
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+
+      // CRITICAL: Force prompt for Exact Alarm permission
+      await androidPlugin?.requestExactAlarmsPermission();
+
       if (await Permission.scheduleExactAlarm.isDenied) {
-        debugPrint("HabitX: Exact Alarm Denied. Requesting...");
         await Permission.scheduleExactAlarm.request();
       }
 
-      final bool isGranted = status.isGranted;
-      debugPrint(
-        "HabitX: Permission Status -> ${isGranted ? 'AUTHORIZED' : 'DENIED'}",
-      );
-      return isGranted;
-    } else if (Platform.isIOS) {
-      final iosPlugin = _notifications
-          .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >();
-      return await iosPlugin?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          ) ??
-          false;
+      return (await Permission.notification.isGranted);
     }
     return true;
   }
 
-  /// Schedules a recurring daily reminder for a habit
+  /// 🎯 THE FULL REMINDER PROTOCOL FOR SPECIFIC HABIT TASK
   Future<void> scheduleHabitReminder(
     String habitId,
     String name,
@@ -188,81 +157,44 @@ class HabitXNotificationService {
       targetTime.minute,
     );
 
-    try {
-      await _notifications.zonedSchedule(
-        id: baseId,
-        title: "Protocol Reminder: $name",
-        body: NotificationMessages.getRandomPrompt(persona),
-        scheduledDate: scheduledDate,
-        notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails(
-            _habitChannelId,
-            _habitChannelName,
-            importance: Importance.max,
-            priority: Priority.max,
-            icon: '@mipmap/ic_launcher',
-            fullScreenIntent: true,
-            category: AndroidNotificationCategory.reminder,
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            interruptionLevel: InterruptionLevel.timeSensitive,
-          ),
-        ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
-      );
+    // 2. The Main Execution with specific habit task details
+    await _notifications.zonedSchedule(
+      id: baseId,
+      title: "Habit Reminder: $name 🚀",
+      body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
+      scheduledDate: scheduledDate,
+      notificationDetails: _missionDetails(),
+      androidScheduleMode:
+          AndroidScheduleMode.exactAllowWhileIdle, // Bypasses system 'Doze'
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
 
-      debugPrint(
-        "HabitX: Scheduled Reminder for '$name' at ${targetTime.hour}:${targetTime.minute}",
-      );
-    } catch (e) {
-      debugPrint("HabitX: Failed to schedule reminder for '$name': $e");
-    }
+    debugPrint("HabitX: Armed reminder for habit '$name' at $scheduledDate");
   }
 
-  /// Schedules daily briefings at set intervals
   Future<void> scheduleDailyBriefings() async {
     final String persona =
         await StorageService().getUserPersona() ?? "Professional";
-
     final briefings = [
-      {'id': 7001, 'hour': 8, 'min': 30, 'title': 'Morning Briefing'},
-      {'id': 7002, 'hour': 13, 'min': 0, 'title': 'Mid-Day Audit'},
-      {'id': 7003, 'hour': 18, 'min': 0, 'title': 'Evening Push'},
-      {'id': 7004, 'hour': 21, 'min': 30, 'title': 'Nightly Reflection'},
+      {'id': 7001, 'h': 8, 'm': 30, 't': 'Morning Briefing'},
+      {'id': 7002, 'h': 13, 'm': 0, 't': 'Mid-Day Audit'},
+      {'id': 7003, 'h': 18, 'm': 0, 't': 'Evening Push'},
+      {'id': 7004, 'h': 21, 'm': 30, 't': 'Nightly Reflection'},
     ];
 
     for (var b in briefings) {
-      final scheduledDate = _nextInstanceOfTime(
-        b['hour'] as int,
-        b['min'] as int,
-      );
-
       await _notifications.zonedSchedule(
         id: b['id'] as int,
-        title: "SHELBY AI: ${b['title']}",
+        title: "SHELBY AI: ${b['t']}",
         body: NotificationMessages.getRandomPrompt(persona),
-        scheduledDate: scheduledDate,
-        notificationDetails: const NotificationDetails(
+        scheduledDate: _nextInstanceOfTime(b['h'] as int, b['m'] as int),
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _briefingChannelId,
-            _briefingChannelName,
+            'SHELBY AI Briefing',
             importance: Importance.high,
             priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
-          macOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
+            icon: 'ic_notif',
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -271,47 +203,28 @@ class HabitXNotificationService {
     }
   }
 
-  /// Shows an instant notification
-  Future<void> showInstantNotification({
-    required String title,
-    required String body,
-    int id = 0,
-  }) async {
-    if (!_isInitialized) await init();
-
-    await _notifications.show(
-      id: id,
-      title: title,
-      body: body,
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          _briefingChannelId,
-          _briefingChannelName,
-          importance: Importance.max,
-          priority: Priority.max,
-          icon: '@mipmap/ic_launcher',
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-        macOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
+  NotificationDetails _missionDetails() {
+    return const NotificationDetails(
+      android: AndroidNotificationDetails(
+        _habitChannelId,
+        'Critical Habit Missions',
+        importance: Importance.max,
+        priority: Priority.max,
+        icon: 'ic_notif',
+        fullScreenIntent: true, // Wakes lockscreen
+        category:
+            AndroidNotificationCategory.alarm, // High priority system status
+        visibility: NotificationVisibility.public,
+        playSound: true,
+        enableVibration: true,
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        interruptionLevel: InterruptionLevel.timeSensitive,
       ),
     );
-  }
-
-  Future<void> cancelReminder(String habitId) async {
-    final int baseId = (habitId.hashCode.abs() % 100000);
-    await _notifications.cancel(id: baseId);
-  }
-
-  Future<void> cancelAll() async {
-    await _notifications.cancelAll();
   }
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
@@ -325,9 +238,40 @@ class HabitXNotificationService {
       minute,
     );
 
+    // If target time has already passed (even by a second), schedule for tomorrow
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
     return scheduledDate;
   }
+
+  Future<void> showInstantNotification({
+    required String title,
+    required String body,
+    int id = 0,
+  }) async {
+    if (!_isInitialized) await init();
+    await _notifications.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: _missionDetails(),
+    );
+  }
+
+  Future<void> cancelReminder(String habitId) async {
+    final int baseId = (habitId.hashCode.abs() % 100000);
+    await _notifications.cancel(id: baseId);
+    await _notifications.cancel(id: baseId + 10);
+  }
+
+  Future<void> cancelDailyBriefings() async {
+    final briefingIds = [7001, 7002, 7003, 7004];
+    for (var id in briefingIds) {
+      await _notifications.cancel(id: id);
+    }
+    debugPrint("HabitX: Daily Briefings cancelled.");
+  }
+
+  Future<void> cancelAll() async => await _notifications.cancelAll();
 }

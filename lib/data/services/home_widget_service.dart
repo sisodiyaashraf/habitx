@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 
 class HomeWidgetService {
+  // FIXED: Removed the package name prefix to prevent the ClassNotFound double-package error
   static const String _androidWidgetName = 'HabitWidgetProvider';
-  static const String _androidWidgetPackage = 'com.shalcontech.habitx';
   static const String _groupId = 'habitx_glass_data';
 
   /// Initializes the Home Widget service.
@@ -12,42 +12,34 @@ class HomeWidgetService {
     await HomeWidget.setAppGroupId(_groupId);
   }
 
-  /// Updates the Home Widget with progress and mascot.
-  static Future<void> updateWidget({
-    double progress = 0.0,
-    String? activeHabit,
-    int completed = 0,
-    int total = 0,
-  }) async {
+  /// Updates the Home Widget with the optimized daily rotating image.
+  static Future<void> updateWidget() async {
     try {
-      // 1. Save Data for Native Side
-      await HomeWidget.saveWidgetData('progress', progress);
-      await HomeWidget.saveWidgetData('active_habit', activeHabit ?? "None");
-      await HomeWidget.saveWidgetData('completed_text', "$completed/$total DONE");
-
-      // 2. Calculate Mascot
       final now = DateTime.now();
-      final epoch = DateTime(2025, 1, 1);
-      final daysSinceEpoch = now.difference(epoch).inDays;
-      final imageIndex = (daysSinceEpoch % 3) + 1;
+
+      // Calculate Daily Image Index (1, 2, or 3)
+      final imageIndex = (now.day % 3) + 1;
       final String assetPath = 'assets/images/habitx$imageIndex.png';
 
-      // 3. Render Mascot for Widget
+      debugPrint("HabitX Neural Sync: Rotating daily artwork -> $assetPath");
+
+      // FIXED: Dropped logicalSize to 100x100.
+      // This is the "Safe Zone" for Android RemoteViews memory limits.
       await HomeWidget.renderFlutterWidget(
         Image.asset(assetPath, fit: BoxFit.contain),
         key: 'mascot_image',
-        logicalSize: const Size(400, 400),
+        logicalSize: const Size(100, 100),
       );
 
-      // 4. Trigger Native Update
+      // FIXED: Using only the class name to prevent the package-doubling crash
       await HomeWidget.updateWidget(
         name: _androidWidgetName,
-        androidName: '$_androidWidgetPackage.$_androidWidgetName',
+        androidName: _androidWidgetName,
       );
 
-      debugPrint("HabitX: Widget Updated [Progress: $progress, Habit: $activeHabit]");
+      debugPrint("HabitX: Home Widget Sync Complete.");
     } catch (e) {
-      debugPrint("HabitX Widget Error: $e");
+      debugPrint("HabitX Widget Sync Error: $e");
     }
   }
 }

@@ -108,10 +108,9 @@ class WeeklyBarChart extends StatelessWidget {
       // In a real DB, you'd check a 'completionLogs' table.
       // For now, we simulate based on the provider's logic:
       final completedOnDate = provider.allHabits.where((h) {
-        if (h.lastCompleted == null) return false;
-        return h.lastCompleted!.year == date.year &&
-            h.lastCompleted!.month == date.month &&
-            h.lastCompleted!.day == date.day;
+        return h.lastCompleted.year == date.year &&
+            h.lastCompleted.month == date.month &&
+            h.lastCompleted.day == date.day;
       }).length;
 
       double completionPercentage = (completedOnDate / totalHabits) * 100;
@@ -179,8 +178,9 @@ class WeeklyBarChart extends StatelessWidget {
           reservedSize: 32,
           getTitlesWidget: (double value, TitleMeta meta) {
             int index = value.toInt();
-            if (index < 0 || index >= weekDays.length)
+            if (index < 0 || index >= weekDays.length) {
               return const SizedBox.shrink();
+            }
 
             // Format to 'Mon', 'Tue', etc.
             String label = DateFormat(

@@ -91,7 +91,7 @@ class StatsScreen extends StatelessWidget {
                 // --- HEATMAP ---
                 _buildSectionHeader(
                   "ACTIVITY INTENSITY",
-                  "35-DAY",
+                  "SELECTABLE MATRIX",
                   subTextColor,
                 ),
                 const SizedBox(height: 16),
