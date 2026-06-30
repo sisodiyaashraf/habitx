@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import '../../providers/habit_provider.dart';
+import '../../core/utils/haptic_feedback_helper.dart';
 import '../widgets/timer/habit_timer_dial.dart';
 import '../widgets/shared/glass_background.dart';
+import '../widgets/timer/storm_overlay.dart';
 
-class HabitTimerScreen extends StatelessWidget {
+class HabitTimerScreen extends StatefulWidget {
   final String habitName;
   final int initialMinutes;
 
@@ -16,7 +18,20 @@ class HabitTimerScreen extends StatelessWidget {
   });
 
   @override
+  State<HabitTimerScreen> createState() => _HabitTimerScreenState();
+}
+
+class _HabitTimerScreenState extends State<HabitTimerScreen> {
+  bool _isStormActive = false;
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final subTextColor = isDark ? Colors.white70 : Colors.black54;
+    final hintTextColor = isDark ? Colors.white38 : Colors.black38;
+    final iconColor = isDark ? Colors.white70 : Colors.black54;
+
     // Watch provider to react to the 1-second timer ticks
     final provider = context.watch<HabitProvider>();
     final bool isRunning = provider.isTimerRunning;
@@ -26,24 +41,24 @@ class HabitTimerScreen extends StatelessWidget {
     String seconds = (provider.currentSeconds % 60).toString().padLeft(2, '0');
 
     // Progress calculation for the sweep dial
-    double progress = (initialMinutes * 60) > 0
-        ? provider.currentSeconds / (initialMinutes * 60)
+    double progress = (widget.initialMinutes * 60) > 0
+        ? provider.currentSeconds / (widget.initialMinutes * 60)
         : 0.0;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.black,
+            color: textColor,
           ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          habitName.toUpperCase(),
-          style: const TextStyle(
-            color: Colors.black,
+          widget.habitName.toUpperCase(),
+          style: TextStyle(
+            color: textColor,
             fontWeight: FontWeight.w900,
             fontSize: 16,
             letterSpacing: 2.0,
@@ -53,48 +68,65 @@ class HabitTimerScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
       ),
-      body: GlassBackground(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 10),
-
-                // Header Status
-                _buildFocusHeader(isRunning),
-
-                const SizedBox(height: 20),
-
-                // FIXED: Explicit centering for the Dial Stack
-                Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      _buildGlowEffect(isRunning, progress),
-                      HabitTimerDial(
-                        progress: progress,
-                        displayTime: "$minutes:$seconds",
-                      ),
-                    ],
+      body: StormOverlay(
+        isStormActive: _isStormActive,
+        child: GlassBackground(
+          child: SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 10),
+  
+                  // Header Status
+                  _buildFocusHeader(isRunning, subTextColor),
+  
+                  const SizedBox(height: 20),
+  
+                  // FIXED: Explicit centering for the Dial Stack
+                  Center(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        _buildGlowEffect(isRunning, progress),
+                        HabitTimerDial(
+                          progress: progress,
+                          displayTime: "$minutes:$seconds",
+                          onTap: () {
+                            if (provider.isHapticsEnabled) {
+                              HapticHelper.selection();
+                            }
+                          },
+                          onLongPressStart: () {
+                            setState(() {
+                              _isStormActive = true;
+                            });
+                          },
+                          onLongPressEnd: () {
+                            setState(() {
+                              _isStormActive = false;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
                 const SizedBox(height: 20),
 
                 // FIXED: Time details text alignment
-                _buildTimeDetails(minutes, seconds),
+                _buildTimeDetails(minutes, seconds, textColor, hintTextColor),
 
                 const SizedBox(height: 24),
 
                 // FIXED: Centered Control Pod
-                Center(child: _buildPlaybackControls(provider)),
+                Center(child: _buildPlaybackControls(provider, iconColor)),
 
                 const SizedBox(height: 24),
 
                 // Motivational Footer
-                _buildMotivationalQuote(),
+                _buildMotivationalQuote(subTextColor),
 
                 const SizedBox(height: 20),
               ],
@@ -102,10 +134,11 @@ class HabitTimerScreen extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
 
-  Widget _buildFocusHeader(bool isRunning) {
+  Widget _buildFocusHeader(bool isRunning, Color color) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 500),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -128,8 +161,8 @@ class HabitTimerScreen extends StatelessWidget {
           Text(
             isRunning ? "DEEP FOCUS ACTIVE" : "PREPARING SESSION",
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.black54,
+            style: TextStyle(
+              color: color,
               fontWeight: FontWeight.w900,
               fontSize: 11,
               letterSpacing: 1.5,
@@ -158,15 +191,15 @@ class HabitTimerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeDetails(String min, String sec) {
+  Widget _buildTimeDetails(String min, String sec, Color textColor, Color subTextColor) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
+        Text(
           "REMAINING",
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.black38,
+            color: subTextColor,
             fontSize: 12,
             fontWeight: FontWeight.w900,
             letterSpacing: 2.0,
@@ -175,10 +208,10 @@ class HabitTimerScreen extends StatelessWidget {
         Text(
           "$min:$sec",
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 90,
             fontWeight: FontWeight.w900,
-            color: Colors.black,
+            color: textColor,
             letterSpacing: -5,
             height: 1.1,
           ),
@@ -187,7 +220,7 @@ class HabitTimerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaybackControls(HabitProvider provider) {
+  Widget _buildPlaybackControls(HabitProvider provider, Color iconColor) {
     return GlassmorphicContainer(
       width: 280,
       height: 100,
@@ -204,12 +237,13 @@ class HabitTimerScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _circleIconButton(Icons.replay_rounded, () {
-            provider.startTaskTimer("", initialMinutes);
+          _circleIconButton(Icons.replay_rounded, iconColor, () {
+            provider.startTaskTimer("", widget.initialMinutes);
           }),
           _buildMainToggleButton(provider),
           _circleIconButton(
             Icons.add_circle_outline_outlined, // Improved Icon
+            iconColor,
             () => provider.addSeconds(60),
           ),
         ],
@@ -217,9 +251,9 @@ class HabitTimerScreen extends StatelessWidget {
     );
   }
 
-  Widget _circleIconButton(IconData icon, VoidCallback onTap) {
+  Widget _circleIconButton(IconData icon, Color color, VoidCallback onTap) {
     return IconButton(
-      icon: Icon(icon, color: Colors.black54, size: 28),
+      icon: Icon(icon, color: color, size: 28),
       onPressed: onTap,
     );
   }
@@ -227,7 +261,7 @@ class HabitTimerScreen extends StatelessWidget {
   Widget _buildMainToggleButton(HabitProvider provider) {
     bool isRunning = provider.isTimerRunning;
     return GestureDetector(
-      onTap: () => provider.toggleTimer(initialMinutes),
+      onTap: () => provider.toggleTimer(widget.initialMinutes),
       child: Container(
         width: 70,
         height: 70,
@@ -255,14 +289,14 @@ class HabitTimerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMotivationalQuote() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 30),
+  Widget _buildMotivationalQuote(Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Text(
         "“Excellence is not an act, but a habit.”",
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: Colors.black45,
+          color: color,
           fontSize: 14,
           fontWeight: FontWeight.w600,
           fontStyle: FontStyle.italic,

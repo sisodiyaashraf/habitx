@@ -15,6 +15,11 @@ class ProgressItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final subTextColor = isDark ? Colors.white70 : Colors.black54;
+    final arrowColor = isDark ? Colors.white38 : Colors.black26;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GlassmorphicContainer(
@@ -28,8 +33,8 @@ class ProgressItemTile extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.3), // More "milky" for text contrast
-            Colors.white.withOpacity(0.1),
+            isDark ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.3),
+            isDark ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.1),
           ],
         ),
         borderGradient: LinearGradient(
@@ -64,8 +69,8 @@ class ProgressItemTile extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.black, // Onyx Visibility
+                      style: TextStyle(
+                        color: textColor, // Onyx Visibility
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
                         letterSpacing: -0.2,
@@ -74,8 +79,8 @@ class ProgressItemTile extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       progress,
-                      style: const TextStyle(
-                        color: Colors.black54, // Clear subtext contrast
+                      style: TextStyle(
+                        color: subTextColor, // Clear subtext contrast
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -85,9 +90,9 @@ class ProgressItemTile extends StatelessWidget {
               ),
 
               // Right-aligned status arrow
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.black26,
+                color: arrowColor,
                 size: 14,
               ),
             ],

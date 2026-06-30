@@ -15,6 +15,7 @@
     <!-- 3. Exact Alarm Protocol (Android 14+) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <!-- 4. Foreground Engine Requirements -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -51,13 +52,14 @@
         <!-- Notification Receivers (flutter_local_notifications v21+ standard) -->
         <receiver
             android:exported="false"
-            android:name="com.dexterous.flutter_local_notifications.ScheduledNotificationReceiver" />
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
         <receiver
             android:exported="false"
-            android:name="com.dexterous.flutter_local_notifications.ActionBroadcastReceiver" />
+            android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
         <receiver
-            android:exported="false"
-            android:name="com.dexterous.flutter_local_notifications.ScheduledNotificationBootReceiver">
+            android:exported="true"
+            android:enabled="true"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
@@ -86,7 +88,7 @@
 
         <!-- 7. Foreground Service Protocol (Android 14+ Compliance) -->
         <service
-            android:name="com.dexterous.flutter_local_notifications.ForegroundService"
+            android:name="com.dexterous.flutterlocalnotifications.ForegroundService"
             android:exported="false"
             android:stopWithTask="false"
             android:foregroundServiceType="specialUse">

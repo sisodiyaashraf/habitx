@@ -8,61 +8,73 @@ class GlassBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Stack(
       children: [
-        // 1. Vibrant Base Gradient
+        // 1. Vibrant Base Gradient (Light or Dark)
         Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              stops: [0.1, 0.4, 0.7, 0.9],
-              colors: [
-                Color(0xFFF0E5FF), // Soft Lavender
-                Color(0xFFE0EEFF), // Sky Blue
-                Color(0xFFD1E1FF), // Periwinkle
-                Color(0xFFC9D6FF), // Light Blue
-              ],
+              stops: const [0.1, 0.4, 0.7, 0.9],
+              colors: isDark
+                  ? const [
+                      Color(0xFF070B19), // Ultra Deep Blue
+                      Color(0xFF030D22), // Dark Sapphire
+                      Color(0xFF0A1428), // Midnight Blue
+                      Color(0xFF000511), // Pure Deep Obsidian
+                    ]
+                  : const [
+                      Color(0xFFF0E5FF), // Soft Lavender
+                      Color(0xFFE0EEFF), // Sky Blue
+                      Color(0xFFD1E1FF), // Periwinkle
+                      Color(0xFFC9D6FF), // Light Blue
+                    ],
             ),
           ),
         ),
 
         // 2. High-Visibility Decorative Orbs
-        // Top Left - Strong Brand Purple
+        // Top Left - Glowing Purple/Indigo
         _buildOrb(
           top: -30,
           left: -40,
           size: 320,
-          color: const Color(
-            0xFFAC5DED,
-          ).withOpacity(0.4), // Increased opacity for visibility
+          color: isDark
+              ? const Color(0xFF7B61FF).withOpacity(0.24)
+              : const Color(0xFFAC5DED).withOpacity(0.4),
         ),
 
-        // Bottom Right - Deep Lavender Blue
+        // Bottom Right - Deep Violet/Magenta
         _buildOrb(
           bottom: -50,
           right: -50,
           size: 400,
-          color: const Color(0xFF7B61FF).withOpacity(0.35),
+          color: isDark
+              ? const Color(0xFFAC5DED).withOpacity(0.18)
+              : const Color(0xFF7B61FF).withOpacity(0.35),
         ),
 
-        // Center Left - Accent Cyan/Teal for contrast
+        // Center Left - Glowing Cyan/Teal for contrast
         _buildOrb(
           top: 350,
           left: -80,
           size: 220,
-          color: Colors.cyanAccent.withOpacity(0.25),
+          color: isDark
+              ? const Color(0xFF00F0FF).withOpacity(0.12)
+              : Colors.cyanAccent.withOpacity(0.25),
         ),
 
         // 3. Balanced Blur Layer
-        // Lowering sigma slightly (from 60 to 45) makes the color shapes more "visible"
         Positioned.fill(
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
             child: Container(
-              color: Colors.white.withOpacity(
-                0.05,
-              ), // Adds a slight "milk" texture
+              color: isDark
+                  ? Colors.black.withOpacity(0.3) // Dark Smoked Glass texture
+                  : Colors.white.withOpacity(0.05), // Light Milk Glass texture
             ),
           ),
         ),

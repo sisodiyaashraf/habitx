@@ -48,7 +48,12 @@ class HabitXNotificationService {
         identifier = "Asia/Kolkata";
       }
 
-      tz.setLocalLocation(tz.getLocation(identifier));
+      try {
+        tz.setLocalLocation(tz.getLocation(identifier));
+      } catch (e) {
+        debugPrint("HabitX Timezone lookup failed for '$identifier', falling back to UTC: $e");
+        tz.setLocalLocation(tz.getLocation('UTC'));
+      }
       debugPrint("HabitX: Timezone Locked to $identifier");
 
       // Points to android/app/src/main/res/drawable/ic_notif.png
@@ -135,6 +140,11 @@ class HabitXNotificationService {
         await Permission.scheduleExactAlarm.request();
       }
 
+      // Request ignoring battery optimization to prevent background thread throttling
+      if (await Permission.ignoreBatteryOptimizations.isDenied) {
+        await Permission.ignoreBatteryOptimizations.request();
+      }
+
       return (await Permission.notification.isGranted);
     }
     return true;
@@ -157,19 +167,37 @@ class HabitXNotificationService {
       targetTime.minute,
     );
 
-    // 2. The Main Execution with specific habit task details
-    await _notifications.zonedSchedule(
-      id: baseId,
-      title: "Habit Reminder: $name 🚀",
-      body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
-      scheduledDate: scheduledDate,
-      notificationDetails: _missionDetails(),
-      androidScheduleMode:
-          AndroidScheduleMode.exactAllowWhileIdle, // Bypasses system 'Doze'
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
-
-    debugPrint("HabitX: Armed reminder for habit '$name' at $scheduledDate");
+    try {
+      // 2. The Main Execution with specific habit task details
+      await _notifications.zonedSchedule(
+        id: baseId,
+        title: "Habit Reminder: $name 🚀",
+        body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
+        scheduledDate: scheduledDate,
+        notificationDetails: _missionDetails(),
+        androidScheduleMode:
+            AndroidScheduleMode.exactAllowWhileIdle, // Bypasses system 'Doze'
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+      debugPrint("HabitX: Armed exact reminder for habit '$name' at $scheduledDate");
+    } catch (e) {
+      debugPrint("HabitX: Exact alarm scheduling failed for '$name', trying inexact fallback: $e");
+      try {
+        await _notifications.zonedSchedule(
+          id: baseId,
+          title: "Habit Reminder: $name 🚀",
+          body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
+          scheduledDate: scheduledDate,
+          notificationDetails: _missionDetails(),
+          androidScheduleMode:
+              AndroidScheduleMode.inexactAllowWhileIdle, // Fallback without permission
+          matchDateTimeComponents: DateTimeComponents.time,
+        );
+        debugPrint("HabitX: Armed inexact fallback reminder for habit '$name' at $scheduledDate");
+      } catch (innerErr) {
+        debugPrint("HabitX Critical: Failed to schedule fallback reminder for '$name': $innerErr");
+      }
+    }
   }
 
   Future<void> scheduleDailyBriefings() async {
@@ -183,23 +211,51 @@ class HabitXNotificationService {
     ];
 
     for (var b in briefings) {
-      await _notifications.zonedSchedule(
-        id: b['id'] as int,
-        title: "SHELBY AI: ${b['t']}",
-        body: NotificationMessages.getRandomPrompt(persona),
-        scheduledDate: _nextInstanceOfTime(b['h'] as int, b['m'] as int),
-        notificationDetails: NotificationDetails(
-          android: AndroidNotificationDetails(
-            _briefingChannelId,
-            'SHELBY AI Briefing',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: 'ic_notif',
+      final scheduledDate = _nextInstanceOfTime(b['h'] as int, b['m'] as int);
+      try {
+        await _notifications.zonedSchedule(
+          id: b['id'] as int,
+          title: "SHELBY AI: ${b['t']}",
+          body: NotificationMessages.getRandomPrompt(persona),
+          scheduledDate: scheduledDate,
+          notificationDetails: NotificationDetails(
+            android: AndroidNotificationDetails(
+              _briefingChannelId,
+              'SHELBY AI Briefing',
+              importance: Importance.high,
+              priority: Priority.high,
+              icon: 'ic_notif',
+            ),
           ),
-        ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
-      );
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.time,
+        );
+        debugPrint("HabitX: Armed exact briefing '${b['t']}' at $scheduledDate");
+      } catch (e) {
+        debugPrint("HabitX: Exact briefing scheduling failed for '${b['t']}', trying inexact fallback: $e");
+        try {
+          await _notifications.zonedSchedule(
+            id: b['id'] as int,
+            title: "SHELBY AI: ${b['t']}",
+            body: NotificationMessages.getRandomPrompt(persona),
+            scheduledDate: scheduledDate,
+            notificationDetails: NotificationDetails(
+              android: AndroidNotificationDetails(
+                _briefingChannelId,
+                'SHELBY AI Briefing',
+                importance: Importance.high,
+                priority: Priority.high,
+                icon: 'ic_notif',
+              ),
+            ),
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            matchDateTimeComponents: DateTimeComponents.time,
+          );
+          debugPrint("HabitX: Armed inexact briefing '${b['t']}' at $scheduledDate");
+        } catch (innerErr) {
+          debugPrint("HabitX Critical: Failed to schedule fallback briefing for '${b['t']}': $innerErr");
+        }
+      }
     }
   }
 

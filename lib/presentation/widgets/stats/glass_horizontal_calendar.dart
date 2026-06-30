@@ -7,6 +7,10 @@ class GlassHorizontalCalendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white70 : Colors.black54;
+
     return SizedBox(
       height: 100,
       child: ListView.builder(
@@ -42,13 +46,13 @@ class GlassHorizontalCalendar extends StatelessWidget {
                 children: [
                   Text(
                     DateFormat('E').format(date),
-                    style: const TextStyle(color: Colors.black, fontSize: 12),
+                    style: TextStyle(color: subTextColor, fontSize: 12),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     "${date.day}",
-                    style: const TextStyle(
-                      color: Colors.black87,
+                    style: TextStyle(
+                      color: textColor,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),

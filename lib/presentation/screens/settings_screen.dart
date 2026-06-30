@@ -90,6 +90,7 @@ class SettingsScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = isDark ? Colors.white70 : Colors.black54;
+    final provider = context.watch<HabitProvider>();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -110,6 +111,8 @@ class SettingsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 120, 20, 40),
           children: [
+
+
             _buildSectionHeader("APPEARANCE", subTextColor),
             _buildSettingsGroup(
               [_buildThemeSelector(context, textColor, subTextColor)],
@@ -119,76 +122,55 @@ class SettingsScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            _buildSectionHeader("DEVELOPER TOOLS", subTextColor),
+            _buildSectionHeader("PREFERENCES", subTextColor),
             _buildSettingsGroup(
               [
+                _switchSettingsTile(
+                  FontAwesomeIcons.fingerprint,
+                  "Tactile Feedback",
+                  "Enable haptic vibrations on screen interaction",
+                  provider.isHapticsEnabled,
+                  textColor,
+                  subTextColor,
+                  onChanged: (val) {
+                    provider.toggleHaptics(val);
+                  },
+                ),
+                _switchSettingsTile(
+                  FontAwesomeIcons.envelopeOpenText,
+                  "Daily Motivations",
+                  "Receive routine briefings and check-ins",
+                  provider.isDailyMotivationEnabled,
+                  textColor,
+                  subTextColor,
+                  onChanged: (val) {
+                    provider.toggleDailyMotivation(val);
+                  },
+                ),
                 _settingsTile(
-                  FontAwesomeIcons.shield,
-                  "Verify Permissions",
-                  "Authorize tactical alerts",
+                  FontAwesomeIcons.bell,
+                  "System Alerts Permission",
+                  "Ensure system notifications are fully authorized",
                   textColor,
                   subTextColor,
                   onTap: () async {
-                    final granted = await HabitXNotificationService()
-                        .requestPermissions();
+                    final granted = await HabitXNotificationService().requestPermissions();
                     if (!context.mounted) return;
                     if (granted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text(
-                            "Protocol Authorized: Notifications Active ⚡",
-                          ),
+                          content: Text("Protocol Authorized: Notifications Active ⚡"),
                           backgroundColor: Colors.green,
                         ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text(
-                            "Permissions Denied. Please check System Settings.",
-                          ),
+                          content: Text("Permissions Denied. Please check System Settings."),
                           backgroundColor: Colors.redAccent,
                         ),
                       );
                     }
-                  },
-                ),
-                _settingsTile(
-                  FontAwesomeIcons.rotate,
-                  "Refresh All Triggers",
-                  "Force re-sync reminders",
-                  textColor,
-                  subTextColor,
-                  onTap: () async {
-                    await context
-                        .read<HabitProvider>()
-                        .refreshAllNotifications();
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          "Neural Re-sync Complete: All triggers updated.",
-                        ),
-                        backgroundColor: Color(0xFFAC5DED),
-                      ),
-                    );
-                  },
-                ),
-                _settingsTile(
-                  FontAwesomeIcons.bug,
-                  "Test Core Sync",
-                  "Trigger instant alert (System check)",
-                  textColor,
-                  subTextColor,
-                  onTap: () {
-                    context.read<HabitProvider>().sendTestNotification();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          "Instant trigger deployed. Check your tray.",
-                        ),
-                      ),
-                    );
                   },
                 ),
               ],
@@ -321,6 +303,48 @@ class SettingsScreen extends StatelessWidget {
         Icons.chevron_right_rounded,
         color: subTextColor.withOpacity(0.3),
         size: 18,
+      ),
+    );
+  }
+
+  Widget _switchSettingsTile(
+    dynamic icon,
+    String title,
+    String subtitle,
+    bool value,
+    Color textColor,
+    Color subTextColor, {
+    required ValueChanged<bool> onChanged,
+  }) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFAC5DED).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: FaIcon(
+          icon,
+          color: const Color(0xFFAC5DED),
+          size: 16,
+        ),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+          color: textColor,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(fontSize: 10, color: subTextColor),
+      ),
+      trailing: Switch.adaptive(
+        value: value,
+        activeColor: const Color(0xFFAC5DED),
+        onChanged: onChanged,
       ),
     );
   }
