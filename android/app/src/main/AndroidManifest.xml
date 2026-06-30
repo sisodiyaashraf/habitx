@@ -26,6 +26,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
+        android:usesCleartextTraffic="false"
         android:enableOnBackInvokedCallback="true"> <!-- Optimizes back navigation -->
 
         <activity
