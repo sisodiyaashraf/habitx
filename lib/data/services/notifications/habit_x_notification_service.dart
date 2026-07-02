@@ -81,16 +81,7 @@ class HabitXNotificationService {
       }
 
       _isInitialized = true;
-      await requestPermissions();
-
       debugPrint("HabitX Notification Engine: ACTIVE");
-
-      // ⚡ TEST PULSE: If you see this, your icon and channel are working perfectly.
-      await showInstantNotification(
-        title: "Neural Engine: ONLINE ⚡",
-        body: "System handshake successful. Ready for mission.",
-        id: 888,
-      );
     } catch (e) {
       debugPrint("HabitX Critical Engine Failure: $e");
     }

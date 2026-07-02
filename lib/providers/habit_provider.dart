@@ -137,11 +137,10 @@ class HabitProvider extends ChangeNotifier {
       await _storage.saveHabits(_allHabits);
     }
 
-    // Initialize Overlord Engine
-    await HabitXNotificationService().init();
-
-    // 🛰️ STRATEGIC RE-SYNC: Force-reschedules all habits
-    await refreshAllNotifications();
+    // Initialize Overlord Engine & reschedule notifications in the background
+    HabitXNotificationService().init().then((_) {
+      refreshAllNotifications();
+    });
 
     _updateHomeWidget();
     notifyListeners();

@@ -26,11 +26,8 @@ void main() async {
     // Registers the background group ID for the daily image rotation
     await HomeWidgetService.init();
 
-    // Sequential initialization: Database (Hive) must load first
+    // Sequential initialization: Database (SharedPreferences) must load first
     await habitProvider.init();
-
-    // Neural Engine init: Handles Timezones, Permissions, and Daily Briefing loops
-    await notificationService.init();
   } catch (e) {
     debugPrint("HabitX Neural Init Failure: $e");
   }

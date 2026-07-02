@@ -164,7 +164,7 @@ flutter run --release
 ## 👨‍💻 Author
 
 **Ashraf**  
-Flutter Engineer • AI Systems Builder  
+Flutter developer • AI Systems Builder  
 
 - LinkedIn  
 - Portfolio  
