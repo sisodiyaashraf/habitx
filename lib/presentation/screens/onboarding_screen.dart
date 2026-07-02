@@ -60,6 +60,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       duration: const Duration(milliseconds: 1000),
     )..forward();
 
+    // Listeners to update the "ACTIVATE CORE" button dynamically
+    _nameController.addListener(() => setState(() {}));
+    _ageController.addListener(() => setState(() {}));
+
     // 🚀 REQUEST PERMISSIONS ON LAUNCH
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HabitXNotificationService>().requestPermissions();
@@ -142,17 +146,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           return Expanded(
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 400),
-              height: 4,
+              height: 6,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color: isActive 
-                  ? const Color(0xFFAC5DED) 
-                  : Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(2),
+                gradient: isActive 
+                  ? const LinearGradient(colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)])
+                  : LinearGradient(colors: [Colors.white.withOpacity(0.1), Colors.white.withOpacity(0.1)]),
+                borderRadius: BorderRadius.circular(3),
                 boxShadow: isActive ? [
                   BoxShadow(
-                    color: const Color(0xFFAC5DED).withOpacity(0.5),
-                    blurRadius: 10,
+                    color: const Color(0xFFAC5DED).withOpacity(0.4),
+                    blurRadius: 12,
+                    spreadRadius: 1,
                   )
                 ] : [],
               ),
@@ -165,43 +170,70 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Widget _buildFeatureSlide(Map<String, dynamic> data) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
       child: Center(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildAnimatedIcon(data['icon'], data['color']),
-              const SizedBox(height: 30),
-              FadeTransition(
-                opacity: _typingController,
-                child: Text(
-                  data['title'],
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
+          child: GlassmorphicContainer(
+            width: double.infinity,
+            height: 380,
+            borderRadius: 30,
+            blur: 25,
+            alignment: Alignment.center,
+            border: 1.5,
+            linearGradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.07),
+                Colors.white.withOpacity(0.02),
+              ],
+            ),
+            borderGradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                data['color'].withOpacity(0.3),
+                Colors.white.withOpacity(0.05),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(28.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildAnimatedIcon(data['icon'], data['color']),
+                  const SizedBox(height: 30),
+                  FadeTransition(
+                    opacity: _typingController,
+                    child: Text(
+                      data['title'],
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              FadeTransition(
-                opacity: _typingController,
-                child: Text(
-                  data['subtitle'],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 15,
-                    fontFamily: 'monospace',
-                    height: 1.5,
+                  const SizedBox(height: 16),
+                  FadeTransition(
+                    opacity: _typingController,
+                    child: Text(
+                      data['subtitle'],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 14,
+                        fontFamily: 'monospace',
+                        height: 1.5,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -238,38 +270,68 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Widget _buildIdentityForm() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
-      child: Column(
-        children: [
-          const Text(
-            "NEURAL LINK",
-            style: TextStyle(
-              color: Color(0xFFAC5DED),
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 4,
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: GlassmorphicContainer(
+          width: double.infinity,
+          height: 480,
+          borderRadius: 30,
+          blur: 25,
+          alignment: Alignment.center,
+          border: 1.5,
+          linearGradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withOpacity(0.07),
+              Colors.white.withOpacity(0.02),
+            ],
+          ),
+          borderGradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFFAC5DED).withOpacity(0.3),
+              Colors.white.withOpacity(0.05),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "NEURAL LINK",
+                  style: TextStyle(
+                    color: Color(0xFFAC5DED),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 4,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "Configure Profile",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                _buildInputLabel("USER_DESIGNATION"),
+                _buildTextInput(_nameController, "ENTER NAME"),
+                const SizedBox(height: 20),
+                _buildInputLabel("USER_AGE"),
+                _buildTextInput(_ageController, "ENTER AGE", isNumber: true),
+                const SizedBox(height: 20),
+                _buildInputLabel("TACTICAL_PERSONA"),
+                _buildPersonaSelector(),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          const Text(
-            "Configure Profile",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 40),
-          _buildInputLabel("USER_DESIGNATION"),
-          _buildTextInput(_nameController, "ENTER NAME"),
-          const SizedBox(height: 25),
-          _buildInputLabel("USER_AGE"),
-          _buildTextInput(_ageController, "ENTER AGE", isNumber: true),
-          const SizedBox(height: 25),
-          _buildInputLabel("TACTICAL_PERSONA"),
-          _buildPersonaSelector(),
-        ],
+        ),
       ),
     );
   }
@@ -295,26 +357,26 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget _buildTextInput(TextEditingController controller, String hint, {bool isNumber = false}) {
     return GlassmorphicContainer(
       width: double.infinity,
-      height: 60,
-      borderRadius: 20,
+      height: 56,
+      borderRadius: 16,
       blur: 20,
       alignment: Alignment.center,
       border: 1.0,
       linearGradient: LinearGradient(
-        colors: [Colors.white.withOpacity(0.05), Colors.white.withOpacity(0.02)],
+        colors: [Colors.white.withOpacity(0.08), Colors.white.withOpacity(0.03)],
       ),
       borderGradient: LinearGradient(
-        colors: [const Color(0xFFAC5DED).withOpacity(0.5), Colors.transparent],
+        colors: [const Color(0xFFAC5DED).withOpacity(0.6), Colors.white.withOpacity(0.1)],
       ),
       child: TextField(
         controller: controller,
         textAlign: TextAlign.center,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly] : [],
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 2),
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 14),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.1), fontSize: 12),
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.2), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 2),
           border: InputBorder.none,
         ),
       ),
@@ -339,12 +401,19 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         duration: const Duration(milliseconds: 300),
         height: 100,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFAC5DED).withOpacity(0.1) : Colors.white.withOpacity(0.03),
+          color: isSelected ? const Color(0xFFAC5DED).withOpacity(0.15) : Colors.white.withOpacity(0.03),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? const Color(0xFFAC5DED) : Colors.white.withOpacity(0.1),
             width: 1.5,
           ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: const Color(0xFFAC5DED).withOpacity(0.2),
+              blurRadius: 15,
+              spreadRadius: 2,
+            )
+          ] : [],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -378,18 +447,33 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget _buildNextButton() {
     return GestureDetector(
       onTap: _nextPage,
-      child: Container(
+      child: GlassmorphicContainer(
         width: double.infinity,
-        height: 60,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFAC5DED).withOpacity(0.5)),
-          color: const Color(0xFFAC5DED).withOpacity(0.05),
-        ),
+        height: 56,
+        borderRadius: 16,
+        blur: 15,
         alignment: Alignment.center,
+        border: 1.0,
+        linearGradient: LinearGradient(
+          colors: [
+            const Color(0xFFAC5DED).withOpacity(0.15),
+            const Color(0xFFAC5DED).withOpacity(0.05),
+          ],
+        ),
+        borderGradient: LinearGradient(
+          colors: [
+            const Color(0xFFAC5DED),
+            const Color(0xFFAC5DED).withOpacity(0.3),
+          ],
+        ),
         child: const Text(
           "CONTINUE PROTOCOL",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 2),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+            fontSize: 13,
+          ),
         ),
       ),
     );
@@ -406,9 +490,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             age: int.tryParse(_ageController.text) ?? 18,
             persona: _selectedPersona,
           );
-          // The HabitXApp home property uses context.select((HabitProvider p) => p.isNewUser)
-          // which will re-trigger and show HomeScreen when setupUser calls notifyListeners().
-          // But we can also push manually for safety.
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Complete all neural fields to proceed.")),
@@ -418,19 +499,24 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         width: double.infinity,
-        height: 60,
+        height: 56,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: isValid 
               ? [const Color(0xFFAC5DED), const Color(0xFF7B61FF)]
-              : [Colors.white10, Colors.white10],
+              : [Colors.white.withOpacity(0.08), Colors.white.withOpacity(0.04)],
+          ),
+          border: Border.all(
+            color: isValid ? Colors.transparent : Colors.white.withOpacity(0.1),
+            width: 1.0,
           ),
           boxShadow: isValid ? [
             BoxShadow(
-              color: const Color(0xFFAC5DED).withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: const Color(0xFFAC5DED).withOpacity(0.4),
+              blurRadius: 25,
+              spreadRadius: 2,
+              offset: const Offset(0, 8),
             )
           ] : [],
         ),
@@ -441,13 +527,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             Text(
               "ACTIVATE CORE",
               style: TextStyle(
-                color: isValid ? Colors.white : Colors.white24,
+                color: isValid ? Colors.white : Colors.white.withOpacity(0.2),
                 fontWeight: FontWeight.w900,
                 letterSpacing: 2,
+                fontSize: 13,
               ),
             ),
             const SizedBox(width: 12),
-            Icon(Icons.bolt, color: isValid ? const Color(0xFF00E5FF) : Colors.white10, size: 20),
+            Icon(
+              Icons.bolt_rounded,
+              color: isValid ? const Color(0xFF00E5FF) : Colors.white.withOpacity(0.2),
+              size: 20,
+            ),
           ],
         ),
       ),

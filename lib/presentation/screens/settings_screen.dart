@@ -75,13 +75,12 @@ class SettingsScreen extends StatelessWidget {
   }
 
   // --- Support ---
-  Future<void> _launchWhatsApp() async {
-    const String phone = "919530273440";
+  Future<void> _launchEmail() async {
     final Uri uri = Uri.parse(
-      "https://wa.me/$phone?text=HabitX Support Request",
+      "mailto:ashrafsisodiya478@gmail.com?subject=HabitX%20Support%20Request",
     );
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(uri);
     }
   }
 
@@ -200,12 +199,12 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => _rateApp(context),
                 ),
                 _settingsTile(
-                  FontAwesomeIcons.whatsapp,
-                  "WhatsApp Support",
-                  "Direct dev chat",
+                  FontAwesomeIcons.envelope,
+                  "Email Support",
+                  "Direct dev feedback",
                   textColor,
                   subTextColor,
-                  onTap: _launchWhatsApp,
+                  onTap: _launchEmail,
                 ),
               ],
               height: 216,
