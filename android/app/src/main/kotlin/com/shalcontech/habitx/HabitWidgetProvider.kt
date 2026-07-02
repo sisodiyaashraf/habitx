@@ -31,6 +31,19 @@ class HabitWidgetProvider : AppWidgetProvider() {
             if (imagePath != null) {
                 // 🚀 IMPROVED: Using Uri.fromFile for absolute paths
                 views.setImageViewUri(R.id.widget_image, Uri.fromFile(File(imagePath)))
+            } else {
+                // Fallback to daily rotating drawable from habitx1, habitx2, habitx3
+                val calendar = java.util.Calendar.getInstance()
+                val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
+                val imageIndex = (day % 3) + 1 // 1, 2, or 3
+                val resourceId = context.resources.getIdentifier(
+                    "habitx$imageIndex",
+                    "drawable",
+                    context.packageName
+                )
+                if (resourceId != 0) {
+                    views.setImageViewResource(R.id.widget_image, resourceId)
+                }
             }
 
             // Setup Click Intent to open the app
