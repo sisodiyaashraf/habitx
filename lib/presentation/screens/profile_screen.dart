@@ -4,7 +4,7 @@ import 'package:habitx/presentation/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../../providers/habit_provider.dart';
-import '../widgets/shared/AnimatedLevelAvatar.dart';
+import '../widgets/shared/animated_level_avatar.dart';
 import '../widgets/shared/glass_background.dart';
 import 'onboarding_screen.dart'; // <--- IMPORTANT: Add this import
 

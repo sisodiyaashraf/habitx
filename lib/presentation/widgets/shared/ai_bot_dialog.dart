@@ -13,7 +13,7 @@ class AiBotDialog extends StatefulWidget {
   static void show(BuildContext context) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.92),
+      barrierColor: Colors.black.withValues(alpha: 0.92),
       builder: (context) => const AiBotDialog(),
     );
   }
@@ -170,14 +170,14 @@ class _AiBotDialogState extends State<AiBotDialog>
         border: 1.5,
         linearGradient: LinearGradient(
           colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.02),
+            Colors.white.withValues(alpha: 0.1),
+            Colors.white.withValues(alpha: 0.02),
           ],
         ),
         borderGradient: LinearGradient(
           colors: [
             const Color(0xFFAC5DED),
-            const Color(0xFF00E5FF).withOpacity(0.5),
+            const Color(0xFF00E5FF).withValues(alpha: 0.5),
           ],
         ),
         child: Padding(
@@ -191,10 +191,10 @@ class _AiBotDialogState extends State<AiBotDialog>
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                      color: const Color(0xFFAC5DED).withOpacity(0.25),
+                      color: const Color(0xFFAC5DED).withValues(alpha: 0.25),
                     ),
                   ),
                   child: _isAnalyzing
@@ -278,10 +278,10 @@ class _AiBotDialogState extends State<AiBotDialog>
                   width: 95,
                   margin: const EdgeInsets.only(right: 10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFAC5DED).withOpacity(0.1),
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFFAC5DED).withOpacity(0.3),
+                      color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -393,9 +393,9 @@ class _AiBotDialogState extends State<AiBotDialog>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFF00E5FF).withOpacity(0.1),
+        color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
       ),
       child: const Row(
         children: [

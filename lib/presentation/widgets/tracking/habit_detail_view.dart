@@ -167,7 +167,7 @@ class HabitDetailView extends StatelessWidget {
         ),
         borderGradient: LinearGradient(
           colors: [
-            const Color(0xFFAC5DED).withOpacity(0.5),
+            const Color(0xFFAC5DED).withValues(alpha: 0.5),
             Colors.transparent,
           ],
         ),
@@ -207,7 +207,7 @@ class HabitDetailView extends StatelessWidget {
       alignment: Alignment.center,
       border: 1,
       linearGradient: LinearGradient(
-        colors: [const Color(0xFFAC5DED).withOpacity(0.1), Colors.transparent],
+        colors: [const Color(0xFFAC5DED).withValues(alpha: 0.1), Colors.transparent],
       ),
       borderGradient: const LinearGradient(
         colors: [Color(0xFFAC5DED), Colors.transparent],
@@ -273,7 +273,7 @@ class HabitDetailView extends StatelessWidget {
       alignment: Alignment.center,
       border: 0.5,
       linearGradient: LinearGradient(
-        colors: [Colors.white.withOpacity(0.05), Colors.transparent],
+        colors: [Colors.white.withValues(alpha: 0.05), Colors.transparent],
       ),
       borderGradient: LinearGradient(
         colors: [isDark ? Colors.white10 : Colors.black12, Colors.transparent],
@@ -318,7 +318,7 @@ class HabitDetailView extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: habit.isCompleted
-              ? Colors.grey.withOpacity(0.2)
+              ? Colors.grey.withValues(alpha: 0.2)
               : const Color(0xFFAC5DED),
           foregroundColor: Colors.white,
           elevation: 0,
@@ -348,9 +348,9 @@ class HabitDetailView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFAC5DED).withOpacity(0.15),
+        color: const Color(0xFFAC5DED).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFAC5DED).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFFAC5DED).withValues(alpha: 0.3)),
       ),
       child: Text(
         label,

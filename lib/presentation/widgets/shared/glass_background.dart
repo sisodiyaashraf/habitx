@@ -43,8 +43,8 @@ class GlassBackground extends StatelessWidget {
           left: -40,
           size: 320,
           color: isDark
-              ? const Color(0xFF7B61FF).withOpacity(0.24)
-              : const Color(0xFFAC5DED).withOpacity(0.4),
+              ? const Color(0xFF7B61FF).withValues(alpha: 0.24)
+              : const Color(0xFFAC5DED).withValues(alpha: 0.4),
         ),
 
         // Bottom Right - Deep Violet/Magenta
@@ -53,8 +53,8 @@ class GlassBackground extends StatelessWidget {
           right: -50,
           size: 400,
           color: isDark
-              ? const Color(0xFFAC5DED).withOpacity(0.18)
-              : const Color(0xFF7B61FF).withOpacity(0.35),
+              ? const Color(0xFFAC5DED).withValues(alpha: 0.18)
+              : const Color(0xFF7B61FF).withValues(alpha: 0.35),
         ),
 
         // Center Left - Glowing Cyan/Teal for contrast
@@ -63,8 +63,8 @@ class GlassBackground extends StatelessWidget {
           left: -80,
           size: 220,
           color: isDark
-              ? const Color(0xFF00F0FF).withOpacity(0.12)
-              : Colors.cyanAccent.withOpacity(0.25),
+              ? const Color(0xFF00F0FF).withValues(alpha: 0.12)
+              : Colors.cyanAccent.withValues(alpha: 0.25),
         ),
 
         // 3. Balanced Blur Layer
@@ -73,8 +73,8 @@ class GlassBackground extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
             child: Container(
               color: isDark
-                  ? Colors.black.withOpacity(0.3) // Dark Smoked Glass texture
-                  : Colors.white.withOpacity(0.05), // Light Milk Glass texture
+                  ? Colors.black.withValues(alpha: 0.3) // Dark Smoked Glass texture
+                  : Colors.white.withValues(alpha: 0.05), // Light Milk Glass texture
             ),
           ),
         ),
@@ -106,7 +106,7 @@ class GlassBackground extends StatelessWidget {
           color: color,
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.4),
+              color: color.withValues(alpha: 0.4),
               blurRadius: 40,
               spreadRadius: 20,
             ),

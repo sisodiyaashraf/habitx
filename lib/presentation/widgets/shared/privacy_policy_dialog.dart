@@ -10,7 +10,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: "Privacy",
-      barrierColor: Colors.black.withOpacity(0.9),
+      barrierColor: Colors.black.withValues(alpha: 0.9),
       transitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (context, anim1, anim2) => const Center(
         child: SingleChildScrollView(child: PrivacyPolicyDialog()),
@@ -31,7 +31,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
         border: Border.all(color: Colors.black12, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 30,
             spreadRadius: 2,
           ),
@@ -309,7 +309,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.03),
+        color: Colors.black.withValues(alpha: 0.03),
         border: Border.all(color: Colors.black12),
       ),
       child: const Text(
@@ -351,7 +351,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: const Color(0xFFAC5DED).withOpacity(0.6),
+                      color: const Color(0xFFAC5DED).withValues(alpha: 0.6),
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(4),
@@ -384,7 +384,14 @@ class PrivacyPolicyDialog extends StatelessWidget {
               QrImageView(
                 data: "HabitX_Protocol_8A7F2D",
                 size: 45,
-                foregroundColor: Colors.black.withOpacity(0.5),
+                eyeStyle: QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: Colors.black.withValues(alpha: 0.5),
+                ),
+                dataModuleStyle: QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: Colors.black.withValues(alpha: 0.5),
+                ),
               ),
             ],
           ),

@@ -44,17 +44,17 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
       linearGradient: LinearGradient(
         colors: [
           isDark
-              ? Colors.white.withOpacity(0.08)
-              : Colors.white.withOpacity(0.25),
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.white.withValues(alpha: 0.25),
           isDark
-              ? Colors.white.withOpacity(0.03)
-              : Colors.white.withOpacity(0.1),
+              ? Colors.white.withValues(alpha: 0.03)
+              : Colors.white.withValues(alpha: 0.1),
         ],
       ),
       borderGradient: LinearGradient(
         colors: [
-          const Color(0xFFAC5DED).withOpacity(0.6),
-          const Color(0xFF00E5FF).withOpacity(0.2),
+          const Color(0xFFAC5DED).withValues(alpha: 0.6),
+          const Color(0xFF00E5FF).withValues(alpha: 0.2),
         ],
       ),
       child: Padding(
@@ -71,7 +71,7 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFAC5DED).withOpacity(0.15),
+                        color: const Color(0xFFAC5DED).withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: const FaIcon(
@@ -122,13 +122,13 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.04)
-                    : Colors.black.withOpacity(0.03),
+                    ? Colors.white.withValues(alpha: 0.04)
+                    : Colors.black.withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withOpacity(0.06)
-                      : Colors.black.withOpacity(0.05),
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : Colors.black.withValues(alpha: 0.05),
                 ),
               ),
               child: Row(
@@ -240,8 +240,8 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
               color: isSelected
                   ? const Color(0xFFAC5DED)
                   : (isDark
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.black.withOpacity(0.04)),
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.04)),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isSelected
@@ -251,7 +251,7 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: const Color(0xFFAC5DED).withOpacity(0.3),
+                        color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
                         blurRadius: 6,
                       ),
                     ]
@@ -460,14 +460,14 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
       return BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: isDark
-            ? Colors.white.withOpacity(0.04)
-            : Colors.black.withOpacity(0.03),
+            ? Colors.white.withValues(alpha: 0.04)
+            : Colors.black.withValues(alpha: 0.03),
         border:
             border ??
             Border.all(
               color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.05),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.05),
               width: 1,
             ),
       );
@@ -482,7 +482,7 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF00E676).withOpacity(0.3),
+            color: const Color(0xFF00E676).withValues(alpha: 0.3),
             blurRadius: 4,
             spreadRadius: 0.5,
           ),
@@ -499,7 +499,7 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFAC5DED).withOpacity(0.35),
+            color: const Color(0xFFAC5DED).withValues(alpha: 0.35),
             blurRadius: 5,
             spreadRadius: 1,
           ),
@@ -516,7 +516,7 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF2A85).withOpacity(0.4),
+            color: const Color(0xFFFF2A85).withValues(alpha: 0.4),
             blurRadius: 6,
             spreadRadius: 1,
           ),
@@ -533,7 +533,7 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF3D00).withOpacity(0.5),
+            color: const Color(0xFFFF3D00).withValues(alpha: 0.5),
             blurRadius: 8,
             spreadRadius: 1.5,
           ),
@@ -548,13 +548,13 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFFAC5DED).withOpacity(0.2),
-            const Color(0xFF7B61FF).withOpacity(0.2),
+            const Color(0xFFAC5DED).withValues(alpha: 0.2),
+            const Color(0xFF7B61FF).withValues(alpha: 0.2),
           ],
         ),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: const Color(0xFFAC5DED).withOpacity(0.4),
+          color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -595,8 +595,8 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
             ),
             _buildLegendBox(
               isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.04),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.04),
             ),
             const SizedBox(width: 4),
             _buildLegendGradientBox(const [
@@ -679,9 +679,9 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: accentColor.withOpacity(0.12),
+        color: accentColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accentColor.withOpacity(0.3)),
+        border: Border.all(color: accentColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

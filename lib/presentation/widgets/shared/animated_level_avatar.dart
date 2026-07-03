@@ -104,8 +104,8 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.white.withOpacity(0.3),
-                    Colors.white.withOpacity(0.02),
+                    Colors.white.withValues(alpha: 0.3),
+                    Colors.white.withValues(alpha: 0.02),
                   ],
                   stops: [
                     (_controller.value - 0.4).clamp(0.0, 1.0),
@@ -123,7 +123,7 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
                     Text(
                       "CORE",
                       style: TextStyle(
-                        color: colors[0].withOpacity(0.5),
+                        color: colors[0].withValues(alpha: 0.5),
                         fontSize: 8,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 6,
@@ -185,7 +185,7 @@ class LiquidProgressPainter extends CustomPainter {
 
     // 1. Subtle Shadow/Glow under the progress
     final backgroundPaint = Paint()
-      ..color = Colors.black.withOpacity(0.05)
+      ..color = Colors.black.withValues(alpha: 0.05)
       ..strokeWidth = 10
       ..style = PaintingStyle.stroke;
     canvas.drawCircle(center, radius, backgroundPaint);
@@ -240,7 +240,7 @@ class GradientOrbitPainter extends CustomPainter {
         startAngle,
         sweepAngle,
         false,
-        paint..color = colors[0].withOpacity(opacity),
+        paint..color = colors[0].withValues(alpha: opacity),
       );
     }
   }

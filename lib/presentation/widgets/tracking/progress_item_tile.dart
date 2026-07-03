@@ -33,14 +33,14 @@ class ProgressItemTile extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            isDark ? Colors.black.withOpacity(0.2) : Colors.white.withOpacity(0.3),
-            isDark ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.1),
+            isDark ? Colors.black.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.3),
+            isDark ? Colors.black.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.1),
           ],
         ),
         borderGradient: LinearGradient(
           colors: [
-            const Color(0xFFAC5DED).withOpacity(0.4),
-            Colors.white.withOpacity(0.2),
+            const Color(0xFFAC5DED).withValues(alpha: 0.4),
+            Colors.white.withValues(alpha: 0.2),
           ],
         ),
         child: Padding(
@@ -51,10 +51,10 @@ class ProgressItemTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFAC5DED).withOpacity(0.1),
+                  color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFFAC5DED).withOpacity(0.2),
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.2),
                   ),
                 ),
                 child: Icon(icon, color: const Color(0xFFAC5DED), size: 24),

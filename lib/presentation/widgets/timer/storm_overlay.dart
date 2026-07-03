@@ -193,7 +193,7 @@ class _StormOverlayState extends State<StormOverlay> with SingleTickerProviderSt
               child: Opacity(
                 opacity: _lightningOpacity,
                 child: Container(
-                  color: Colors.white.withOpacity(0.95),
+                  color: Colors.white.withValues(alpha: 0.95),
                 ),
               ),
             ),
@@ -215,7 +215,7 @@ class StormPainter extends CustomPainter {
     // 1. Draw Rain
     final rainPaint = Paint()..strokeCap = StrokeCap.round;
     for (var drop in raindrops) {
-      rainPaint.color = Colors.blueGrey.withOpacity(drop.opacity);
+      rainPaint.color = Colors.blueGrey.withValues(alpha: drop.opacity);
       rainPaint.strokeWidth = 1.0 + (drop.speed / 15.0);
       canvas.drawLine(
         Offset(drop.x, drop.y),
@@ -229,7 +229,7 @@ class StormPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
     for (var streak in windStreaks) {
-      windPaint.color = Colors.white.withOpacity(streak.opacity);
+      windPaint.color = Colors.white.withValues(alpha: streak.opacity);
       windPaint.strokeWidth = streak.width;
 
       final path = Path();

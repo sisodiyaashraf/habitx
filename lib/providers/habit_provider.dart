@@ -534,7 +534,7 @@ class HabitProvider extends ChangeNotifier {
       context: context,
       barrierDismissible: true,
       barrierLabel: "Achievement",
-      barrierColor: Colors.black.withOpacity(0.9),
+      barrierColor: Colors.black.withValues(alpha: 0.9),
       transitionDuration: const Duration(milliseconds: 600),
       pageBuilder: (context, anim1, anim2) => Center(
         child: GlassmorphicContainer(
@@ -546,8 +546,8 @@ class HabitProvider extends ChangeNotifier {
           border: 2,
           linearGradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
+              Colors.white.withValues(alpha: 0.1),
+              Colors.white.withValues(alpha: 0.05),
             ],
           ),
           borderGradient: const LinearGradient(
@@ -617,7 +617,7 @@ class HabitProvider extends ChangeNotifier {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFAC5DED).withOpacity(0.6),
+                color: const Color(0xFFAC5DED).withValues(alpha: 0.6),
                 blurRadius: 40,
                 spreadRadius: 5,
               ),

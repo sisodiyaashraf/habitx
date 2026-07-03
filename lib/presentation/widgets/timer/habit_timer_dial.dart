@@ -116,7 +116,7 @@ class _HabitTimerDialState extends State<HabitTimerDial> with TickerProviderStat
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFFAC5DED).withOpacity(0.12),
+                  const Color(0xFFAC5DED).withValues(alpha: 0.12),
                   Colors.transparent,
                 ],
               ),
@@ -141,7 +141,7 @@ class _HabitTimerDialState extends State<HabitTimerDial> with TickerProviderStat
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFF7B61FF).withOpacity(0.8),
+                            color: const Color(0xFF7B61FF).withValues(alpha: 0.8),
                             width: 2,
                           ),
                         ),
@@ -160,7 +160,7 @@ class _HabitTimerDialState extends State<HabitTimerDial> with TickerProviderStat
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              const Color(0xFFAC5DED).withOpacity(0.4),
+                              const Color(0xFFAC5DED).withValues(alpha: 0.4),
                               Colors.transparent,
                             ],
                           ),
@@ -180,7 +180,7 @@ class _HabitTimerDialState extends State<HabitTimerDial> with TickerProviderStat
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 width: 14,
               ),
             ),
@@ -218,14 +218,14 @@ class _HabitTimerDialState extends State<HabitTimerDial> with TickerProviderStat
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
+                    color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),

@@ -12,8 +12,8 @@ class LevelUpOverlay extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Level Up',
-      barrierColor: Colors.black.withOpacity(
-        0.2,
+      barrierColor: Colors.black.withValues(
+        alpha: 0.2,
       ), // Lighter barrier for better glass look
       transitionDuration: const Duration(milliseconds: 500),
       pageBuilder: (context, anim1, anim2) {
@@ -56,14 +56,14 @@ class LevelUpOverlay extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withOpacity(0.4), // Milky glass for Onyx text
-                Colors.white.withOpacity(0.1),
+                Colors.white.withValues(alpha: 0.4), // Milky glass for Onyx text
+                Colors.white.withValues(alpha: 0.1),
               ],
             ),
             borderGradient: LinearGradient(
               colors: [
                 const Color(0xFFAC5DED),
-                const Color(0xFF7B61FF).withOpacity(0.5),
+                const Color(0xFF7B61FF).withValues(alpha: 0.5),
               ],
             ),
             child: Padding(
@@ -118,11 +118,11 @@ class LevelUpOverlay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFAC5DED).withOpacity(0.1),
+        color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFAC5DED).withOpacity(0.2),
+            color: const Color(0xFFAC5DED).withValues(alpha: 0.2),
             blurRadius: 20,
             spreadRadius: 5,
           ),
@@ -147,7 +147,7 @@ class LevelUpOverlay extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFAC5DED).withOpacity(0.3),
+            color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),

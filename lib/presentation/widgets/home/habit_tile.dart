@@ -30,14 +30,14 @@ class HabitTile extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withOpacity(0.28), // Optimized for Onyx visibility
-              Colors.white.withOpacity(0.12),
+              Colors.white.withValues(alpha: 0.28), // Optimized for Onyx visibility
+              Colors.white.withValues(alpha: 0.12),
             ],
           ),
           borderGradient: LinearGradient(
             colors: [
-              const Color(0xFFAC5DED).withOpacity(0.4),
-              Colors.white.withOpacity(0.3),
+              const Color(0xFFAC5DED).withValues(alpha: 0.4),
+              Colors.white.withValues(alpha: 0.3),
             ],
           ),
           child: Padding(
@@ -71,7 +71,7 @@ class HabitTile extends StatelessWidget {
                             _buildInfoBadge(
                               Icons.timer_outlined,
                               '${habit.timerDuration}m',
-                              const Color(0xFFAC5DED).withOpacity(0.1),
+                              const Color(0xFFAC5DED).withValues(alpha: 0.1),
                               const Color(0xFFAC5DED),
                             ),
                             const SizedBox(width: 8),
@@ -111,9 +111,9 @@ class HabitTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
-        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Icon(Icons.bolt_rounded, color: color, size: 24),
     );
@@ -148,7 +148,7 @@ class HabitTile extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF00E676).withOpacity(0.1),
+          color: const Color(0xFF00E676).withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: const Icon(
@@ -167,7 +167,7 @@ class HabitTile extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFAC5DED).withOpacity(0.3),
+            color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -225,8 +225,8 @@ class HabitTile extends StatelessWidget {
         border: 2,
         linearGradient: LinearGradient(
           colors: [
-            Colors.white.withOpacity(0.2),
-            Colors.white.withOpacity(0.1),
+            Colors.white.withValues(alpha: 0.2),
+            Colors.white.withValues(alpha: 0.1),
           ],
         ),
         borderGradient: const LinearGradient(

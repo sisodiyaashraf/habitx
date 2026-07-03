@@ -99,15 +99,15 @@ class AchievementTracker extends StatelessWidget {
               linearGradient: LinearGradient(
                 colors: [
                   unlocked
-                      ? Colors.white.withOpacity(0.2)
+                      ? Colors.white.withValues(alpha: 0.2)
                       : (isDark
                             ? Colors.white10
-                            : Colors.black.withOpacity(0.05)),
+                            : Colors.black.withValues(alpha: 0.05)),
                   unlocked
-                      ? Colors.white.withOpacity(0.05)
+                      ? Colors.white.withValues(alpha: 0.05)
                       : (isDark
-                            ? Colors.white.withOpacity(0.02)
-                            : Colors.black.withOpacity(0.02)),
+                            ? Colors.white.withValues(alpha: 0.02)
+                            : Colors.black.withValues(alpha: 0.02)),
                 ],
               ),
               borderGradient: LinearGradient(

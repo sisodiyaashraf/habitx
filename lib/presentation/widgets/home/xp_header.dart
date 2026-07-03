@@ -156,19 +156,19 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
       linearGradient: LinearGradient(
         colors: [
           isDark
-              ? Colors.white.withOpacity(0.1 + (_flashAnimation.value * 0.05))
-              : Colors.white.withOpacity(0.25),
+              ? Colors.white.withValues(alpha: 0.1 + (_flashAnimation.value * 0.05))
+              : Colors.white.withValues(alpha: 0.25),
           isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.white.withOpacity(0.1),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.white.withValues(alpha: 0.1),
         ],
       ),
       borderGradient: LinearGradient(
         colors: [
           const Color(
             0xFFAC5DED,
-          ).withOpacity(0.5 + (_flashAnimation.value * 0.5)),
-          const Color(0xFF00E5FF).withOpacity(_flashAnimation.value),
+          ).withValues(alpha: 0.5 + (_flashAnimation.value * 0.5)),
+          const Color(0xFF00E5FF).withValues(alpha: _flashAnimation.value),
         ],
       ),
       child: Padding(
@@ -243,12 +243,12 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
           BoxShadow(
             color: const Color(
               0xFF00E5FF,
-            ).withOpacity(_flashAnimation.value * 0.8),
+            ).withValues(alpha: _flashAnimation.value * 0.8),
             blurRadius: 20,
             spreadRadius: 5,
           ),
           BoxShadow(
-            color: const Color(0xFFAC5DED).withOpacity(0.4),
+            color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
             blurRadius: 15,
           ),
         ],
@@ -304,7 +304,7 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
           height: 12,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
         ),
@@ -328,7 +328,7 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFAC5DED).withOpacity(0.5),
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.5),
                     blurRadius: 10 + (_flashAnimation.value * 10),
                   ),
                 ],
@@ -359,14 +359,14 @@ class LightningPainter extends CustomPainter {
     if (points.isEmpty || opacity <= 0) return;
 
     final Paint glowPaint = Paint()
-      ..color = const Color(0xFF00E5FF).withOpacity(opacity * 0.5)
+      ..color = const Color(0xFF00E5FF).withValues(alpha: opacity * 0.5)
       ..strokeWidth = 6.0
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
 
     final Paint boltPaint = Paint()
-      ..color = Colors.white.withOpacity(opacity)
+      ..color = Colors.white.withValues(alpha: opacity)
       ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;

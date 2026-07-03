@@ -71,7 +71,7 @@ class HomeMobileContent extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFAC5DED).withOpacity(0.1),
+              color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(

@@ -206,7 +206,10 @@ class _AddHabitFormState extends State<AddHabitForm> {
         ],
       ),
       borderGradient: LinearGradient(
-        colors: [const Color(0xFFAC5DED).withValues(alpha: 0.6), Colors.transparent],
+        colors: [
+          const Color(0xFFAC5DED).withValues(alpha: 0.6),
+          Colors.transparent,
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0),

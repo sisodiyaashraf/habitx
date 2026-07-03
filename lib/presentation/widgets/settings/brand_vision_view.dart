@@ -57,7 +57,7 @@ class BrandVisionView extends StatelessWidget {
                 "Shalcontech Studio is a boutique development lab dedicated to building tools for high-performers. We believe that privacy is a right, and focus is a superpower.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: textColor.withOpacity(0.7),
+                  color: textColor.withValues(alpha: 0.7),
                   fontSize: 14,
                   height: 1.8,
                 ),

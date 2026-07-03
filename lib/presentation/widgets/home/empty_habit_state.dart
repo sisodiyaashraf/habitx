@@ -63,12 +63,12 @@ class EmptyHabitState extends StatelessWidget {
       linearGradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Colors.white.withOpacity(0.3), Colors.white.withOpacity(0.1)],
+        colors: [Colors.white.withValues(alpha: 0.3), Colors.white.withValues(alpha: 0.1)],
       ),
       borderGradient: LinearGradient(
         colors: [
-          const Color(0xFFAC5DED).withOpacity(0.5),
-          const Color(0xFF7B61FF).withOpacity(0.2),
+          const Color(0xFFAC5DED).withValues(alpha: 0.5),
+          const Color(0xFF7B61FF).withValues(alpha: 0.2),
         ],
       ),
       child: const Icon(
@@ -88,10 +88,10 @@ class EmptyHabitState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFAC5DED).withOpacity(0.1),
+        color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFAC5DED).withOpacity(0.2),
+          color: const Color(0xFFAC5DED).withValues(alpha: 0.2),
           width: 1,
         ),
       ),

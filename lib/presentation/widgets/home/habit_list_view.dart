@@ -27,7 +27,7 @@ class HabitListView extends StatelessWidget {
       // Prevents scrolling conflicts within the SingleChildScrollView of HomeMobileContent
       physics: const NeverScrollableScrollPhysics(),
       itemCount: filteredHabits.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final habit = filteredHabits[index];
 
@@ -40,7 +40,7 @@ class HabitListView extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text("${habit.name} deleted"),
-                backgroundColor: Colors.redAccent.withOpacity(0.8),
+                backgroundColor: Colors.redAccent.withValues(alpha: 0.8),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -58,7 +58,7 @@ class HabitListView extends StatelessWidget {
       padding: const EdgeInsets.only(right: 20),
       decoration: BoxDecoration(
         // Using a soft red to match the glassmorphism palette
-        color: Colors.redAccent.withOpacity(0.7),
+        color: Colors.redAccent.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(20),
       ),
       child: const Icon(

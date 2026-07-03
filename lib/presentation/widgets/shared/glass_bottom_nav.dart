@@ -32,17 +32,17 @@ class GlassBottomNav extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             isDark
-                ? Colors.white.withOpacity(0.1)
-                : Colors.white.withOpacity(0.3),
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.3),
             isDark
-                ? Colors.white.withOpacity(0.05)
-                : Colors.white.withOpacity(0.1),
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white.withValues(alpha: 0.1),
           ],
         ),
         borderGradient: LinearGradient(
           colors: [
-            const Color(0xFFAC5DED).withOpacity(0.5),
-            Colors.white.withOpacity(0.2),
+            const Color(0xFFAC5DED).withValues(alpha: 0.5),
+            Colors.white.withValues(alpha: 0.2),
           ],
         ),
         child: Row(
@@ -83,7 +83,7 @@ class GlassBottomNav extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFAC5DED).withOpacity(0.4),
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
                     blurRadius: 15,
                     spreadRadius: 2,
                   ),
@@ -138,7 +138,7 @@ class GlassBottomNav extends StatelessWidget {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: activeColor.withOpacity(0.5),
+                          color: activeColor.withValues(alpha: 0.5),
                           blurRadius: 8,
                         ),
                       ]

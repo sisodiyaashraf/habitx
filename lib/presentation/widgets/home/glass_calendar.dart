@@ -42,12 +42,12 @@ class GlassCalendar extends StatelessWidget {
                   end: Alignment.bottomRight,
                   colors: isSelected
                       ? [
-                          Colors.white.withOpacity(0.4), // Whiter for selected
-                          Colors.white.withOpacity(0.2),
+                          Colors.white.withValues(alpha: 0.4), // Whiter for selected
+                          Colors.white.withValues(alpha: 0.2),
                         ]
                       : [
-                          Colors.white.withOpacity(0.15),
-                          Colors.white.withOpacity(0.08),
+                          Colors.white.withValues(alpha: 0.15),
+                          Colors.white.withValues(alpha: 0.08),
                         ],
                 ),
                 borderGradient: LinearGradient(
@@ -57,8 +57,8 @@ class GlassCalendar extends StatelessWidget {
                           const Color(0xFF7B61FF), // Accent Blue
                         ]
                       : [
-                          Colors.black.withOpacity(0.15),
-                          Colors.black.withOpacity(0.05),
+                          Colors.black.withValues(alpha: 0.15),
+                          Colors.black.withValues(alpha: 0.05),
                         ],
                 ),
                 child: Column(

@@ -31,8 +31,8 @@ class GlassHorizontalCalendar extends StatelessWidget {
               border: isToday ? 2 : 1,
               linearGradient: LinearGradient(
                 colors: [
-                  Colors.white.withOpacity(isToday ? 0.2 : 0.1),
-                  Colors.white.withOpacity(0.05),
+                  Colors.white.withValues(alpha: isToday ? 0.2 : 0.1),
+                  Colors.white.withValues(alpha: 0.05),
                 ],
               ),
               borderGradient: LinearGradient(

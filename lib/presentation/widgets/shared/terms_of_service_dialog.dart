@@ -9,7 +9,7 @@ class TermsOfServiceDialog extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: "Terms",
-      barrierColor: Colors.black.withOpacity(0.9),
+      barrierColor: Colors.black.withValues(alpha: 0.9),
       transitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (context, anim1, anim2) => const Center(
         child: SingleChildScrollView(child: TermsOfServiceDialog()),
@@ -30,7 +30,7 @@ class TermsOfServiceDialog extends StatelessWidget {
         border: Border.all(color: Colors.black12, width: 0.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 30,
             spreadRadius: 2,
           ),
@@ -317,7 +317,14 @@ class TermsOfServiceDialog extends StatelessWidget {
           child: QrImageView(
             data: "HabitX_TOS_CORE_2026",
             size: 45,
-            foregroundColor: Colors.black.withOpacity(0.5),
+            eyeStyle: QrEyeStyle(
+              eyeShape: QrEyeShape.square,
+              color: Colors.black.withValues(alpha: 0.5),
+            ),
+            dataModuleStyle: QrDataModuleStyle(
+              dataModuleShape: QrDataModuleShape.square,
+              color: Colors.black.withValues(alpha: 0.5),
+            ),
           ),
         ),
       ],

@@ -16,8 +16,8 @@ class WeeklyBarChart extends StatelessWidget {
     // Dynamic Colors based on Theme
     final textColor = isDark ? Colors.white70 : Colors.black45;
     final barBgColor = isDark
-        ? Colors.white.withOpacity(0.05)
-        : Colors.black.withOpacity(0.05);
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
 
     // Get the last 7 days of dates from provider
     final List<DateTime> weekDays = provider.pastWeekDates;
@@ -34,17 +34,17 @@ class WeeklyBarChart extends StatelessWidget {
         end: Alignment.bottomRight,
         colors: [
           isDark
-              ? Colors.white.withOpacity(0.1)
-              : Colors.white.withOpacity(0.25),
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.white.withValues(alpha: 0.25),
           isDark
-              ? Colors.white.withOpacity(0.02)
-              : Colors.white.withOpacity(0.1),
+              ? Colors.white.withValues(alpha: 0.02)
+              : Colors.white.withValues(alpha: 0.1),
         ],
       ),
       borderGradient: LinearGradient(
         colors: [
-          const Color(0xFFAC5DED).withOpacity(0.6),
-          const Color(0xFF7B61FF).withOpacity(0.1),
+          const Color(0xFFAC5DED).withValues(alpha: 0.6),
+          const Color(0xFF7B61FF).withValues(alpha: 0.1),
         ],
       ),
       child: Padding(
@@ -82,8 +82,8 @@ class WeeklyBarChart extends StatelessWidget {
                     barBgColor,
                   ),
                 ),
-                swapAnimationDuration: const Duration(milliseconds: 1000),
-                swapAnimationCurve: Curves.fastOutSlowIn,
+                duration: const Duration(milliseconds: 1000),
+                curve: Curves.fastOutSlowIn,
               ),
             ),
           ],
@@ -209,9 +209,9 @@ class WeeklyBarChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFAC5DED).withOpacity(0.1),
+        color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFAC5DED).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFFAC5DED).withValues(alpha: 0.2)),
       ),
       child: const Text(
         "LIVE DATA",
