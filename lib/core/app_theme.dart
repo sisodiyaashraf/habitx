@@ -46,10 +46,10 @@ class AppTheme {
     // 4. Glass-compatible Card Theme
     cardTheme: CardThemeData(
       elevation: 0,
-      color: Colors.white.withOpacity(0.2),
+      color: Colors.white.withValues(alpha: 0.2),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.white.withOpacity(0.1)),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
       ),
     ),
   );
@@ -64,10 +64,10 @@ class AppTheme {
     scaffoldBackgroundColor: Colors.transparent,
     cardTheme: CardThemeData(
       elevation: 0,
-      color: Colors.black.withOpacity(0.3),
+      color: Colors.black.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.white.withOpacity(0.05)),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
       ),
     ),
   );

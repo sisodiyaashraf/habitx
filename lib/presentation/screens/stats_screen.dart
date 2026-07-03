@@ -122,15 +122,17 @@ class StatsScreen extends StatelessWidget {
       linearGradient: LinearGradient(
         colors: [
           isDark
-              ? Colors.white.withOpacity(0.12)
-              : Colors.white.withOpacity(0.3),
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.3)
+              ,
           isDark
-              ? Colors.white.withOpacity(0.02)
-              : Colors.white.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.02)
+              : Colors.white.withValues(alpha: 0.05)
+              ,
         ],
       ),
       borderGradient: LinearGradient(
-        colors: [const Color(0xFFAC5DED).withOpacity(0.5), Colors.white24],
+        colors: [const Color(0xFFAC5DED).withValues(alpha: 0.5), Colors.white24],
       ),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -145,7 +147,7 @@ class StatsScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFAC5DED).withOpacity(0.4),
+                        color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
                         blurRadius: 15,
                       ),
                     ],
@@ -207,7 +209,7 @@ class StatsScreen extends StatelessWidget {
                     minHeight: 8,
                     backgroundColor: isDark
                         ? Colors.white10
-                        : Colors.black.withOpacity(0.05),
+                        : Colors.black.withValues(alpha: 0.05),
                     color: const Color(0xFFAC5DED),
                   ),
                 );
@@ -279,30 +281,38 @@ class StatsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
           color: isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.03),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
         child: Column(
           children: [
             FaIcon(icon, color: const Color(0xFFAC5DED), size: 18),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                maxLines: 1,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
-            Text(
-              label,
-              style: TextStyle(
-                color: subTextColor,
-                fontSize: 9,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.5,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: TextStyle(
+                  color: subTextColor,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
           ],
@@ -349,7 +359,7 @@ class StatsScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFAC5DED).withOpacity(0.12),
+            color: const Color(0xFFAC5DED).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(

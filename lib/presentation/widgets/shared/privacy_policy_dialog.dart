@@ -324,49 +324,7 @@ class PrivacyPolicyDialog extends StatelessWidget {
     );
   }
 
-  Widget _legalArticleHeader(String article, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "$article: $title",
-            style: const TextStyle(
-              fontWeight: FontWeight.w900,
-              color: Colors.black,
-              fontSize: 13,
-            ),
-          ),
-          const Divider(thickness: 1, color: Colors.black12),
-        ],
-      ),
-    );
-  }
 
-  Widget _legalSection(String title, String body) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            body,
-            style: const TextStyle(
-              color: Colors.black87,
-              fontSize: 12,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildDigitalStampAndAcceptance() {
     return Row(

@@ -53,7 +53,12 @@ class SettingsScreen extends StatelessWidget {
   void _shareApp() {
     const String message =
         "I'm building elite discipline with HabitX. 🚀\n\nDownload here: https://play.google.com/store/apps/details?id=com.shalcontech.habitx";
-    Share.share(message, subject: 'Join me on HabitX');
+    SharePlus.instance.share(
+      ShareParams(
+        text: message,
+        subject: 'Join me on HabitX',
+      ),
+    );
   }
 
   Future<void> _rateApp(BuildContext context) async {
@@ -213,7 +218,7 @@ class SettingsScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            _buildSectionHeader("DANGER ZONE", Colors.red.withOpacity(0.7)),
+            _buildSectionHeader("DANGER ZONE", Colors.red.withValues(alpha: 0.7)),
             _buildSettingsGroup(
               [
                 _settingsTile(
@@ -275,7 +280,7 @@ class SettingsScreen extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFFAC5DED).withOpacity(0.1),
+          color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: FaIcon(
@@ -288,6 +293,8 @@ class SettingsScreen extends StatelessWidget {
       ),
       title: Text(
         title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,
@@ -296,11 +303,13 @@ class SettingsScreen extends StatelessWidget {
       ),
       subtitle: Text(
         subtitle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(fontSize: 10, color: subTextColor),
       ),
       trailing: Icon(
         Icons.chevron_right_rounded,
-        color: subTextColor.withOpacity(0.3),
+        color: subTextColor.withValues(alpha: 0.3),
         size: 18,
       ),
     );
@@ -319,7 +328,7 @@ class SettingsScreen extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFFAC5DED).withOpacity(0.1),
+          color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: FaIcon(
@@ -330,6 +339,8 @@ class SettingsScreen extends StatelessWidget {
       ),
       title: Text(
         title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 14,
@@ -338,11 +349,13 @@ class SettingsScreen extends StatelessWidget {
       ),
       subtitle: Text(
         subtitle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(fontSize: 10, color: subTextColor),
       ),
       trailing: Switch.adaptive(
         value: value,
-        activeColor: const Color(0xFFAC5DED),
+        activeThumbColor: const Color(0xFFAC5DED),
         onChanged: onChanged,
       ),
     );
@@ -378,15 +391,15 @@ class SettingsScreen extends StatelessWidget {
       linearGradient: LinearGradient(
         colors: [
           isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.white.withOpacity(0.2),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.white.withValues(alpha: 0.2),
           isDark
-              ? Colors.white.withOpacity(0.02)
-              : Colors.white.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.02)
+              : Colors.white.withValues(alpha: 0.05),
         ],
       ),
       borderGradient: LinearGradient(
-        colors: [Colors.white.withOpacity(0.1), Colors.transparent],
+        colors: [Colors.white.withValues(alpha: 0.1), Colors.transparent],
       ),
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -474,7 +487,7 @@ class SettingsScreen extends StatelessWidget {
             border: Border.all(
               color: isSelected
                   ? const Color(0xFFAC5DED)
-                  : textColor.withOpacity(0.1),
+                  : textColor.withValues(alpha: 0.1),
             ),
           ),
           child: Column(
@@ -482,7 +495,7 @@ class SettingsScreen extends StatelessWidget {
               Icon(
                 icon,
                 size: 18,
-                color: isSelected ? Colors.white : textColor.withOpacity(0.5),
+                color: isSelected ? Colors.white : textColor.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 4),
               Text(
@@ -490,7 +503,7 @@ class SettingsScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : textColor.withOpacity(0.5),
+                  color: isSelected ? Colors.white : textColor.withValues(alpha: 0.5),
                 ),
               ),
             ],

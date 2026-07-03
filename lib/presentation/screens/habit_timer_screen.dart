@@ -144,7 +144,7 @@ class _HabitTimerScreenState extends State<HabitTimerScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isRunning
-            ? const Color(0xFFAC5DED).withOpacity(0.1)
+            ? const Color(0xFFAC5DED).withValues(alpha: 0.1)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(20),
       ),
@@ -182,7 +182,7 @@ class _HabitTimerScreenState extends State<HabitTimerScreen> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFAC5DED).withOpacity(0.25 * progress),
+            color: const Color(0xFFAC5DED).withValues(alpha: 0.25 * progress),
             blurRadius: 70,
             spreadRadius: 10,
           ),
@@ -229,10 +229,10 @@ class _HabitTimerScreenState extends State<HabitTimerScreen> {
       alignment: Alignment.center,
       border: 1.5,
       linearGradient: LinearGradient(
-        colors: [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.1)],
+        colors: [Colors.white.withValues(alpha: 0.2), Colors.white.withValues(alpha: 0.1)],
       ),
       borderGradient: LinearGradient(
-        colors: [Colors.white.withOpacity(0.3), Colors.transparent],
+        colors: [Colors.white.withValues(alpha: 0.3), Colors.transparent],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -274,7 +274,7 @@ class _HabitTimerScreenState extends State<HabitTimerScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFAC5DED).withOpacity(0.4),
+              color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),

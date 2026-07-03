@@ -50,7 +50,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
       {"name": "Stretching", "icon": FontAwesomeIcons.childReaching},
       {"name": "Nap", "icon": FontAwesomeIcons.bed},
       {"name": "Music", "icon": FontAwesomeIcons.music},
-      {"name": "Prayer", "icon": FontAwesomeIcons.prayingHands},
+      {"name": "Prayer", "icon": FontAwesomeIcons.handsPraying},
     ],
     "Skills": [
       {"name": "Design", "icon": FontAwesomeIcons.palette},
@@ -198,15 +198,15 @@ class _AddHabitFormState extends State<AddHabitForm> {
         end: Alignment.bottomRight,
         colors: [
           isDark
-              ? Colors.white.withOpacity(0.12)
-              : Colors.white.withOpacity(0.25),
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.25),
           isDark
-              ? Colors.white.withOpacity(0.02)
-              : Colors.white.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.02)
+              : Colors.white.withValues(alpha: 0.05),
         ],
       ),
       borderGradient: LinearGradient(
-        colors: [const Color(0xFFAC5DED).withOpacity(0.6), Colors.transparent],
+        colors: [const Color(0xFFAC5DED).withValues(alpha: 0.6), Colors.transparent],
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30.0),
@@ -234,6 +234,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         _currentIcon,
                         isDark,
                         textColor,
+                        isNumber: true,
                       ),
                       const SizedBox(height: 20),
                       _buildDateTimeRow(context, isDark, textColor),
@@ -300,13 +301,13 @@ class _AddHabitFormState extends State<AddHabitForm> {
                 color: isSelected
                     ? const Color(0xFFAC5DED)
                     : (isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.black.withOpacity(0.03)),
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.03)),
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: const Color(0xFFAC5DED).withOpacity(0.3),
+                          color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
                           blurRadius: 10,
                         ),
                       ]
@@ -353,10 +354,10 @@ class _AddHabitFormState extends State<AddHabitForm> {
               duration: const Duration(milliseconds: 200),
               decoration: BoxDecoration(
                 color: isPicked
-                    ? const Color(0xFFAC5DED).withOpacity(0.15)
+                    ? const Color(0xFFAC5DED).withValues(alpha: 0.15)
                     : (isDark
-                          ? Colors.white.withOpacity(0.03)
-                          : Colors.black.withOpacity(0.02)),
+                          ? Colors.white.withValues(alpha: 0.03)
+                          : Colors.black.withValues(alpha: 0.02)),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
                   color: isPicked
@@ -400,7 +401,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
     child: Text(
       text,
       style: TextStyle(
-        color: const Color(0xFFAC5DED).withOpacity(0.8),
+        color: const Color(0xFFAC5DED).withValues(alpha: 0.8),
         fontSize: 10,
         fontWeight: FontWeight.w900,
         letterSpacing: 1.5,
@@ -413,8 +414,9 @@ class _AddHabitFormState extends State<AddHabitForm> {
     String hint,
     dynamic icon,
     bool isDark,
-    Color textColor,
-  ) {
+    Color textColor, {
+    required bool isNumber,
+  }) {
     return TextFormField(
       controller: controller,
       style: TextStyle(
@@ -424,18 +426,18 @@ class _AddHabitFormState extends State<AddHabitForm> {
       ),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: textColor.withOpacity(0.2)),
+        hintStyle: TextStyle(color: textColor.withValues(alpha: 0.2)),
         prefixIcon: Padding(
           padding: const EdgeInsets.all(14.0),
           child: FaIcon(icon, color: const Color(0xFFAC5DED), size: 18),
         ),
         filled: true,
         fillColor: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.04),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.04),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
@@ -487,21 +489,25 @@ class _AddHabitFormState extends State<AddHabitForm> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
           color: isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.04),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
             FaIcon(icon, color: const Color(0xFFAC5DED), size: 16),
             const SizedBox(width: 12),
-            Text(
-              text,
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
+            Expanded(
+              child: Text(
+                text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
               ),
             ),
           ],
@@ -515,38 +521,44 @@ class _AddHabitFormState extends State<AddHabitForm> {
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.03),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              FaIcon(
-                _isReminderEnabled
-                    ? FontAwesomeIcons.solidBell
-                    : FontAwesomeIcons.solidBellSlash,
-                color: const Color(0xFFAC5DED),
-                size: 18,
-              ),
-              const SizedBox(width: 15),
-              Text(
-                "SET REMINDER",
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 11,
-                  letterSpacing: 1,
+          Expanded(
+            child: Row(
+              children: [
+                FaIcon(
+                  _isReminderEnabled
+                      ? FontAwesomeIcons.solidBell
+                      : FontAwesomeIcons.solidBellSlash,
+                  color: const Color(0xFFAC5DED),
+                  size: 18,
                 ),
-              ),
-            ],
+                const SizedBox(width: 15),
+                Flexible(
+                  child: Text(
+                    "SET REMINDER",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 11,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           Switch.adaptive(
             value: _isReminderEnabled,
-            activeColor: const Color(0xFFAC5DED),
+            activeThumbColor: const Color(0xFFAC5DED),
             onChanged: (val) => setState(() => _isReminderEnabled = val),
           ),
         ],
@@ -567,11 +579,11 @@ class _AddHabitFormState extends State<AddHabitForm> {
       decoration: InputDecoration(
         filled: true,
         fillColor: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.04),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.04),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -634,6 +646,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
               FontAwesomeIcons.stopwatch,
               isDark,
               textColor,
+              isNumber: true,
             ),
           ),
       ],
@@ -657,13 +670,13 @@ class _AddHabitFormState extends State<AddHabitForm> {
           color: selected
               ? const Color(0xFFAC5DED)
               : (isDark
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.04)),
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.04)),
           borderRadius: BorderRadius.circular(15),
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFAC5DED).withOpacity(0.3),
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
                     blurRadius: 8,
                   ),
                 ]
@@ -698,7 +711,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFAC5DED).withOpacity(0.4),
+            color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

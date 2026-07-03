@@ -2,10 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../../providers/habit_provider.dart';
+import 'home_screen.dart';
 import '../widgets/shared/glass_background.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -159,15 +159,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       )
                     : LinearGradient(
                         colors: [
-                          Colors.white.withOpacity(0.1),
-                          Colors.white.withOpacity(0.1),
+                          Colors.white.withValues(alpha: 0.1),
+                          Colors.white.withValues(alpha: 0.1),
                         ],
                       ),
                 borderRadius: BorderRadius.circular(3),
                 boxShadow: isActive
                     ? [
                         BoxShadow(
-                          color: const Color(0xFFAC5DED).withOpacity(0.4),
+                          color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
                           blurRadius: 12,
                           spreadRadius: 1,
                         ),
@@ -217,7 +217,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       data['subtitle'],
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 14,
                         fontFamily: 'monospace',
                         height: 1.5,
@@ -244,12 +244,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.15 * _glowController.value),
+                color: color.withValues(alpha: 0.15 * _glowController.value),
                 blurRadius: 50,
                 spreadRadius: 20,
               ),
             ],
-            border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+            border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
           ),
           child: Center(child: FaIcon(icon, size: 60, color: color)),
         );
@@ -349,7 +349,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               fontSize: 11,
               fontWeight: FontWeight.bold,
               letterSpacing: 2,
@@ -383,19 +383,19 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         height: 100,
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFFAC5DED).withOpacity(0.15)
-              : Colors.white.withOpacity(0.03),
+              ? const Color(0xFFAC5DED).withValues(alpha: 0.15)
+              : Colors.white.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFFAC5DED)
-                : Colors.white.withOpacity(0.1),
+                : Colors.white.withValues(alpha: 0.1),
             width: 1.5,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFAC5DED).withOpacity(0.2),
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.2),
                     blurRadius: 15,
                     spreadRadius: 2,
                   ),
@@ -413,6 +413,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             const SizedBox(height: 10),
             Text(
               label.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.white38,
                 fontSize: 10,
@@ -470,6 +472,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             age: int.tryParse(_ageController.text) ?? 18,
             persona: _selectedPersona,
           );
+          if (!mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (route) => false,
+          );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -488,18 +496,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             colors: isValid
                 ? [const Color(0xFFAC5DED), const Color(0xFF7B61FF)]
                 : [
-                    Colors.white.withOpacity(0.08),
-                    Colors.white.withOpacity(0.04),
+                    Colors.white.withValues(alpha: 0.08),
+                    Colors.white.withValues(alpha: 0.04),
                   ],
           ),
           border: Border.all(
-            color: isValid ? Colors.transparent : Colors.white.withOpacity(0.1),
+            color: isValid ? Colors.transparent : Colors.white.withValues(alpha: 0.1),
             width: 1.0,
           ),
           boxShadow: isValid
               ? [
                   BoxShadow(
-                    color: const Color(0xFFAC5DED).withOpacity(0.4),
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
                     blurRadius: 25,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
@@ -514,7 +522,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             Text(
               "ACTIVATE CORE",
               style: TextStyle(
-                color: isValid ? Colors.white : Colors.white.withOpacity(0.2),
+                color: isValid ? Colors.white : Colors.white.withValues(alpha: 0.2),
                 fontWeight: FontWeight.w900,
                 letterSpacing: 2,
                 fontSize: 13,
@@ -525,7 +533,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               Icons.bolt_rounded,
               color: isValid
                   ? const Color(0xFF00E5FF)
-                  : Colors.white.withOpacity(0.2),
+                  : Colors.white.withValues(alpha: 0.2),
               size: 20,
             ),
           ],
@@ -546,9 +554,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.07),
+            color: Colors.white.withValues(alpha: 0.07),
             borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: borderColor.withOpacity(0.3), width: 1.5),
+            border: Border.all(color: borderColor.withValues(alpha: 0.3), width: 1.5),
           ),
           child: child,
         ),
@@ -564,7 +572,7 @@ class GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.2)
+      ..color = color.withValues(alpha: 0.2)
       ..strokeWidth = 0.5;
 
     for (double i = 0; i <= size.width; i += 40) {

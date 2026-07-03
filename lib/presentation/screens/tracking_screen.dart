@@ -134,8 +134,8 @@ class _TrackingScreenState extends State<TrackingScreen>
       border: 2,
       linearGradient: LinearGradient(
         colors: [
-          const Color(0xFFAC5DED).withOpacity(0.2),
-          Colors.white.withOpacity(0.05),
+          const Color(0xFFAC5DED).withValues(alpha: 0.2),
+          Colors.white.withValues(alpha: 0.05),
         ],
       ),
       borderGradient: const LinearGradient(
@@ -193,7 +193,7 @@ class _TrackingScreenState extends State<TrackingScreen>
                   decoration: BoxDecoration(
                     color: isDark
                         ? Colors.white10
-                        : Colors.black.withOpacity(0.05),
+                        : Colors.black.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Text(
@@ -226,13 +226,13 @@ class _TrackingScreenState extends State<TrackingScreen>
                   icon: Icons.stop_rounded,
                   label: "Stop",
                   onTap: () => provider.stopTimer(),
-                  color: Colors.redAccent.withOpacity(0.8),
+                  color: Colors.redAccent.withValues(alpha: 0.8),
                 ),
                 _buildSessionAction(
                   icon: Icons.add_rounded,
                   label: "+1m",
                   onTap: () => provider.addSeconds(60),
-                  color: textColor.withOpacity(0.1),
+                  color: textColor.withValues(alpha: 0.1),
                   iconColor: textColor,
                 ),
               ],
@@ -326,17 +326,17 @@ class _TrackingScreenState extends State<TrackingScreen>
         linearGradient: LinearGradient(
           colors: [
             isDark
-                ? Colors.white.withOpacity(0.1)
-                : Colors.white.withOpacity(0.2),
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.2),
             isDark
-                ? Colors.white.withOpacity(0.05)
-                : Colors.white.withOpacity(0.1),
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white.withValues(alpha: 0.1),
           ],
         ),
         borderGradient: LinearGradient(
           colors: [
-            const Color(0xFFAC5DED).withOpacity(0.3),
-            Colors.white.withOpacity(0.2),
+            const Color(0xFFAC5DED).withValues(alpha: 0.3),
+            Colors.white.withValues(alpha: 0.2),
           ],
         ),
         child: Row(

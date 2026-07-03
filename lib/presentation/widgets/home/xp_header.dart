@@ -178,7 +178,7 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildUserText(textColor, subTextColor),
+                Expanded(child: _buildUserText(textColor, subTextColor)),
                 GestureDetector(
                   onTap: _triggerLightning,
                   child: _buildLevelBadge(isDark),
@@ -204,6 +204,8 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
       children: [
         Text(
           _getGreeting(widget.userName),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: subTextColor,
             fontSize: 10,
@@ -214,6 +216,8 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
         const SizedBox(height: 6),
         Text(
           "Level ${widget.level}",
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: textColor,
             fontSize: 34,

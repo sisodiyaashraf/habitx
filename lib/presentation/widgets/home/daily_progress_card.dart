@@ -55,17 +55,17 @@ class _DailyProgressCardState extends State<DailyProgressCard>
         end: Alignment.bottomRight,
         colors: [
           isDark
-              ? Colors.white.withOpacity(0.12)
-              : Colors.white.withOpacity(0.2),
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.2),
           isDark
-              ? Colors.white.withOpacity(0.02)
-              : Colors.white.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.02)
+              : Colors.white.withValues(alpha: 0.05),
         ],
       ),
       borderGradient: LinearGradient(
         colors: [
-          const Color(0xFFAC5DED).withOpacity(0.6),
-          const Color(0xFF7B61FF).withOpacity(0.1),
+          const Color(0xFFAC5DED).withValues(alpha: 0.6),
+          const Color(0xFF7B61FF).withValues(alpha: 0.1),
         ],
       ),
       child: Stack(
@@ -78,7 +78,7 @@ class _DailyProgressCardState extends State<DailyProgressCard>
               child: FaIcon(
                 FontAwesomeIcons.trophy,
                 size: 100,
-                color: const Color(0xFFAC5DED).withOpacity(0.05),
+                color: const Color(0xFFAC5DED).withValues(alpha: 0.05),
               ),
             ),
           Padding(
@@ -142,8 +142,8 @@ class _DailyProgressCardState extends State<DailyProgressCard>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFAC5DED).withOpacity(
-                      progress > 0
+                    color: const Color(0xFFAC5DED).withValues(
+                      alpha: progress > 0
                           ? (0.2 + (_glowController.value * 0.15))
                           : 0.0,
                     ),
@@ -160,8 +160,8 @@ class _DailyProgressCardState extends State<DailyProgressCard>
                 value: progress,
                 strokeWidth: 10,
                 backgroundColor: isDark
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.05),
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.05),
                 color: const Color(0xFFAC5DED),
                 strokeCap: StrokeCap.round,
               ),
@@ -213,22 +213,26 @@ class _DailyProgressCardState extends State<DailyProgressCard>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: accent.withOpacity(0.12),
+        color: accent.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accent.withOpacity(0.2)),
+        border: Border.all(color: accent.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           FaIcon(icon, color: accent, size: 10),
           const SizedBox(width: 8),
-          Text(
-            message,
-            style: TextStyle(
-              color: accent,
-              fontSize: 9,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.8,
+          Flexible(
+            child: Text(
+              message,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: accent,
+                fontSize: 9,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.8,
+              ),
             ),
           ),
         ],

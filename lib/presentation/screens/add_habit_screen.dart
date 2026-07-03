@@ -56,10 +56,10 @@ class AddHabitScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFFAC5DED).withOpacity(0.3),
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
                   ),
                 ),
                 child: const Icon(

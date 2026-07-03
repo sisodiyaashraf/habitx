@@ -150,8 +150,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 border: 2,
                 linearGradient: LinearGradient(
                   colors: [
-                    Colors.white.withOpacity(0.2),
-                    Colors.white.withOpacity(0.1),
+                    Colors.white.withValues(alpha: 0.2),
+                    Colors.white.withValues(alpha: 0.1),
                   ],
                 ),
                 borderGradient: const LinearGradient(
@@ -197,7 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ),
                                 value: provider.isDailyMotivationEnabled,
-                                activeColor: const Color(0xFFAC5DED),
+                                activeThumbColor: const Color(0xFFAC5DED),
                                 onChanged: (val) {
                                   provider.toggleDailyMotivation(val);
                                   if (val) {
@@ -255,8 +255,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             border: 2,
             linearGradient: LinearGradient(
               colors: [
-                Colors.white.withOpacity(0.2),
-                Colors.white.withOpacity(0.1),
+                Colors.white.withValues(alpha: 0.2),
+                Colors.white.withValues(alpha: 0.1),
               ],
             ),
             borderGradient: const LinearGradient(
@@ -373,8 +373,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           border: 2,
           linearGradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.2),
-              Colors.white.withOpacity(0.1),
+              Colors.white.withValues(alpha: 0.2),
+              Colors.white.withValues(alpha: 0.1),
             ],
           ),
           borderGradient: const LinearGradient(
@@ -449,6 +449,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
       child: Text(
         persona,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: isSelected ? Colors.white : Colors.black,
           fontWeight: FontWeight.bold,
@@ -471,8 +473,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           border: 2,
           linearGradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.2),
-              Colors.white.withOpacity(0.1),
+              Colors.white.withValues(alpha: 0.2),
+              Colors.white.withValues(alpha: 0.1),
             ],
           ),
           borderGradient: const LinearGradient(
@@ -589,14 +591,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       alignment: Alignment.center,
       border: 1.5,
       linearGradient: LinearGradient(
-        colors: [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.1)],
+        colors: [Colors.white.withValues(alpha: 0.2), Colors.white.withValues(alpha: 0.1)],
       ),
       borderGradient: LinearGradient(
-        colors: [Colors.white.withOpacity(0.2), Colors.transparent],
+        colors: [Colors.white.withValues(alpha: 0.2), Colors.transparent],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: tiles,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: tiles,
+        ),
       ),
     );
   }
@@ -614,10 +619,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: Icon(icon, color: const Color(0xFFAC5DED)),
         title: Text(
           title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
         subtitle: Text(
           subtitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 12, color: Colors.black45),
         ),
         trailing: const Icon(
@@ -641,16 +650,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: Icon(icon, color: const Color(0xFFAC5DED)),
         title: Text(
           title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
         subtitle: Text(
           subtitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 12, color: Colors.black45),
         ),
         trailing: Switch.adaptive(
           value: value,
           onChanged: onChanged,
-          activeColor: const Color(0xFFAC5DED),
+          activeThumbColor: const Color(0xFFAC5DED),
         ),
       ),
     );

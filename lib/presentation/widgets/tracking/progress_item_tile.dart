@@ -69,6 +69,8 @@ class ProgressItemTile extends StatelessWidget {
                   children: [
                     Text(
                       title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: textColor, // Onyx Visibility
                         fontWeight: FontWeight.w800,
@@ -79,6 +81,8 @@ class ProgressItemTile extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       progress,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: subTextColor, // Clear subtext contrast
                         fontSize: 13,
