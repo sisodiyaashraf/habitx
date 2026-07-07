@@ -165,17 +165,15 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
               ),
             ),
             Expanded(
-              child: Center(
-                child: _selectedDays == 7
-                    ? _build7DayGridView(dataMap, startDate, endDate, isDark)
-                    : _buildMultiDayGridView(
-                        dataMap,
-                        startDate,
-                        endDate,
-                        isDark,
-                        _selectedDays,
-                      ),
-              ),
+              child: _selectedDays == 7
+                  ? _build7DayGridView(dataMap, startDate, endDate, isDark)
+                  : _buildMultiDayGridView(
+                      dataMap,
+                      startDate,
+                      endDate,
+                      isDark,
+                      _selectedDays,
+                    ),
             ),
 
             const SizedBox(height: 6),
@@ -224,47 +222,52 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: options.map((days) {
         bool isSelected = _selectedDays == days;
-        return GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            setState(() {
-              _selectedDays = days;
-              _selectedCellDate = null;
-            });
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFFAC5DED)
-                  : (isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.black.withValues(alpha: 0.04)),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
+        return Expanded(
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              setState(() {
+                _selectedDays = days;
+                _selectedCellDate = null;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
                 color: isSelected
                     ? const Color(0xFFAC5DED)
-                    : Colors.transparent,
+                    : (isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.04)),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected
+                      ? const Color(0xFFAC5DED)
+                      : Colors.transparent,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
+                          blurRadius: 6,
+                        ),
+                      ]
+                    : [],
               ),
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
-                        blurRadius: 6,
-                      ),
-                    ]
-                  : [],
-            ),
-            child: Text(
-              "${days}D",
-              style: TextStyle(
-                color: isSelected
-                    ? Colors.white
-                    : (isDark ? Colors.white60 : Colors.black54),
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
+              child: Text(
+                "${days}DAYS",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? Colors.white60 : Colors.black54),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ),
@@ -285,66 +288,89 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 14,
-          mainAxisSpacing: 14,
-          childAspectRatio: 1.3,
-        ),
-        itemCount: daysList.length,
-        itemBuilder: (context, index) {
-          final date = daysList[index];
-          final normalizedDate = DateTime(date.year, date.month, date.day);
-          final value = dataMap[normalizedDate] ?? 0;
-          final isSelected =
-              _selectedCellDate != null &&
-              _selectedCellDate!.year == date.year &&
-              _selectedCellDate!.month == date.month &&
-              _selectedCellDate!.day == date.day;
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final double availableWidth = constraints.maxWidth;
+          final double availableHeight = constraints.maxHeight;
+          const double spacing = 14.0;
 
-          return GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              setState(() {
-                _selectedCellDate = normalizedDate;
-                _selectedCellIntensity = value;
-              });
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOutCubic,
-              decoration: _getCellDecoration(value, isDark, isSelected),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    DateFormat('EEE').format(date).toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.8,
-                      color: value > 0
-                          ? Colors.white70
-                          : (isDark ? Colors.white38 : Colors.black38),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${date.day}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      color: value > 0
-                          ? Colors.white
-                          : (isDark ? Colors.white : Colors.black87),
-                    ),
-                  ),
-                ],
-              ),
+          // 3 columns layout
+          final double cellWidth = (availableWidth - (spacing * 2)) / 3;
+
+          // 3 rows layout (7 items)
+          final double cellHeight = (availableHeight - (spacing * 2)) / 3;
+
+          // Keep aspect ratio beautiful and proportional (clamp between 0.8 and 1.8)
+          double aspectRatio = cellWidth / cellHeight;
+          if (aspectRatio.isNaN || aspectRatio.isInfinite) {
+            aspectRatio = 1.3;
+          } else {
+            aspectRatio = aspectRatio.clamp(0.8, 1.8);
+          }
+
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
+              childAspectRatio: aspectRatio,
             ),
+            itemCount: daysList.length,
+            itemBuilder: (context, index) {
+              final date = daysList[index];
+              final normalizedDate = DateTime(date.year, date.month, date.day);
+              final value = dataMap[normalizedDate] ?? 0;
+              final isSelected =
+                  _selectedCellDate != null &&
+                  _selectedCellDate!.year == date.year &&
+                  _selectedCellDate!.month == date.month &&
+                  _selectedCellDate!.day == date.day;
+
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  setState(() {
+                    _selectedCellDate = normalizedDate;
+                    _selectedCellIntensity = value;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  decoration: _getCellDecoration(value, isDark, isSelected),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        DateFormat('EEE').format(date).toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                          color: value > 0
+                              ? Colors.white70
+                              : (isDark ? Colors.white38 : Colors.black38),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${date.day}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: value > 0
+                              ? Colors.white
+                              : (isDark ? Colors.white : Colors.black87),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
@@ -393,55 +419,81 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
             ),
           ),
           Expanded(
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const BouncingScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: daysCount > 60 ? 6 : 8,
-                mainAxisSpacing: daysCount > 60 ? 6 : 8,
-                childAspectRatio: 1.0,
-              ),
-              itemCount: daysList.length,
-              itemBuilder: (context, index) {
-                final date = daysList[index];
-                final normalizedDate = DateTime(
-                  date.year,
-                  date.month,
-                  date.day,
-                );
-                final value = dataMap[normalizedDate] ?? 0;
-                final isSelected =
-                    _selectedCellDate != null &&
-                    _selectedCellDate!.year == date.year &&
-                    _selectedCellDate!.month == date.month &&
-                    _selectedCellDate!.day == date.day;
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double availableWidth = constraints.maxWidth;
+                final double availableHeight = constraints.maxHeight;
+                final double spacing = daysCount > 60 ? 6.0 : 8.0;
 
-                return GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    setState(() {
-                      _selectedCellDate = normalizedDate;
-                      _selectedCellIntensity = value;
-                    });
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutCubic,
-                    decoration: _getCellDecoration(value, isDark, isSelected),
-                    child: Center(
-                      child: Text(
-                        '${date.day}',
-                        style: TextStyle(
-                          fontSize: daysCount > 60 ? 10 : 12,
-                          fontWeight: FontWeight.w900,
-                          color: value > 0
-                              ? Colors.white
-                              : (isDark ? Colors.white38 : Colors.black38),
+                // 7 columns layout
+                final double cellWidth = (availableWidth - (spacing * 6)) / 7;
+
+                // Row counts
+                final int rowCount = (daysCount / 7.0).ceil();
+
+                // Compute cell height to fill available height exactly
+                final double cellHeight = (availableHeight - (spacing * (rowCount - 1))) / rowCount;
+
+                // Restrict extreme scale stretches: keep aspect ratio between 0.65 (tall) and 1.5 (flat)
+                double aspectRatio = cellWidth / cellHeight;
+                if (aspectRatio.isNaN || aspectRatio.isInfinite) {
+                  aspectRatio = 1.0;
+                } else {
+                  aspectRatio = aspectRatio.clamp(0.65, 1.5);
+                }
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  physics: const BouncingScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: spacing,
+                    mainAxisSpacing: spacing,
+                    childAspectRatio: aspectRatio,
+                  ),
+                  itemCount: daysList.length,
+                  itemBuilder: (context, index) {
+                    final date = daysList[index];
+                    final normalizedDate = DateTime(
+                      date.year,
+                      date.month,
+                      date.day,
+                    );
+                    final value = dataMap[normalizedDate] ?? 0;
+                    final isSelected =
+                        _selectedCellDate != null &&
+                        _selectedCellDate!.year == date.year &&
+                        _selectedCellDate!.month == date.month &&
+                        _selectedCellDate!.day == date.day;
+
+                    return GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        setState(() {
+                          _selectedCellDate = normalizedDate;
+                          _selectedCellIntensity = value;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutCubic,
+                        decoration: _getCellDecoration(value, isDark, isSelected),
+                        child: Center(
+                          child: Text(
+                            '${date.day}',
+                            style: TextStyle(
+                              fontSize: daysCount > 60 ? 10 : 12,
+                              fontWeight: FontWeight.w900,
+                              color: value > 0
+                                  ? Colors.white
+                                  : (isDark ? Colors.white38 : Colors.black38),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 );
               },
             ),

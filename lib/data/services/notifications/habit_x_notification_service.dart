@@ -145,11 +145,12 @@ class HabitXNotificationService {
   Future<void> scheduleHabitReminder(
     String habitId,
     String name,
-    DateTime targetTime,
-  ) async {
+    DateTime targetTime, {
+    DateTime? createdAt,
+  }) async {
     if (!_isInitialized) await init();
 
-    final int baseId = (habitId.hashCode.abs() % 100000);
+    final int baseId = (100000 + (habitId.hashCode.abs() % 100000));
     final String persona =
         await StorageService().getUserPersona() ?? "Professional";
 
@@ -158,12 +159,16 @@ class HabitXNotificationService {
       targetTime.minute,
     );
 
+    final String createdTimeStr = createdAt != null
+        ? " (Created: ${createdAt.year}-${createdAt.month.toString().padLeft(2, '0')}-${createdAt.day.toString().padLeft(2, '0')} ${createdAt.hour.toString().padLeft(2, '0')}:${createdAt.minute.toString().padLeft(2, '0')})"
+        : "";
+
     try {
       // 2. The Main Execution with specific habit task details
       await _notifications.zonedSchedule(
         id: baseId,
         title: "Habit Reminder: $name 🚀",
-        body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
+        body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}$createdTimeStr",
         scheduledDate: scheduledDate,
         notificationDetails: _missionDetails(),
         androidScheduleMode:
@@ -177,7 +182,7 @@ class HabitXNotificationService {
         await _notifications.zonedSchedule(
           id: baseId,
           title: "Habit Reminder: $name 🚀",
-          body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
+          body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}$createdTimeStr",
           scheduledDate: scheduledDate,
           notificationDetails: _missionDetails(),
           androidScheduleMode:
@@ -192,45 +197,33 @@ class HabitXNotificationService {
   }
 
   Future<void> scheduleDailyBriefings() async {
+    await cancelDailyBriefings();
+
     final String persona =
         await StorageService().getUserPersona() ?? "Professional";
     final briefings = [
-      {'id': 7001, 'h': 8, 'm': 30, 't': 'Morning Briefing'},
-      {'id': 7002, 'h': 13, 'm': 0, 't': 'Mid-Day Audit'},
-      {'id': 7003, 'h': 18, 'm': 0, 't': 'Evening Push'},
-      {'id': 7004, 'h': 21, 'm': 30, 't': 'Nightly Reflection'},
+      {'baseId': 7000, 'h': 9, 'm': 0, 't': 'Morning Motivation'},
+      {'baseId': 7010, 'h': 18, 'm': 0, 't': 'Evening Motivation'},
     ];
 
     for (var b in briefings) {
-      final scheduledDate = _nextInstanceOfTime(b['h'] as int, b['m'] as int);
-      try {
-        await _notifications.zonedSchedule(
-          id: b['id'] as int,
-          title: "SHELBY AI: ${b['t']}",
-          body: NotificationMessages.getRandomPrompt(persona),
-          scheduledDate: scheduledDate,
-          notificationDetails: NotificationDetails(
-            android: AndroidNotificationDetails(
-              _briefingChannelId,
-              'SHELBY AI Briefing',
-              importance: Importance.high,
-              priority: Priority.high,
-              icon: 'ic_notif',
-            ),
-          ),
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          matchDateTimeComponents: DateTimeComponents.time,
-        );
-        debugPrint("HabitX: Armed exact briefing '${b['t']}' at $scheduledDate");
-      } catch (e) {
-        debugPrint("HabitX: Exact briefing scheduling failed for '${b['t']}', trying inexact fallback: $e");
+      final int baseId = b['baseId'] as int;
+      final int hour = b['h'] as int;
+      final int minute = b['m'] as int;
+      final String titleLabel = b['t'] as String;
+
+      for (int day = 1; day <= 7; day++) {
+        final int id = baseId + day;
+        final scheduledDate = _nextInstanceOfWeekdayTime(day, hour, minute);
+        final String bodyText = NotificationMessages.getPromptForDay(persona, day);
+
         try {
           await _notifications.zonedSchedule(
-            id: b['id'] as int,
-            title: "SHELBY AI: ${b['t']}",
-            body: NotificationMessages.getRandomPrompt(persona),
+            id: id,
+            title: "SHELBY AI: $titleLabel",
+            body: bodyText,
             scheduledDate: scheduledDate,
-            notificationDetails: NotificationDetails(
+            notificationDetails: const NotificationDetails(
               android: AndroidNotificationDetails(
                 _briefingChannelId,
                 'SHELBY AI Briefing',
@@ -239,12 +232,34 @@ class HabitXNotificationService {
                 icon: 'ic_notif',
               ),
             ),
-            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-            matchDateTimeComponents: DateTimeComponents.time,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
           );
-          debugPrint("HabitX: Armed inexact briefing '${b['t']}' at $scheduledDate");
-        } catch (innerErr) {
-          debugPrint("HabitX Critical: Failed to schedule fallback briefing for '${b['t']}': $innerErr");
+          debugPrint("HabitX: Armed exact weekly briefing '$titleLabel' for weekday $day at $scheduledDate");
+        } catch (e) {
+          debugPrint("HabitX: Exact weekly briefing scheduling failed for weekday $day, trying inexact fallback: $e");
+          try {
+            await _notifications.zonedSchedule(
+              id: id,
+              title: "SHELBY AI: $titleLabel",
+              body: bodyText,
+              scheduledDate: scheduledDate,
+              notificationDetails: const NotificationDetails(
+                android: AndroidNotificationDetails(
+                  _briefingChannelId,
+                  'SHELBY AI Briefing',
+                  importance: Importance.high,
+                  priority: Priority.high,
+                  icon: 'ic_notif',
+                ),
+              ),
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+              matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+            );
+            debugPrint("HabitX: Armed inexact weekly briefing '$titleLabel' for weekday $day at $scheduledDate");
+          } catch (innerErr) {
+            debugPrint("HabitX Critical: Failed to schedule fallback weekly briefing for weekday $day: $innerErr");
+          }
         }
       }
     }
@@ -292,6 +307,14 @@ class HabitXNotificationService {
     return scheduledDate;
   }
 
+  tz.TZDateTime _nextInstanceOfWeekdayTime(int weekday, int hour, int minute) {
+    tz.TZDateTime scheduledDate = _nextInstanceOfTime(hour, minute);
+    while (scheduledDate.weekday != weekday) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+    return scheduledDate;
+  }
+
   Future<void> showInstantNotification({
     required String title,
     required String body,
@@ -307,15 +330,21 @@ class HabitXNotificationService {
   }
 
   Future<void> cancelReminder(String habitId) async {
-    final int baseId = (habitId.hashCode.abs() % 100000);
+    final int baseId = (100000 + (habitId.hashCode.abs() % 100000));
     await _notifications.cancel(id: baseId);
     await _notifications.cancel(id: baseId + 10);
   }
 
   Future<void> cancelDailyBriefings() async {
-    final briefingIds = [7001, 7002, 7003, 7004];
-    for (var id in briefingIds) {
+    // Cancel old ids (7001 to 7004)
+    final legacyIds = [7001, 7002, 7003, 7004];
+    for (var id in legacyIds) {
       await _notifications.cancel(id: id);
+    }
+    // Cancel weekly day of week ids (Morning: 7001 to 7007, Evening: 7011 to 7017)
+    for (int day = 1; day <= 7; day++) {
+      await _notifications.cancel(id: 7000 + day);
+      await _notifications.cancel(id: 7010 + day);
     }
     debugPrint("HabitX: Daily Briefings cancelled.");
   }

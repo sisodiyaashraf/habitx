@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -32,6 +33,8 @@ class _AddHabitFormState extends State<AddHabitForm> {
       {"name": "Reading", "icon": FontAwesomeIcons.bookOpen},
       {"name": "Gym", "icon": FontAwesomeIcons.dumbbell},
       {"name": "Meditation", "icon": FontAwesomeIcons.brain},
+      {"name": "Running", "icon": FontAwesomeIcons.personRunning},
+      {"name": "Yoga", "icon": FontAwesomeIcons.spa},
     ],
     "Health": [
       {"name": "Drink Water", "icon": FontAwesomeIcons.droplet},
@@ -39,24 +42,38 @@ class _AddHabitFormState extends State<AddHabitForm> {
       {"name": "Healthy Meal", "icon": FontAwesomeIcons.appleWhole},
       {"name": "Skin Care", "icon": FontAwesomeIcons.faceGrinSquint},
       {"name": "Bath/Shower", "icon": FontAwesomeIcons.bath},
+      {"name": "Sleep Well", "icon": FontAwesomeIcons.moon},
+      {"name": "No Sugar", "icon": FontAwesomeIcons.ban},
     ],
     "Productivity": [
       {"name": "Deep Work", "icon": FontAwesomeIcons.laptopCode},
       {"name": "Journaling", "icon": FontAwesomeIcons.penNib},
       {"name": "Planning", "icon": FontAwesomeIcons.calendarCheck},
       {"name": "Learning", "icon": FontAwesomeIcons.graduationCap},
+      {"name": "Inbox Zero", "icon": FontAwesomeIcons.inbox},
+      {"name": "Review Day", "icon": FontAwesomeIcons.clipboardCheck},
     ],
     "Self-Care": [
       {"name": "Stretching", "icon": FontAwesomeIcons.childReaching},
       {"name": "Nap", "icon": FontAwesomeIcons.bed},
       {"name": "Music", "icon": FontAwesomeIcons.music},
       {"name": "Prayer", "icon": FontAwesomeIcons.handsPraying},
+      {"name": "Quiet Time", "icon": FontAwesomeIcons.book},
+      {"name": "Nature Walk", "icon": FontAwesomeIcons.tree},
     ],
     "Skills": [
       {"name": "Design", "icon": FontAwesomeIcons.palette},
       {"name": "Writing", "icon": FontAwesomeIcons.pen},
       {"name": "Language", "icon": FontAwesomeIcons.language},
       {"name": "Gaming", "icon": FontAwesomeIcons.gamepad},
+      {"name": "Speaking", "icon": FontAwesomeIcons.microphone},
+      {"name": "Marketing", "icon": FontAwesomeIcons.chartLine},
+    ],
+    "Finance": [
+      {"name": "Save Money", "icon": FontAwesomeIcons.piggyBank},
+      {"name": "Track Spend", "icon": FontAwesomeIcons.wallet},
+      {"name": "Investments", "icon": FontAwesomeIcons.chartPie},
+      {"name": "Budgeting", "icon": FontAwesomeIcons.moneyBillWave},
     ],
   };
 
@@ -237,7 +254,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         _currentIcon,
                         isDark,
                         textColor,
-                        isNumber: true,
+                        isNumber: false,
                       ),
                       const SizedBox(height: 20),
                       _buildDateTimeRow(context, isDark, textColor),
@@ -288,114 +305,101 @@ class _AddHabitFormState extends State<AddHabitForm> {
   }
 
   Widget _buildCategorySelector(bool isDark) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: _habitLibrary.keys.map((cat) {
-          bool isSelected = _selectedCategory == cat;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedCategory = cat),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.only(right: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _habitLibrary.keys.map((cat) {
+        bool isSelected = _selectedCategory == cat;
+        return GestureDetector(
+          onTap: () => setState(() => _selectedCategory = cat),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? const Color(0xFFAC5DED)
+                  : (isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.03)),
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
+                        blurRadius: 10,
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Text(
+              cat.toUpperCase(),
+              style: TextStyle(
                 color: isSelected
-                    ? const Color(0xFFAC5DED)
-                    : (isDark
-                          ? Colors.white.withValues(alpha: 0.05)
-                          : Colors.black.withValues(alpha: 0.03)),
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
-                          blurRadius: 10,
-                        ),
-                      ]
-                    : [],
-              ),
-              child: Text(
-                cat.toUpperCase(),
-                style: TextStyle(
-                  color: isSelected
-                      ? Colors.white
-                      : (isDark ? Colors.white54 : Colors.black54),
-                  fontSize: 9,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.2,
-                ),
+                    ? Colors.white
+                    : (isDark ? Colors.white54 : Colors.black54),
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.2,
               ),
             ),
-          );
-        }).toList(),
-      ),
+          ),
+        );
+      }).toList(),
     );
   }
 
   Widget _buildPresetGrid(bool isDark, Color textColor) {
     final presets = _habitLibrary[_selectedCategory]!;
-    return SizedBox(
-      height: 120,
-      child: GridView.builder(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisExtent: 150,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemCount: presets.length,
-        itemBuilder: (context, index) {
-          final item = presets[index];
-          bool isPicked = _nameController.text == item['name'];
-          return GestureDetector(
-            onTap: () => _selectPreset(item['name'], item['icon']),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              decoration: BoxDecoration(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: presets.map((item) {
+        bool isPicked = _nameController.text == item['name'];
+        return GestureDetector(
+          onTap: () => _selectPreset(item['name'], item['icon']),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isPicked
+                  ? const Color(0xFFAC5DED).withValues(alpha: 0.15)
+                  : (isDark
+                        ? Colors.white.withValues(alpha: 0.03)
+                        : Colors.black.withValues(alpha: 0.02)),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
                 color: isPicked
-                    ? const Color(0xFFAC5DED).withValues(alpha: 0.15)
-                    : (isDark
-                          ? Colors.white.withValues(alpha: 0.03)
-                          : Colors.black.withValues(alpha: 0.02)),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: isPicked
-                      ? const Color(0xFFAC5DED)
-                      : Colors.transparent,
-                  width: 1.5,
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FaIcon(
-                    item['icon'],
-                    size: 14,
-                    color: isPicked
-                        ? const Color(0xFFAC5DED)
-                        : (isDark ? Colors.white38 : Colors.black38),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    item['name'],
-                    style: TextStyle(
-                      color: isPicked
-                          ? const Color(0xFFAC5DED)
-                          : (isDark ? Colors.white70 : Colors.black87),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
+                    ? const Color(0xFFAC5DED)
+                    : Colors.transparent,
+                width: 1.5,
               ),
             ),
-          );
-        },
-      ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FaIcon(
+                  item['icon'],
+                  size: 12,
+                  color: isPicked
+                      ? const Color(0xFFAC5DED)
+                      : (isDark ? Colors.white38 : Colors.black38),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  item['name'],
+                  style: TextStyle(
+                    color: isPicked
+                        ? const Color(0xFFAC5DED)
+                        : (isDark ? Colors.white70 : Colors.black87),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -422,6 +426,10 @@ class _AddHabitFormState extends State<AddHabitForm> {
   }) {
     return TextFormField(
       controller: controller,
+      keyboardType: isNumber
+          ? const TextInputType.numberWithOptions(decimal: false, signed: false)
+          : TextInputType.text,
+      inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly] : [],
       style: TextStyle(
         color: textColor,
         fontWeight: FontWeight.w600,

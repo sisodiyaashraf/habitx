@@ -17,7 +17,12 @@ class MockHabitXNotificationService extends HabitXNotificationService {
   Future<void> init() async {}
 
   @override
-  Future<void> scheduleHabitReminder(String habitId, String name, DateTime targetTime) async {
+  Future<void> scheduleHabitReminder(
+    String habitId,
+    String name,
+    DateTime targetTime, {
+    DateTime? createdAt,
+  }) async {
     scheduleReminderCalled = true;
   }
 

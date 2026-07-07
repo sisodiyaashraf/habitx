@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:habitx/presentation/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
@@ -64,13 +65,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildLevelAvatar(provider),
               const SizedBox(height: 24),
 
-              Text(
-                provider.userName.toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -1,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    provider.userName.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1,
+                    ),
+                  ),
                 ),
               ),
               const Text(
@@ -298,7 +307,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           TextField(
                             controller: ageController,
                             textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                             style: const TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
@@ -440,11 +450,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
       onPressed: () {
-        provider.setupUser(
-          name: provider.userName,
-          age: provider.userAge,
-          persona: persona,
-        );
+        provider.updatePersona(persona);
         Navigator.pop(context);
       },
       child: Text(

@@ -151,11 +151,16 @@ class HabitProvider extends ChangeNotifier {
     final activeHabits = _allHabits.where((h) => h.reminderTime != null);
 
     for (var habit in activeHabits) {
-      await notificationService.scheduleHabitReminder(
-        habit.id,
-        habit.name,
-        habit.reminderTime!,
-      );
+      if (habit.isCompleted) {
+        await notificationService.cancelReminder(habit.id);
+      } else {
+        await notificationService.scheduleHabitReminder(
+          habit.id,
+          habit.name,
+          habit.reminderTime!,
+          createdAt: habit.createdAt,
+        );
+      }
     }
 
     if (_isDailyMotivationEnabled) {
@@ -260,6 +265,20 @@ class HabitProvider extends ChangeNotifier {
       age: _userAge,
       persona: _userPersona,
     );
+    _updateHomeWidget();
+    notifyListeners();
+  }
+
+  Future<void> updatePersona(String newPersona) async {
+    _userPersona = newPersona;
+    await _storage.saveUserIdentity(
+      name: _userName,
+      age: _userAge,
+      persona: _userPersona,
+    );
+    if (_isDailyMotivationEnabled) {
+      await HabitXNotificationService().scheduleDailyBriefings();
+    }
     _updateHomeWidget();
     notifyListeners();
   }
@@ -385,11 +404,16 @@ class HabitProvider extends ChangeNotifier {
     _storage.saveHabits(_allHabits);
 
     if (habit.reminderTime != null) {
-      HabitXNotificationService().scheduleHabitReminder(
-        habit.id,
-        habit.name,
-        habit.reminderTime!,
-      );
+      if (habit.isCompleted) {
+        HabitXNotificationService().cancelReminder(habit.id);
+      } else {
+        HabitXNotificationService().scheduleHabitReminder(
+          habit.id,
+          habit.name,
+          habit.reminderTime!,
+          createdAt: habit.createdAt,
+        );
+      }
     }
 
     _updateHomeWidget();
@@ -402,11 +426,12 @@ class HabitProvider extends ChangeNotifier {
       _allHabits[index] = updatedHabit;
       _storage.saveHabits(_allHabits);
 
-      if (updatedHabit.reminderTime != null) {
+      if (updatedHabit.reminderTime != null && !updatedHabit.isCompleted) {
         HabitXNotificationService().scheduleHabitReminder(
           updatedHabit.id,
           updatedHabit.name,
           updatedHabit.reminderTime!,
+          createdAt: updatedHabit.createdAt,
         );
       } else {
         HabitXNotificationService().cancelReminder(updatedHabit.id);
@@ -458,6 +483,15 @@ class HabitProvider extends ChangeNotifier {
       updatedCompletedDates.removeWhere(
         (d) => "${d.year}-${d.month}-${d.day}" == todayStr,
       );
+
+      if (habit.reminderTime != null) {
+        HabitXNotificationService().scheduleHabitReminder(
+          habit.id,
+          habit.name,
+          habit.reminderTime!,
+          createdAt: habit.createdAt,
+        );
+      }
     }
 
     _allHabits[index] = habit.copyWith(

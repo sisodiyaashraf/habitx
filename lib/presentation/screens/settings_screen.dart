@@ -177,8 +177,16 @@ class SettingsScreen extends StatelessWidget {
                     }
                   },
                 ),
+                _settingsTile(
+                  FontAwesomeIcons.circleUser,
+                  "Notification Theme",
+                  "Style: ${provider.userPersona}",
+                  textColor,
+                  subTextColor,
+                  onTap: () => _showNotificationThemeDialog(context, provider),
+                ),
               ],
-              height: 216,
+              height: 288,
               isDark: isDark,
             ),
 
@@ -445,15 +453,6 @@ class SettingsScreen extends StatelessWidget {
               _themeOption(
                 context,
                 themeProvider,
-                ThemeMode.light,
-                Icons.light_mode_rounded,
-                "Light",
-                textColor,
-              ),
-              const SizedBox(width: 8),
-              _themeOption(
-                context,
-                themeProvider,
                 ThemeMode.dark,
                 Icons.dark_mode_rounded,
                 "Dark",
@@ -507,6 +506,116 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showNotificationThemeDialog(
+    BuildContext context,
+    HabitProvider provider,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogTextColor = isDark ? Colors.white : Colors.black;
+    final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
+
+    showDialog(
+      context: context,
+      builder: (context) => Center(
+        child: GlassmorphicContainer(
+          width: MediaQuery.of(context).size.width * 0.85,
+          height: 280,
+          borderRadius: 30,
+          blur: 20,
+          alignment: Alignment.center,
+          border: 2,
+          linearGradient: LinearGradient(
+            colors: [
+              Colors.white.withValues(alpha: 0.2),
+              Colors.white.withValues(alpha: 0.1),
+            ],
+          ),
+          borderGradient: const LinearGradient(
+            colors: [Color(0xFFAC5DED), Colors.white24],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text(
+                    "NOTIFICATION THEME",
+                    style: TextStyle(
+                      color: dialogTextColor,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildThemeOptionBtn(context, provider, "Professional", dialogTextColor),
+                  const SizedBox(height: 10),
+                  _buildThemeOptionBtn(context, provider, "GenZ", dialogTextColor),
+                  const SizedBox(height: 10),
+                  _buildThemeOptionBtn(context, provider, "SHELBY AI", dialogTextColor),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      "CLOSE",
+                      style: TextStyle(color: dialogSubTextColor),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeOptionBtn(
+    BuildContext context,
+    HabitProvider provider,
+    String theme,
+    Color activeTextColor,
+  ) {
+    final String currentPersona = provider.userPersona;
+    bool isSelected = false;
+    if (theme == "SHELBY AI") {
+      isSelected = currentPersona == "SHELBY AI" ||
+          currentPersona.toLowerCase() == "shelby" ||
+          currentPersona.toLowerCase() == "overlord";
+    } else {
+      isSelected = currentPersona.toLowerCase() == theme.toLowerCase();
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected ? const Color(0xFFAC5DED) : Colors.white24,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        ),
+        onPressed: () {
+          String savedTheme = theme;
+          if (theme == "SHELBY AI") {
+            savedTheme = "Overlord";
+          }
+          provider.updatePersona(savedTheme);
+          Navigator.pop(context);
+        },
+        child: Text(
+          theme.toUpperCase(),
+          style: TextStyle(
+            color: isSelected ? Colors.white : activeTextColor,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),

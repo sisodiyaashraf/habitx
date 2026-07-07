@@ -105,13 +105,19 @@ class EmptyHabitState extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Flexible(
-            child: Text(
-              "$displayName, LET'S CRUSH SOME GOALS!",
-              style: const TextStyle(
-                color: Color(0xFFAC5DED),
-                fontWeight: FontWeight.w900,
-                fontSize: 10,
-                letterSpacing: 1.2,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "$displayName, LET'S CRUSH SOME GOALS!",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFFAC5DED),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 10,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
           ),

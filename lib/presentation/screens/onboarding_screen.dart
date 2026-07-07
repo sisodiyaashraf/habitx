@@ -22,7 +22,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   final _ageController = TextEditingController();
 
   int _currentPage = 0;
-  String _selectedPersona = "Professional";
 
   late AnimationController _glowController;
   late AnimationController _typingController;
@@ -293,9 +292,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 const SizedBox(height: 20),
                 _buildInputLabel("USER_AGE"),
                 _buildTextInput(_ageController, "ENTER AGE", isNumber: true),
-                const SizedBox(height: 20),
-                _buildInputLabel("TACTICAL_PERSONA"),
-                _buildPersonaSelector(),
               ],
             ),
           ),
@@ -362,71 +358,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
-  Widget _buildPersonaSelector() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildPersonaOption("Professional", FontAwesomeIcons.userTie),
-        ),
-        const SizedBox(width: 15),
-        Expanded(child: _buildPersonaOption("GenZ", FontAwesomeIcons.bolt)),
-      ],
-    );
-  }
 
-  Widget _buildPersonaOption(String label, dynamic icon) {
-    bool isSelected = _selectedPersona == label;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedPersona = label),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        height: 100,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFFAC5DED).withValues(alpha: 0.15)
-              : Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFFAC5DED)
-                : Colors.white.withValues(alpha: 0.1),
-            width: 1.5,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFFAC5DED).withValues(alpha: 0.2),
-                    blurRadius: 15,
-                    spreadRadius: 2,
-                  ),
-                ]
-              : [],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FaIcon(
-              icon,
-              color: isSelected ? const Color(0xFFAC5DED) : Colors.white24,
-              size: 24,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              label.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white38,
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildBottomControls() {
     return Padding(
@@ -470,7 +402,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           await context.read<HabitProvider>().setupUser(
             name: _nameController.text,
             age: int.tryParse(_ageController.text) ?? 18,
-            persona: _selectedPersona,
+            persona: "Professional",
           );
           if (!mounted) return;
           Navigator.pushAndRemoveUntil(

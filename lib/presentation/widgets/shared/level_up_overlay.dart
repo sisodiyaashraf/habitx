@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'dart:ui';
+import 'package:provider/provider.dart';
+import '../../../providers/habit_provider.dart';
 
 class LevelUpOverlay extends StatelessWidget {
   final int newLevel;
@@ -34,6 +36,9 @@ class LevelUpOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<HabitProvider>();
+    final String displayName = provider.userName.isNotEmpty ? provider.userName : "Builder";
+
     return Stack(
       children: [
         // 1. Full Screen Blur behind the card
@@ -87,7 +92,7 @@ class LevelUpOverlay extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   Text(
-                    "Ashraf, you reached Level $newLevel",
+                    "$displayName, you reached Level $newLevel",
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.black54,

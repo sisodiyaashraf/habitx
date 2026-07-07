@@ -99,11 +99,7 @@ class _TrackingScreenState extends State<TrackingScreen>
                     ),
                   ),
                   child: ProgressItemTile(
-                    title: habit.name,
-                    progress: "${habit.streak} day streak",
-                    icon: habit.isCompleted
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
+                    habit: habit,
                   ),
                 ),
               ),
@@ -125,121 +121,225 @@ class _TrackingScreenState extends State<TrackingScreen>
     final timeStr =
         "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
 
-    return GlassmorphicContainer(
-      width: double.infinity,
-      height: 180, // Increased height for controls
-      borderRadius: 25,
-      blur: 20,
-      alignment: Alignment.center,
-      border: 2,
-      linearGradient: LinearGradient(
-        colors: [
-          const Color(0xFFAC5DED).withValues(alpha: 0.2),
-          Colors.white.withValues(alpha: 0.05),
-        ],
-      ),
-      borderGradient: const LinearGradient(
-        colors: [Color(0xFFAC5DED), Colors.transparent],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    final activeColor = const Color(0xFFAC5DED);
+    final accentColor = const Color(0xFF00E5FF);
+
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final double scale = provider.isTimerRunning
+            ? 1.0 + (_pulseController.value * 0.015)
+            : 1.0;
+
+        return Transform.scale(
+          scale: scale,
+          child: GlassmorphicContainer(
+            width: double.infinity,
+            height: 200,
+            borderRadius: 25,
+            blur: 20,
+            alignment: Alignment.center,
+            border: 2,
+            linearGradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                provider.isTimerRunning
+                    ? activeColor.withValues(alpha: 0.15)
+                    : Colors.white.withValues(alpha: 0.05),
+                isDark ? Colors.black26 : Colors.white.withValues(alpha: 0.1),
+              ],
+            ),
+            borderGradient: LinearGradient(
+              colors: [
+                provider.isTimerRunning ? accentColor : activeColor,
+                Colors.white12,
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 16.0),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
-                          FadeTransition(
-                            opacity: _pulseController,
-                            child: const Icon(
-                              Icons.circle,
-                              color: Colors.redAccent,
-                              size: 8,
-                            ),
-                          ),
+                          provider.isTimerRunning
+                              ? FadeTransition(
+                                  opacity: _pulseController,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.redAccent,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.redAccent,
+                                          blurRadius: 6,
+                                          spreadRadius: 2,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: textColor.withValues(alpha: 0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
                           const SizedBox(width: 8),
                           Text(
-                            "LIVE SESSION",
+                            provider.isTimerRunning
+                                ? "LIVE FOCUS SESSION ACTIVE"
+                                : "STANDBY FOCUS MODE",
                             style: TextStyle(
-                              color: subTextColor,
+                              color: provider.isTimerRunning
+                                  ? activeColor
+                                  : subTextColor,
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
+                              letterSpacing: 1.5,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        provider.isTimerRunning ? "Focusing..." : "Ready",
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: provider.isTimerRunning
+                              ? accentColor.withValues(alpha: 0.15)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: provider.isTimerRunning
+                                ? accentColor.withValues(alpha: 0.3)
+                                : Colors.transparent,
+                          ),
+                        ),
+                        child: Text(
+                          provider.isTimerRunning ? "SYNCING XP" : "OFFLINE",
+                          style: TextStyle(
+                            color: provider.isTimerRunning ? accentColor : subTextColor,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.0,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                  const Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            provider.isTimerRunning ? "NEURAL COGNITION" : "PREPARE MIND",
+                            style: TextStyle(
+                              color: subTextColor,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            provider.isTimerRunning ? "Focusing..." : "Ready to Start",
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.black26
+                              : Colors.black.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: provider.isTimerRunning
+                                ? activeColor.withValues(alpha: 0.4)
+                                : Colors.white10,
+                          ),
+                          boxShadow: provider.isTimerRunning
+                              ? [
+                                  BoxShadow(
+                                    color: activeColor.withValues(alpha: 0.15),
+                                    blurRadius: 12,
+                                    spreadRadius: 2,
+                                  )
+                                ]
+                              : [],
+                        ),
+                        child: Text(
+                          timeStr,
+                          style: TextStyle(
+                            color: provider.isTimerRunning ? accentColor : activeColor,
+                            fontSize: 30,
+                            fontFamily: 'Courier',
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
+                            shadows: provider.isTimerRunning
+                                ? [
+                                    Shadow(
+                                      color: accentColor.withValues(alpha: 0.6),
+                                      blurRadius: 8,
+                                    )
+                                  ]
+                                : [],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white10
-                        : Colors.black.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(15),
+                  const Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildSessionAction(
+                        icon: provider.isTimerRunning
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        label: provider.isTimerRunning ? "PAUSE" : "RESUME",
+                        onTap: () => provider.toggleTimer(10),
+                        color: activeColor,
+                        isDark: isDark,
+                      ),
+                      _buildSessionAction(
+                        icon: Icons.stop_rounded,
+                        label: "STOP",
+                        onTap: () => provider.stopTimer(),
+                        color: Colors.redAccent.withValues(alpha: 0.8),
+                        isDark: isDark,
+                      ),
+                      _buildSessionAction(
+                        icon: Icons.add_rounded,
+                        label: "+1 MIN",
+                        onTap: () => provider.addSeconds(60),
+                        color: const Color(0xFF00E5FF),
+                        iconColor: Colors.black87,
+                        isDark: isDark,
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    timeStr,
-                    style: const TextStyle(
-                      color: Color(0xFFAC5DED),
-                      fontSize: 28,
-                      fontFamily: 'Courier',
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const Spacer(),
-            // NEW: Quick Controls Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildSessionAction(
-                  icon: provider.isTimerRunning
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
-                  label: provider.isTimerRunning ? "Pause" : "Resume",
-                  onTap: () =>
-                      provider.toggleTimer(10), // Defaulting to 10 if new
-                  color: const Color(0xFFAC5DED),
-                ),
-                _buildSessionAction(
-                  icon: Icons.stop_rounded,
-                  label: "Stop",
-                  onTap: () => provider.stopTimer(),
-                  color: Colors.redAccent.withValues(alpha: 0.8),
-                ),
-                _buildSessionAction(
-                  icon: Icons.add_rounded,
-                  label: "+1m",
-                  onTap: () => provider.addSeconds(60),
-                  color: textColor.withValues(alpha: 0.1),
-                  iconColor: textColor,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -249,23 +349,36 @@ class _TrackingScreenState extends State<TrackingScreen>
     required VoidCallback onTap,
     required Color color,
     Color iconColor = Colors.white,
+    required bool isDark,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         children: [
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            child: Icon(icon, color: iconColor, size: 20),
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                )
+              ],
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 9,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.0,
+              color: isDark ? Colors.white38 : Colors.black38,
             ),
           ),
         ],
@@ -293,6 +406,7 @@ class _TrackingScreenState extends State<TrackingScreen>
           textColor,
           subTextColor,
           isDark,
+          const Color(0xFFAC5DED),
         ),
         const SizedBox(width: 12),
         _buildStatCard(
@@ -302,6 +416,7 @@ class _TrackingScreenState extends State<TrackingScreen>
           textColor,
           subTextColor,
           isDark,
+          const Color(0xFF00E5FF),
         ),
       ],
     );
@@ -314,67 +429,107 @@ class _TrackingScreenState extends State<TrackingScreen>
     Color textColor,
     Color subTextColor,
     bool isDark,
+    Color accentColor,
   ) {
     return Expanded(
       child: GlassmorphicContainer(
         width: double.infinity,
-        height: 80,
-        borderRadius: 20,
+        height: 85,
+        borderRadius: 22,
         blur: 20,
         alignment: Alignment.center,
         border: 1.5,
         linearGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
             isDark
-                ? Colors.white.withValues(alpha: 0.1)
-                : Colors.white.withValues(alpha: 0.2),
-            isDark
                 ? Colors.white.withValues(alpha: 0.05)
-                : Colors.white.withValues(alpha: 0.1),
+                : Colors.white.withValues(alpha: 0.25),
+            isDark
+                ? Colors.white.withValues(alpha: 0.02)
+                : Colors.white.withValues(alpha: 0.08),
           ],
         ),
         borderGradient: LinearGradient(
           colors: [
-            const Color(0xFFAC5DED).withValues(alpha: 0.3),
-            Colors.white.withValues(alpha: 0.2),
+            accentColor.withValues(alpha: 0.4),
+            Colors.white.withValues(alpha: 0.15),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(width: 8),
-            FaIcon(icon, color: const Color(0xFFAC5DED), size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                    ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.5),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      )
+                    ],
                   ),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: subTextColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 4),
+                    FaIcon(icon, color: accentColor, size: 16),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            value,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: textColor,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              letterSpacing: -0.5,
+                              shadows: isDark
+                                  ? [
+                                      Shadow(
+                                        color: accentColor.withValues(alpha: 0.3),
+                                        blurRadius: 6,
+                                      )
+                                    ]
+                                  : [],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            label.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: subTextColor,
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

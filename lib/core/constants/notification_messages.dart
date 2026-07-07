@@ -30,6 +30,12 @@ class NotificationMessages {
     "Excellence is a habit, not an act. Stay sharp.",
     "Master your habits, master your life.",
     "Shalcontech Intelligence: Data suggests you're due for a win.",
+    "Success is the sum of small habits, repeated day in and day out.",
+    "Focus on the process, and the results will take care of themselves.",
+    "Great things are done by a series of small things brought together.",
+    "Discipline is choosing between what you want now and what you want most.",
+    "Your habits are the building blocks of your ultimate potential.",
+    "Stay dedicated. Rome wasn't built in a day, but they worked on it daily.",
   ];
 
   /// Gen Z style prompts - informal and trendy.
@@ -43,6 +49,12 @@ class NotificationMessages {
     "Respect the hustle. Your streak is iconic. 🛐",
     "No zero days, fr fr. 😤",
     "Vibe check: Are you winning yet? 🤙",
+    "Normalize finishing your habits daily, bestie. 💅",
+    "This is your sign to lock in and get it done. 🔒",
+    "Your streak is literally giving productivity god. 👑",
+    "Habits on fleek, rent is free, let's go. 🚀",
+    "Unlocking main character status, one habit at a time. ✨",
+    "Out here living your best disciplined life, fr. 📈",
   ];
 
   /// Helper to get a random motivational prompt based on persona.
@@ -68,5 +80,28 @@ class NotificationMessages {
     }
 
     return messages[random.nextInt(messages.length)];
+  }
+
+  static String getPromptForDay(String persona, int weekday) {
+    List<String> messages;
+
+    switch (persona.toLowerCase()) {
+      case 'genz':
+        messages = genZMessages;
+        break;
+      case 'overlord':
+      case 'habito':
+      case 'shelby':
+        messages = overlordMessages;
+        break;
+      case 'elite':
+      case 'professional':
+      default:
+        messages = eliteMessages;
+        break;
+    }
+
+    final int index = (weekday - 1) % messages.length;
+    return messages[index];
   }
 }
