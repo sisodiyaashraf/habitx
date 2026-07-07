@@ -8,6 +8,7 @@ import 'data/services/notifications/habit_x_notification_service.dart';
 import 'data/services/home_widget_service.dart';
 import 'providers/habit_provider.dart';
 import 'providers/theme_provider.dart';
+import 'core/constants/notification_messages.dart';
 
 // Screens
 import 'presentation/screens/home_screen.dart';
@@ -54,8 +55,8 @@ void main() async {
 
     // Greet the user with a system status check
     notificationService.showInstantNotification(
-      title: "Neural Sync Complete ⚡",
-      body: "Overlord Engine is active. System Status: ELITE.",
+      title: NotificationMessages.getStatusTitle(habitProvider.userPersona),
+      body: NotificationMessages.getStatusBody(habitProvider.userPersona),
     );
 
     // FIXED: Calling the updated service with zero arguments.

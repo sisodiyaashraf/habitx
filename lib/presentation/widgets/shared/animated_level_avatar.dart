@@ -30,6 +30,7 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
   ];
 
   int _paletteIndex = 0;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -38,6 +39,23 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
       vsync: this,
       duration: const Duration(seconds: 8),
     )..repeat();
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 0.97,
+          end: 1.03,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 1.03,
+          end: 0.97,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+    ]).animate(_controller);
   }
 
   @override
@@ -58,93 +76,95 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
   @override
   Widget build(BuildContext context) {
     final colors = _gradientPalettes[_paletteIndex];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final levelTextColor = isDark ? Colors.white : Colors.black;
 
     return GestureDetector(
       onTap: _handleTap,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              // 1. DUAL ORBIT SYSTEM (Kinetic Energy)
-              _buildOrbit(
-                210,
-                -_controller.value * 2 * math.pi,
-                colors,
-                15,
-                0.15,
-              ),
-              _buildOrbit(
-                185,
-                _controller.value * 4 * math.pi,
-                colors.reversed.toList(),
-                10,
-                0.3,
-              ),
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                // 1. DUAL ORBIT SYSTEM (Kinetic Energy)
+                _buildOrbit(
+                  210,
+                  -_controller.value * 2 * math.pi,
+                  colors,
+                  15,
+                  0.15,
+                ),
+                _buildOrbit(
+                  185,
+                  _controller.value * 4 * math.pi,
+                  colors.reversed.toList(),
+                  10,
+                  0.3,
+                ),
 
-              // 2. MODERN GRADIENT PROGRESS (Liquid Glow)
-              CustomPaint(
-                size: const Size(158, 158),
-                painter: LiquidProgressPainter(
-                  progress: widget.provider.levelProgress,
-                  colors: colors,
+                // 2. MODERN GRADIENT PROGRESS (Liquid Glow)
+                CustomPaint(
+                  size: const Size(158, 158),
+                  painter: LiquidProgressPainter(
+                    progress: widget.provider.levelProgress,
+                    colors: colors,
+                  ),
                 ),
-              ),
 
-              // 3. THE GLASS CORE (Hyper-Glassmorphism)
-              GlassmorphicContainer(
-                width: 130,
-                height: 130,
-                borderRadius: 65,
-                blur: 35,
-                alignment: Alignment.center,
-                border: 2,
-                linearGradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.3),
-                    Colors.white.withValues(alpha: 0.02),
-                  ],
-                  stops: [
-                    (_controller.value - 0.4).clamp(0.0, 1.0),
-                    (_controller.value + 0.4).clamp(0.0, 1.0),
-                  ],
-                ),
-                borderGradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: colors,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "CORE",
-                      style: TextStyle(
-                        color: colors[0].withValues(alpha: 0.5),
-                        fontSize: 8,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 6,
+                // 3. THE GLASS CORE (Hyper-Glassmorphism)
+                GlassmorphicContainer(
+                  width: 130,
+                  height: 130,
+                  borderRadius: 65,
+                  blur: 35,
+                  alignment: Alignment.center,
+                  border: 2,
+                  linearGradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.3),
+                      Colors.white.withValues(alpha: 0.02),
+                    ],
+                    stops: const [0.2, 0.9],
+                  ),
+                  borderGradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: colors,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "CORE",
+                        style: TextStyle(
+                          color: colors[0].withValues(alpha: 0.5),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 6,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.provider.userLevel.toString(),
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 58,
-                        fontWeight: FontWeight.w900,
-                        height: 0.9,
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.provider.userLevel.toString(),
+                        style: TextStyle(
+                          color: levelTextColor,
+                          fontSize: 58,
+                          fontWeight: FontWeight.w900,
+                          height: 0.9,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -246,5 +266,8 @@ class GradientOrbitPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(GradientOrbitPainter oldDelegate) => true;
+  bool shouldRepaint(GradientOrbitPainter oldDelegate) =>
+      oldDelegate.colors != colors ||
+      oldDelegate.dashCount != dashCount ||
+      oldDelegate.opacity != opacity;
 }

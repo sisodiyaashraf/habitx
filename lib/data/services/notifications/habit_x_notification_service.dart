@@ -141,7 +141,6 @@ class HabitXNotificationService {
     return true;
   }
 
-  /// 🎯 THE FULL REMINDER PROTOCOL FOR SPECIFIC HABIT TASK
   Future<void> scheduleHabitReminder(
     String habitId,
     String name,
@@ -159,16 +158,12 @@ class HabitXNotificationService {
       targetTime.minute,
     );
 
-    final String createdTimeStr = createdAt != null
-        ? " (Created: ${createdAt.year}-${createdAt.month.toString().padLeft(2, '0')}-${createdAt.day.toString().padLeft(2, '0')} ${createdAt.hour.toString().padLeft(2, '0')}:${createdAt.minute.toString().padLeft(2, '0')})"
-        : "";
-
     try {
       // 2. The Main Execution with specific habit task details
       await _notifications.zonedSchedule(
         id: baseId,
         title: "Habit Reminder: $name 🚀",
-        body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}$createdTimeStr",
+        body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
         scheduledDate: scheduledDate,
         notificationDetails: _missionDetails(),
         androidScheduleMode:
@@ -182,7 +177,7 @@ class HabitXNotificationService {
         await _notifications.zonedSchedule(
           id: baseId,
           title: "Habit Reminder: $name 🚀",
-          body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}$createdTimeStr",
+          body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
           scheduledDate: scheduledDate,
           notificationDetails: _missionDetails(),
           androidScheduleMode:
@@ -206,6 +201,27 @@ class HabitXNotificationService {
       {'baseId': 7010, 'h': 18, 'm': 0, 't': 'Evening Motivation'},
     ];
 
+    String titlePrefix;
+    String channelName;
+    switch (persona.toLowerCase()) {
+      case 'genz':
+        titlePrefix = "GenZ Coach";
+        channelName = "GenZ Daily Briefing";
+        break;
+      case 'overlord':
+      case 'habito':
+      case 'shelby':
+        titlePrefix = "SHELBY AI";
+        channelName = "SHELBY AI Briefing";
+        break;
+      case 'elite':
+      case 'professional':
+      default:
+        titlePrefix = "Elite Coach";
+        channelName = "Elite Coach Briefing";
+        break;
+    }
+
     for (var b in briefings) {
       final int baseId = b['baseId'] as int;
       final int hour = b['h'] as int;
@@ -220,13 +236,13 @@ class HabitXNotificationService {
         try {
           await _notifications.zonedSchedule(
             id: id,
-            title: "SHELBY AI: $titleLabel",
+            title: "$titlePrefix: $titleLabel",
             body: bodyText,
             scheduledDate: scheduledDate,
-            notificationDetails: const NotificationDetails(
+            notificationDetails: NotificationDetails(
               android: AndroidNotificationDetails(
                 _briefingChannelId,
-                'SHELBY AI Briefing',
+                channelName,
                 importance: Importance.high,
                 priority: Priority.high,
                 icon: 'ic_notif',
@@ -241,13 +257,13 @@ class HabitXNotificationService {
           try {
             await _notifications.zonedSchedule(
               id: id,
-              title: "SHELBY AI: $titleLabel",
+              title: "$titlePrefix: $titleLabel",
               body: bodyText,
               scheduledDate: scheduledDate,
-              notificationDetails: const NotificationDetails(
+              notificationDetails: NotificationDetails(
                 android: AndroidNotificationDetails(
                   _briefingChannelId,
-                  'SHELBY AI Briefing',
+                  channelName,
                   importance: Importance.high,
                   priority: Priority.high,
                   icon: 'ic_notif',

@@ -104,4 +104,43 @@ class NotificationMessages {
     final int index = (weekday - 1) % messages.length;
     return messages[index];
   }
+
+  static String getStatusTitle(String persona) {
+    switch (persona.toLowerCase()) {
+      case 'genz':
+        return "Vibe Sync Complete ⚡";
+      case 'overlord':
+      case 'habito':
+      case 'shelby':
+        return "Neural Sync Complete ⚡";
+      case 'elite':
+      case 'professional':
+      default:
+        return "System Sync Complete ⚡";
+    }
+  }
+
+  static String getStatusBody(String persona, {String context = ""}) {
+    switch (persona.toLowerCase()) {
+      case 'genz':
+        if (context == "motivation") {
+          return "GenZ Coach is active, fr fr! Time to level up bestie. 💅";
+        }
+        return "GenZ Coach is active and ready to lock in. fr fr! 🚀";
+      case 'overlord':
+      case 'habito':
+      case 'shelby':
+        if (context == "motivation") {
+          return "Overlord Engine is active and monitoring daily motivation.";
+        }
+        return "Overlord Engine is active. System Status: ELITE.";
+      case 'elite':
+      case 'professional':
+      default:
+        if (context == "motivation") {
+          return "Professional Coach is active and monitoring daily discipline.";
+        }
+        return "Professional Coach is active. System Status: OPTIMAL.";
+    }
+  }
 }

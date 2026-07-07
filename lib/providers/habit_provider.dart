@@ -8,6 +8,7 @@ import '../data/services/storage_service.dart';
 import '../data/services/home_widget_service.dart';
 import '../data/services/notifications/habit_x_notification_service.dart';
 import '../presentation/widgets/shared/level_up_overlay.dart';
+import '../core/constants/notification_messages.dart';
 
 class HabitProvider extends ChangeNotifier {
   // --- Core State ---
@@ -268,7 +269,6 @@ class HabitProvider extends ChangeNotifier {
     _updateHomeWidget();
     notifyListeners();
   }
-
   Future<void> updatePersona(String newPersona) async {
     _userPersona = newPersona;
     await _storage.saveUserIdentity(
@@ -279,6 +279,13 @@ class HabitProvider extends ChangeNotifier {
     if (_isDailyMotivationEnabled) {
       await HabitXNotificationService().scheduleDailyBriefings();
     }
+
+    // Send immediate notification on change
+    await HabitXNotificationService().showInstantNotification(
+      title: NotificationMessages.getStatusTitle(newPersona),
+      body: "Notification theme updated to ${newPersona == 'Overlord' ? 'SHELBY AI' : newPersona}. ${NotificationMessages.getStatusBody(newPersona)}",
+    );
+
     _updateHomeWidget();
     notifyListeners();
   }
@@ -364,8 +371,8 @@ class HabitProvider extends ChangeNotifier {
 
   void sendTestNotification() {
     HabitXNotificationService().showInstantNotification(
-      title: "Neural Sync Complete ⚡",
-      body: "Overlord Engine is active and monitoring.",
+      title: NotificationMessages.getStatusTitle(_userPersona),
+      body: NotificationMessages.getStatusBody(_userPersona),
     );
     if (_isHapticsEnabled) HapticHelper.lightTap();
   }
