@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../providers/habit_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
+import '../../core/constants/notification_messages.dart';
 import '../widgets/shared/glass_background.dart';
 import '../widgets/shared/privacy_policy_dialog.dart';
 import '../widgets/shared/terms_of_service_dialog.dart';
@@ -185,8 +186,39 @@ class SettingsScreen extends StatelessWidget {
                   subTextColor,
                   onTap: () => _showNotificationThemeDialog(context, provider),
                 ),
+                _settingsTile(
+                  FontAwesomeIcons.venusMars,
+                  "Gender Voice Tone",
+                  "Tone: ${provider.userGender}",
+                  textColor,
+                  subTextColor,
+                  onTap: () => _showGenderDialog(context, provider),
+                ),
+                _settingsTile(
+                  FontAwesomeIcons.solidBell,
+                  "Test Notification",
+                  "Send a test check-in notification immediately",
+                  textColor,
+                  subTextColor,
+                  onTap: () async {
+                    final String persona = provider.userPersona;
+                    final String gender = provider.userGender;
+                    final String randomPrompt = NotificationMessages.getRandomPrompt(persona, gender: gender);
+                    await HabitXNotificationService().showInstantNotification(
+                      title: NotificationMessages.getStatusTitle(persona),
+                      body: randomPrompt,
+                    );
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Test check-in notification dispatched! 🔔"),
+                        backgroundColor: Color(0xFFAC5DED),
+                      ),
+                    );
+                  },
+                ),
               ],
-              height: 288,
+              height: 432,
               isDark: isDark,
             ),
 
@@ -697,6 +729,107 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showGenderDialog(BuildContext context, HabitProvider provider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final dialogTextColor = isDark ? Colors.white : Colors.black;
+        final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
+
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: GlassmorphicContainer(
+              width: MediaQuery.of(context).size.width * 0.85,
+              height: 280,
+              borderRadius: 30,
+              blur: 20,
+              alignment: Alignment.center,
+              border: 2,
+              linearGradient: LinearGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.1),
+                ],
+              ),
+              borderGradient: const LinearGradient(
+                colors: [Color(0xFFAC5DED), Colors.white24],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      "GENDER TONE",
+                      style: TextStyle(
+                        color: dialogTextColor,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildGenderBtn(context, provider, "Male", dialogTextColor),
+                    _buildGenderBtn(context, provider, "Female", dialogTextColor),
+                    const SizedBox(height: 10),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        "CLOSE",
+                        style: TextStyle(color: dialogSubTextColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGenderBtn(
+    BuildContext context,
+    HabitProvider provider,
+    String gender,
+    Color activeTextColor,
+  ) {
+    final bool isSelected = provider.userGender.toLowerCase() == gender.toLowerCase();
+
+    return Container(
+      width: double.infinity,
+      height: 48,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: TextButton(
+        style: TextButton.styleFrom(
+          backgroundColor: isSelected
+              ? const Color(0xFFAC5DED).withValues(alpha: 0.2)
+              : Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(
+              color: isSelected ? const Color(0xFFAC5DED) : Colors.white12,
+            ),
+          ),
+        ),
+        onPressed: () {
+          provider.updateGender(gender);
+          Navigator.pop(context);
+        },
+        child: Text(
+          gender.toUpperCase(),
+          style: TextStyle(
+            color: isSelected ? const Color(0xFFAC5DED) : activeTextColor.withValues(alpha: 0.6),
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),

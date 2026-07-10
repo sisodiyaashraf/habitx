@@ -8,7 +8,7 @@ import '../../providers/habit_provider.dart';
 import '../../core/constants/notification_messages.dart';
 import '../widgets/shared/animated_level_avatar.dart';
 import '../widgets/shared/glass_background.dart';
-import 'onboarding_screen.dart'; // <--- IMPORTANT: Add this import
+import 'onboarding_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -93,7 +93,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              const SizedBox(height: 40),
+              _buildWeeklyPerformance(provider, textColor, subTextColor, isDark),
+
+              const SizedBox(height: 20),
 
               _buildSectionHeader("PERSONALIZATION", subTextColor),
               _buildSettingsGroup([
@@ -106,12 +108,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () => _showIdentityDialog(context, provider),
                 ),
                 _settingsTile(
+                  Icons.face_rounded,
+                  "Edit Avatar",
+                  "Preset: ${provider.userAvatar}",
+                  textColor,
+                  subTextColor,
+                  onTap: () => _showAvatarDialog(context, provider),
+                ),
+                _settingsTile(
                   Icons.psychology_outlined,
                   "Persona",
                   "Style: ${provider.userPersona}",
                   textColor,
                   subTextColor,
                   onTap: () => _showPersonaDialog(context, provider),
+                ),
+                _settingsTile(
+                  Icons.wc_rounded,
+                  "Gender Voice",
+                  "Tone: ${provider.userGender}",
+                  textColor,
+                  subTextColor,
+                  onTap: () => _showGenderDialog(context, provider),
                 ),
                 _settingsTile(
                   Icons.notifications_active_rounded,
@@ -244,7 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                     value: isEnabled,
                                     activeThumbColor: const Color(0xFFAC5DED),
-                                    activeColor: const Color(0xFF00E5FF),
+                                    activeTrackColor: const Color(0xFF00E5FF),
                                     onChanged: (val) {
                                       provider.toggleDailyMotivation(val);
                                       if (val) {
@@ -648,6 +666,107 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showGenderDialog(BuildContext context, HabitProvider provider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final dialogTextColor = isDark ? Colors.white : Colors.black;
+        final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
+
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: GlassmorphicContainer(
+              width: MediaQuery.of(context).size.width * 0.85,
+              height: 280,
+              borderRadius: 30,
+              blur: 20,
+              alignment: Alignment.center,
+              border: 2,
+              linearGradient: LinearGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.1),
+                ],
+              ),
+              borderGradient: const LinearGradient(
+                colors: [Color(0xFFAC5DED), Colors.white24],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      "GENDER TONE",
+                      style: TextStyle(
+                        color: dialogTextColor,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildGenderBtn(context, provider, "Male", dialogTextColor),
+                    _buildGenderBtn(context, provider, "Female", dialogTextColor),
+                    const SizedBox(height: 10),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        "CLOSE",
+                        style: TextStyle(color: dialogSubTextColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGenderBtn(
+    BuildContext context,
+    HabitProvider provider,
+    String gender,
+    Color activeTextColor,
+  ) {
+    final bool isSelected = provider.userGender.toLowerCase() == gender.toLowerCase();
+
+    return Container(
+      width: double.infinity,
+      height: 48,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: TextButton(
+        style: TextButton.styleFrom(
+          backgroundColor: isSelected
+              ? const Color(0xFFAC5DED).withValues(alpha: 0.2)
+              : Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(
+              color: isSelected ? const Color(0xFFAC5DED) : Colors.white12,
+            ),
+          ),
+        ),
+        onPressed: () {
+          provider.updateGender(gender);
+          Navigator.pop(context);
+        },
+        child: Text(
+          gender.toUpperCase(),
+          style: TextStyle(
+            color: isSelected ? const Color(0xFFAC5DED) : activeTextColor.withValues(alpha: 0.6),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showLogoutDialog(BuildContext context, HabitProvider provider) {
     showDialog(
       context: context,
@@ -883,6 +1002,294 @@ class _ProfileScreenState extends State<ProfileScreen> {
           activeThumbColor: const Color(0xFFAC5DED),
         ),
       ),
+    );
+  }
+
+  bool _isDayActive(HabitProvider provider, DateTime date) {
+    for (var habit in provider.allHabits) {
+      for (var completedDate in habit.completedDates) {
+        if (completedDate.year == date.year &&
+            completedDate.month == date.month &&
+            completedDate.day == date.day) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  Widget _buildWeeklyPerformance(
+    HabitProvider provider,
+    Color textColor,
+    Color subTextColor,
+    bool isDark,
+  ) {
+    final weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    final pastWeek = provider.pastWeekDates;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 20),
+      child: GlassmorphicContainer(
+        width: double.infinity,
+        height: 110,
+        borderRadius: 25,
+        blur: 20,
+        alignment: Alignment.center,
+        border: 1.5,
+        linearGradient: LinearGradient(
+          colors: [
+            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.15),
+            isDark ? Colors.white.withValues(alpha: 0.02) : Colors.white.withValues(alpha: 0.05),
+          ],
+        ),
+        borderGradient: LinearGradient(
+          colors: [
+            isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.2),
+            Colors.transparent,
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "WEEKLY PERFORMANCE",
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  Text(
+                    "Last 7 Days",
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(pastWeek.length, (index) {
+                  final date = pastWeek[index];
+                  final isActive = _isDayActive(provider, date);
+                  final dayLabel = weekdays[date.weekday - 1];
+                  final isToday = date.day == DateTime.now().day &&
+                      date.month == DateTime.now().month &&
+                      date.year == DateTime.now().year;
+
+                  return Column(
+                    children: [
+                      Text(
+                        dayLabel,
+                        style: TextStyle(
+                          color: isToday ? const Color(0xFFAC5DED) : subTextColor,
+                          fontSize: 10,
+                          fontWeight: isToday ? FontWeight.w900 : FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: isActive
+                              ? const LinearGradient(
+                                  colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
+                                )
+                              : null,
+                          color: isActive ? null : (isDark ? Colors.white12 : Colors.black12),
+                          border: isToday
+                              ? Border.all(
+                                  color: const Color(0xFF00E5FF),
+                                  width: 1.5,
+                                )
+                              : null,
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  )
+                                ]
+                              : [],
+                        ),
+                        child: Icon(
+                          isActive ? Icons.check : Icons.close,
+                          size: 12,
+                          color: isActive ? Colors.white : (isDark ? Colors.white30 : Colors.black38),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAvatarDialog(BuildContext context, HabitProvider provider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final dialogTextColor = isDark ? Colors.white : Colors.black;
+        final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
+
+        final presets = [
+          {"name": "Neon Runner", "desc": "Agile speedster tracking high-octane flow state.", "icon": Icons.directions_run_rounded},
+          {"name": "Cyborg Sentinel", "desc": "Reinforced guardian built for iron discipline.", "icon": Icons.security_rounded},
+          {"name": "Zen Architect", "desc": "Peaceful strategist designing habits in silence.", "icon": Icons.spa_rounded},
+          {"name": "Data Scribe", "desc": "Analytical compiler documenting progress values.", "icon": Icons.code_rounded},
+          {"name": "Solar Pioneer", "desc": "Vanguard charting habits in bright stellar paths.", "icon": Icons.wb_sunny_rounded},
+          {"name": "Quantum Druid", "desc": "Mindbender syncing behavior in neural matrices.", "icon": Icons.psychology_rounded},
+        ];
+
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: GlassmorphicContainer(
+              width: MediaQuery.of(context).size.width * 0.85,
+              height: 480,
+              borderRadius: 30,
+              blur: 20,
+              alignment: Alignment.center,
+              border: 2,
+              linearGradient: LinearGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.1),
+                ],
+              ),
+              borderGradient: const LinearGradient(
+                colors: [Color(0xFFAC5DED), Colors.white24],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    Text(
+                      "SELECT AVATAR PRESET",
+                      style: TextStyle(
+                        color: dialogTextColor,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: presets.length,
+                        itemBuilder: (context, index) {
+                          final item = presets[index];
+                          final name = item["name"] as String;
+                          final desc = item["desc"] as String;
+                          final icon = item["icon"] as IconData;
+                          final isSelected = provider.userAvatar == name;
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5.0),
+                            child: InkWell(
+                              onTap: () {
+                                provider.updateAvatar(name);
+                                Navigator.pop(context);
+                              },
+                              borderRadius: BorderRadius.circular(15),
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  gradient: isSelected
+                                      ? const LinearGradient(
+                                          colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        )
+                                      : null,
+                                  color: isSelected ? null : Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.5)
+                                        : Colors.white.withValues(alpha: 0.1),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        icon,
+                                        color: isSelected ? Colors.white : dialogTextColor.withValues(alpha: 0.7),
+                                        size: 24,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              name,
+                                              style: TextStyle(
+                                                color: isSelected ? Colors.white : dialogTextColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              desc,
+                                              style: TextStyle(
+                                                color: isSelected ? Colors.white70 : dialogSubTextColor.withValues(alpha: 0.6),
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (isSelected)
+                                        const Icon(
+                                          Icons.check_circle_rounded,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        "CANCEL",
+                        style: TextStyle(color: dialogSubTextColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

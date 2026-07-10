@@ -152,6 +152,8 @@ class HabitXNotificationService {
     final int baseId = (100000 + (habitId.hashCode.abs() % 100000));
     final String persona =
         await StorageService().getUserPersona() ?? "Professional";
+    final String gender =
+        await StorageService().getUserGender() ?? "Male";
 
     final scheduledDate = _nextInstanceOfTime(
       targetTime.hour,
@@ -163,7 +165,7 @@ class HabitXNotificationService {
       await _notifications.zonedSchedule(
         id: baseId,
         title: "Habit Reminder: $name 🚀",
-        body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
+        body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona, gender: gender)}",
         scheduledDate: scheduledDate,
         notificationDetails: _missionDetails(),
         androidScheduleMode:
@@ -177,7 +179,7 @@ class HabitXNotificationService {
         await _notifications.zonedSchedule(
           id: baseId,
           title: "Habit Reminder: $name 🚀",
-          body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona)}",
+          body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona, gender: gender)}",
           scheduledDate: scheduledDate,
           notificationDetails: _missionDetails(),
           androidScheduleMode:
@@ -196,6 +198,8 @@ class HabitXNotificationService {
 
     final String persona =
         await StorageService().getUserPersona() ?? "Professional";
+    final String gender =
+        await StorageService().getUserGender() ?? "Male";
     final briefings = [
       {'baseId': 7000, 'h': 9, 'm': 0, 't': 'Morning Motivation'},
       {'baseId': 7010, 'h': 18, 'm': 0, 't': 'Evening Motivation'},
@@ -231,7 +235,7 @@ class HabitXNotificationService {
       for (int day = 1; day <= 7; day++) {
         final int id = baseId + day;
         final scheduledDate = _nextInstanceOfWeekdayTime(day, hour, minute);
-        final String bodyText = NotificationMessages.getPromptForDay(persona, day);
+        final String bodyText = NotificationMessages.getPromptForDay(persona, day, gender: gender);
 
         try {
           await _notifications.zonedSchedule(

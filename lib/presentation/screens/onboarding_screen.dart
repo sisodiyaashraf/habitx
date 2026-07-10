@@ -22,6 +22,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   final _ageController = TextEditingController();
 
   int _currentPage = 0;
+  String _selectedGender = "Male";
 
   late AnimationController _glowController;
   late AnimationController _typingController;
@@ -292,8 +293,66 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 const SizedBox(height: 20),
                 _buildInputLabel("USER_AGE"),
                 _buildTextInput(_ageController, "ENTER AGE", isNumber: true),
+                const SizedBox(height: 20),
+                _buildInputLabel("NOTIFICATION_TONE_GENDER"),
+                _buildGenderSelector(),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGenderSelector() {
+    return Row(
+      children: [
+        Expanded(child: _buildGenderOption("Male")),
+        const SizedBox(width: 16),
+        Expanded(child: _buildGenderOption("Female")),
+      ],
+    );
+  }
+
+  Widget _buildGenderOption(String gender) {
+    bool isSelected = _selectedGender == gender;
+    Color activeColor = const Color(0xFFAC5DED);
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedGender = gender;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        height: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: isSelected
+              ? activeColor.withValues(alpha: 0.15)
+              : Colors.white.withValues(alpha: 0.05),
+          border: Border.all(
+            color: isSelected ? activeColor : Colors.white.withValues(alpha: 0.1),
+            width: 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: activeColor.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : [],
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          gender.toUpperCase(),
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white60,
+            fontWeight: FontWeight.w900,
+            fontSize: 12,
+            letterSpacing: 2,
           ),
         ),
       ),
@@ -403,6 +462,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             name: _nameController.text,
             age: int.tryParse(_ageController.text) ?? 18,
             persona: "Professional",
+            gender: _selectedGender,
           );
           if (!mounted) return;
           Navigator.pushAndRemoveUntil(

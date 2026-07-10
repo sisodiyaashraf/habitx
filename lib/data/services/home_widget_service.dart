@@ -12,8 +12,13 @@ class HomeWidgetService {
     await HomeWidget.setAppGroupId(_groupId);
   }
 
-  /// Updates the Home Widget with the optimized daily rotating image.
-  static Future<void> updateWidget() async {
+  /// Updates the Home Widget with the optimized daily rotating image, streak, and user status.
+  static Future<void> updateWidget({
+    int streak = 0,
+    int level = 1,
+    int completedCount = 0,
+    int totalCount = 0,
+  }) async {
     try {
       final now = DateTime.now();
 
@@ -21,35 +26,143 @@ class HomeWidgetService {
       final imageIndex = (now.day % 3) + 1;
       final String assetPath = 'assets/images/habitx$imageIndex.png';
 
-      debugPrint("HabitX Neural Sync: Rotating daily artwork -> $assetPath");
+      debugPrint("HabitX Neural Sync: Rotating daily artwork -> $assetPath with streak: $streak, Lvl: $level, progress: $completedCount/$totalCount");
 
-      final renderWidget = Container(
-        width: 100,
-        height: 100,
-        color: Colors.transparent,
-        child: Stack(
-          children: [
-            ClipPath(
-              clipper: WidgetCardClipper(),
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  color: Color(0xE61A1A1A), // Dark glass base matching theme
-                ),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Image.asset(assetPath, fit: BoxFit.contain),
+      final renderWidget = Directionality(
+        textDirection: TextDirection.ltr,
+        child: Container(
+          width: 100,
+          height: 100,
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              ClipPath(
+                clipper: WidgetCardClipper(),
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    color: Color(0xE61A1A1A), // Dark glass base matching theme
+                  ),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Image.asset(assetPath, fit: BoxFit.contain),
+                    ),
                   ),
                 ),
               ),
-            ),
-            CustomPaint(
-              size: const Size(100, 100),
-              painter: WidgetCardBorderPainter(),
-            ),
-          ],
+              CustomPaint(
+                size: const Size(100, 100),
+                painter: WidgetCardBorderPainter(),
+              ),
+              // Level Badge (Top-Left Corner)
+              Positioned(
+                top: 6,
+                left: 6,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.8), // Brand purple
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    "L$level",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 6,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'monospace',
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ),
+              // Bottom row containing Streak and Completion status badges
+              Positioned(
+                bottom: 6,
+                left: 4,
+                right: 4,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Streak Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: const Color(0xE6FF5722), // Fire color
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 0.4,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            "🔥",
+                            style: TextStyle(
+                              fontSize: 6.5,
+                              color: Colors.white,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                          const SizedBox(width: 1),
+                          Text(
+                            "$streak",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 6.5,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'monospace',
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Completion Status Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00E5FF).withValues(alpha: 0.75), // Cyan progress
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 0.4,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            "🎯",
+                            style: TextStyle(
+                              fontSize: 6.5,
+                              color: Colors.white,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                          const SizedBox(width: 1),
+                          Text(
+                            "$completedCount/$totalCount",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 6.5,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'monospace',
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       );
 

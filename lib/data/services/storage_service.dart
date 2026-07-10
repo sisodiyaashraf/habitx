@@ -8,12 +8,14 @@ class StorageService {
   static const String _xpKey = 'user_xp';
   static const String _levelKey = 'user_level';
   static const String _nameKey = 'user_name';
-  static const String _ageKey = 'user_age'; // NEW
-  static const String _personaKey = 'user_persona'; // NEW
+  static const String _ageKey = 'user_age';
+  static const String _personaKey = 'user_persona';
+  static const String _genderKey = 'user_gender';
   static const String _isNewUserKey = 'is_new_user';
-  static const String _achievementsKey = 'unlocked_achievements'; // NEW
-  static const String _hapticsKey = 'haptics_enabled'; // NEW
+  static const String _achievementsKey = 'unlocked_achievements';
+  static const String _hapticsKey = 'haptics_enabled';
   static const String _dailyMotivationKey = 'daily_motivation_enabled';
+  static const String _avatarKey = 'user_avatar';
 
   // --- 1. User Identity & Onboarding ---
 
@@ -27,6 +29,16 @@ class StorageService {
     await prefs.setInt(_ageKey, age);
     await prefs.setString(_personaKey, persona);
     await prefs.setBool(_isNewUserKey, false);
+  }
+
+  Future<void> saveUserGender(String gender) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_genderKey, gender);
+  }
+
+  Future<String?> getUserGender() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_genderKey);
   }
 
   Future<String?> getUserName() async {
@@ -130,8 +142,17 @@ class StorageService {
     return prefs.getBool(_dailyMotivationKey) ?? true;
   }
 
-  // --- 5. System Actions ---
+  Future<void> saveUserAvatar(String avatar) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_avatarKey, avatar);
+  }
 
+  Future<String?> getUserAvatar() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_avatarKey);
+  }
+
+  // --- 5. System Actions ---
   Future<void> clearAllData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

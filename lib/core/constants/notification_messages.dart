@@ -1,4 +1,8 @@
 import 'dart:math';
+import 'dart:io';
+import 'habit_notifications.dart';
+import 'habit_notifications_for_her.dart';
+import 'habit_notifications_genz.dart';
 
 class NotificationMessages {
   /// Sarcastic, sentient AI Overlord prompts (Habito AI / SHELBY).
@@ -57,52 +61,124 @@ class NotificationMessages {
     "Out here living your best disciplined life, fr. 📈",
   ];
 
+  static bool _isIndianRegion() {
+    try {
+      final locale = Platform.localeName.toLowerCase();
+      if (locale.contains('_in') || locale.startsWith('hi')) {
+        return true;
+      }
+      final offset = DateTime.now().timeZoneOffset;
+      final tzName = DateTime.now().timeZoneName.toLowerCase();
+      return offset.inMinutes == 330 || tzName.contains('kolkata') || tzName == 'ist';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static List<String> _getIndianMessages(String persona, String gender) {
+    final bool isFemale = gender.toLowerCase() == 'female';
+    switch (persona.toLowerCase()) {
+      case 'genz':
+        return isFemale
+            ? [
+                ...HabitNotificationsGenZForHer.cute,
+                ...HabitNotificationsGenZForHer.flirty,
+                ...HabitNotificationsGenZForHer.romantic
+              ]
+            : [
+                ...HabitNotificationsGenZ.cute,
+                ...HabitNotificationsGenZ.flirty,
+                ...HabitNotificationsGenZ.romantic
+              ];
+      case 'overlord':
+      case 'habito':
+      case 'shelby':
+        return isFemale
+            ? [
+                ...HabitNotificationsForHer.roast,
+                ...HabitNotificationsForHer.breakup
+              ]
+            : [
+                ...HabitNotifications.roast,
+                ...HabitNotifications.breakup
+              ];
+      case 'elite':
+      case 'professional':
+      default:
+        return isFemale
+            ? [
+                ...HabitNotificationsForHer.discipline,
+                ...HabitNotificationsForHer.motivational
+              ]
+            : [
+                ...HabitNotifications.discipline,
+                ...HabitNotifications.motivational
+              ];
+    }
+  }
+
   /// Helper to get a random motivational prompt based on persona.
   /// Defaults to [eliteMessages] if persona is unknown.
-  static String getRandomPrompt(String persona) {
+  static String getRandomPrompt(String persona, {String gender = "Male"}) {
     final Random random = Random();
     List<String> messages;
 
-    switch (persona.toLowerCase()) {
-      case 'genz':
-        messages = genZMessages;
-        break;
-      case 'overlord':
-      case 'habito':
-      case 'shelby':
-        messages = overlordMessages;
-        break;
-      case 'elite':
-      case 'professional':
-      default:
-        messages = eliteMessages;
-        break;
+    if (_isIndianRegion()) {
+      messages = _getIndianMessages(persona, gender);
+    } else {
+      switch (persona.toLowerCase()) {
+        case 'genz':
+          messages = genZMessages;
+          break;
+        case 'overlord':
+        case 'habito':
+        case 'shelby':
+          messages = overlordMessages;
+          break;
+        case 'elite':
+        case 'professional':
+        default:
+          messages = eliteMessages;
+          break;
+      }
     }
 
-    return messages[random.nextInt(messages.length)];
+    String msg = messages[random.nextInt(messages.length)];
+    if (msg.contains('{X}')) {
+      msg = msg.replaceAll('Streak: {X} din.', 'Daily streak');
+    }
+    return msg;
   }
 
-  static String getPromptForDay(String persona, int weekday) {
+  static String getPromptForDay(String persona, int weekday, {String gender = "Male"}) {
     List<String> messages;
 
-    switch (persona.toLowerCase()) {
-      case 'genz':
-        messages = genZMessages;
-        break;
-      case 'overlord':
-      case 'habito':
-      case 'shelby':
-        messages = overlordMessages;
-        break;
-      case 'elite':
-      case 'professional':
-      default:
-        messages = eliteMessages;
-        break;
+    if (_isIndianRegion()) {
+      messages = _getIndianMessages(persona, gender);
+    } else {
+      switch (persona.toLowerCase()) {
+        case 'genz':
+          messages = genZMessages;
+          break;
+        case 'overlord':
+        case 'habito':
+        case 'shelby':
+          messages = overlordMessages;
+          break;
+        case 'elite':
+        case 'professional':
+        default:
+          messages = eliteMessages;
+          break;
+      }
     }
 
     final int index = (weekday - 1) % messages.length;
-    return messages[index];
+    String msg = messages[index];
+    if (msg.contains('{X}')) {
+      msg = msg.replaceAll('Streak: {X} din.', 'Daily streak');
+    }
+    return msg;
   }
 
   static String getStatusTitle(String persona) {

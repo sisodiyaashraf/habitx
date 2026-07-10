@@ -15,14 +15,14 @@ class HabitProvider extends ChangeNotifier {
   final List<Habit> _allHabits = [];
   int _userXP = 0;
   int _userLevel = 1;
-
   // --- Identity & Achievements ---
   String _userName = "";
   int _userAge = 18;
   String _userPersona = "Professional";
+  String _userAvatar = "Neon Runner";
+  String _userGender = "Male";
   bool _isNewUser = true;
   List<String> _unlockedAchievementIds = [];
-
   // --- Preferences & Calendar ---
   bool _isHapticsEnabled = true;
   bool _isDailyMotivationEnabled = true;
@@ -61,7 +61,6 @@ class HabitProvider extends ChangeNotifier {
       );
     }).toList();
   }
-
   List<Habit> get allHabits => List.unmodifiable(_allHabits);
   List<String> get unlockedAchievementIds => _unlockedAchievementIds;
   int get userXP => _userXP;
@@ -69,6 +68,8 @@ class HabitProvider extends ChangeNotifier {
   String get userName => _userName;
   int get userAge => _userAge;
   String get userPersona => _userPersona;
+  String get userAvatar => _userAvatar;
+  String get userGender => _userGender;
   bool get isNewUser => _isNewUser;
   bool get isHapticsEnabled => _isHapticsEnabled;
   bool get isDailyMotivationEnabled => _isDailyMotivationEnabled;
@@ -97,14 +98,13 @@ class HabitProvider extends ChangeNotifier {
 
   double get todayProgress => dailyProgress;
 
-  // --- Neural Initialization Engine ---
-
   Future<void> init() async {
     _isNewUser = await _storage.isNewUser();
     _userName = await _storage.getUserName() ?? "RECRUIT";
     _userAge = await _storage.getUserAge() ?? 18;
     _userPersona = await _storage.getUserPersona() ?? "Professional";
-
+    _userAvatar = await _storage.getUserAvatar() ?? "Neon Runner";
+    _userGender = await _storage.getUserGender() ?? "Male";
     final progress = await _storage.loadProgress();
     _userXP = progress['xp'] ?? 0;
     _userLevel = progress['level'] ?? 1;
@@ -244,12 +244,15 @@ class HabitProvider extends ChangeNotifier {
     required String name,
     required int age,
     required String persona,
+    String gender = "Male",
   }) async {
     _userName = name;
     _userAge = age;
     _userPersona = persona;
+    _userGender = gender;
     _isNewUser = false;
     await _storage.saveUserIdentity(name: name, age: age, persona: persona);
+    await _storage.saveUserGender(gender);
 
     // Initial system handshake
     await HabitXNotificationService().requestPermissions();
@@ -289,17 +292,33 @@ class HabitProvider extends ChangeNotifier {
     _updateHomeWidget();
     notifyListeners();
   }
-
+  Future<void> updateGender(String newGender) async {
+    _userGender = newGender;
+    await _storage.saveUserGender(newGender);
+    if (_isDailyMotivationEnabled) {
+      await HabitXNotificationService().scheduleDailyBriefings();
+    }
+    notifyListeners();
+  }
   Future<void> resetUserIdentity() async {
     _userName = "RECRUIT";
     _userAge = 18;
     _userPersona = "Professional";
+    _userGender = "Male";
     _isNewUser = true;
+    _userAvatar = "Neon Runner";
     await _storage.saveUserIdentity(name: "", age: 18, persona: "Professional");
+    await _storage.saveUserGender("Male");
+    await _storage.saveUserAvatar("Neon Runner");
     _updateHomeWidget();
     notifyListeners();
   }
 
+  Future<void> updateAvatar(String name) async {
+    _userAvatar = name;
+    await _storage.saveUserAvatar(name);
+    notifyListeners();
+  }
   // --- Preference Actions ---
 
   void toggleHaptics(bool value) {
@@ -535,11 +554,24 @@ class HabitProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Home Widget Synchronization ---
+  void addBonusXp(int xp) {
+    _applyGamification(xp);
+    notifyListeners();
+  }
 
   void _updateHomeWidget() {
-    // minimalist sync: The service now internally handles the 3-image rotation logic based on the date.
-    HomeWidgetService.updateWidget();
+    final int maxStreak = _allHabits.isEmpty
+        ? 0
+        : _allHabits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
+    final int completedCount = _allHabits.where((h) => h.isCompleted).length;
+    final int totalCount = _allHabits.length;
+
+    HomeWidgetService.updateWidget(
+      streak: maxStreak,
+      level: _userLevel,
+      completedCount: completedCount,
+      totalCount: totalCount,
+    );
   }
 
   // --- Gamification Engine ---

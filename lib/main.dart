@@ -58,10 +58,18 @@ void main() async {
       title: NotificationMessages.getStatusTitle(habitProvider.userPersona),
       body: NotificationMessages.getStatusBody(habitProvider.userPersona),
     );
+    final int maxStreak = habitProvider.allHabits.isEmpty
+        ? 0
+        : habitProvider.allHabits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
+    final int completedCount = habitProvider.allHabits.where((h) => h.isCompleted).length;
+    final int totalCount = habitProvider.allHabits.length;
 
-    // FIXED: Calling the updated service with zero arguments.
-    // The service now internally handles the 3-image rotation logic.
-    HomeWidgetService.updateWidget();
+    HomeWidgetService.updateWidget(
+      streak: maxStreak,
+      level: habitProvider.userLevel,
+      completedCount: completedCount,
+      totalCount: totalCount,
+    );
   }
 
   runApp(

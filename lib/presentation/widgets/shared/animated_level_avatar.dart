@@ -108,9 +108,10 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
                 // 2. MODERN GRADIENT PROGRESS (Liquid Glow)
                 CustomPaint(
                   size: const Size(158, 158),
-                  painter: LiquidProgressPainter(
-                    progress: widget.provider.levelProgress,
+                  painter: KineticWavePainter(
+                    animationValue: _controller.value,
                     colors: colors,
+                    levelProgress: widget.provider.levelProgress,
                   ),
                 ),
 
@@ -190,43 +191,105 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
   }
 }
 
-/// NEW: Liquid Progress Painter for a unique "Neon Flow" look
-class LiquidProgressPainter extends CustomPainter {
-  final double progress;
+/// NEW: Kinetic Wave Painter for a unique "Neon Flow" look
+class KineticWavePainter extends CustomPainter {
+  final double animationValue;
   final List<Color> colors;
+  final double levelProgress;
 
-  LiquidProgressPainter({required this.progress, required this.colors});
+  KineticWavePainter({
+    required this.animationValue,
+    required this.colors,
+    required this.levelProgress,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    final rect = Rect.fromCircle(center: center, radius: radius);
+    final baseRadius = size.width / 2;
 
-    // 1. Subtle Shadow/Glow under the progress
-    final backgroundPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.05)
-      ..strokeWidth = 10
-      ..style = PaintingStyle.stroke;
-    canvas.drawCircle(center, radius, backgroundPaint);
+    canvas.save();
+    final clipPath = Path()
+      ..addOval(Rect.fromCircle(center: center, radius: baseRadius));
+    canvas.clipPath(clipPath);
 
-    // 2. Gradient Progress Arc
+    final fillHeightMultiplier = levelProgress;
+
+    // Draw 3 overlapping morphing waves
+    _drawWave(
+      canvas,
+      size,
+      baseRadius,
+      fillHeightMultiplier,
+      colors[0].withValues(alpha: 0.22),
+      1.2,
+      0.0,
+    );
+    _drawWave(
+      canvas,
+      size,
+      baseRadius,
+      fillHeightMultiplier - 0.05,
+      colors.last.withValues(alpha: 0.16),
+      1.6,
+      math.pi / 2,
+    );
+    _drawWave(
+      canvas,
+      size,
+      baseRadius,
+      fillHeightMultiplier + 0.05,
+      colors[0].withValues(alpha: 0.10),
+      0.8,
+      math.pi,
+    );
+
+    canvas.restore();
+  }
+
+  void _drawWave(
+    Canvas canvas,
+    Size size,
+    double radius,
+    double fillHeightMultiplier,
+    Color color,
+    double frequency,
+    double phaseShift,
+  ) {
     final paint = Paint()
-      ..shader = SweepGradient(
-        colors: [...colors, colors[0]],
-        startAngle: -math.pi / 2,
-        endAngle: 3 * math.pi / 2,
-      ).createShader(rect)
-      ..strokeWidth = 10
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+      ..color = color
+      ..style = PaintingStyle.fill;
 
-    canvas.drawArc(rect, -math.pi / 2, 2 * math.pi * progress, false, paint);
+    final path = Path();
+    final double width = size.width;
+    final double height = size.height;
+
+    // Fluid height level
+    final double fillHeight = height * (1.0 - fillHeightMultiplier);
+
+    path.moveTo(0, height);
+    for (double x = 0; x <= width; x += 3) {
+      final double y =
+          fillHeight +
+          math.sin(
+                (x / width) * 2 * math.pi * frequency +
+                    (animationValue * 2 * math.pi) +
+                    phaseShift,
+              ) *
+              7;
+      path.lineTo(x, y);
+    }
+    path.lineTo(width, height);
+    path.close();
+
+    canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(covariant LiquidProgressPainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.colors != colors;
+  bool shouldRepaint(covariant KineticWavePainter oldDelegate) =>
+      oldDelegate.animationValue != animationValue ||
+      oldDelegate.colors != colors ||
+      oldDelegate.levelProgress != levelProgress;
 }
 
 /// Keep your GradientOrbitPainter...
