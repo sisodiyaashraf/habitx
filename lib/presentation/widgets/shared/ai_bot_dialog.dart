@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../providers/habit_provider.dart';
 
 class AiBotDialog extends StatefulWidget {
@@ -331,15 +332,15 @@ class _AiBotDialogState extends State<AiBotDialog> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: const Color(0xFFAC5DED).withValues(alpha: 0.15),
             shape: BoxShape.circle,
           ),
-          child: const FaIcon(
-            FontAwesomeIcons.robot,
-            color: Color(0xFFAC5DED),
-            size: 20,
+          child: SvgPicture.asset(
+            'assets/svg_icons/robot-svgrepo-com.svg',
+            width: 30,
+            height: 30,
           ),
         ),
         const SizedBox(width: 12),

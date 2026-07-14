@@ -150,10 +150,24 @@ class HabitXNotificationService {
     if (!_isInitialized) await init();
 
     final int baseId = (100000 + (habitId.hashCode.abs() % 100000));
-    final String persona =
-        await StorageService().getUserPersona() ?? "Professional";
-    final String gender =
-        await StorageService().getUserGender() ?? "Male";
+    
+    // Explicitly cancel the existing scheduled notification for this ID to ensure only one is scheduled
+    await _notifications.cancel(id: baseId);
+
+    final String userName = await StorageService().getUserName() ?? "User";
+    final String title = "$userName, time for $name";
+    final List<String> bodyPrompts = [
+      "Stay consistent and complete your habit today! 🚀",
+      "Every small step counts towards your goals. You got this! ⚡",
+      "Make progress today and lock in your daily streak! 🏆",
+      "Stay disciplined. Tap to complete your objective now! 🎯",
+      "Consistency is the key to building lasting success! 🌟",
+      "Don't break the chain! Log your habit completion today. 🔥",
+      "Keep the momentum going. Time to execute your habit! ☄️",
+      "Focus on your daily goal. Let's make today count! 💎",
+    ];
+    final int index = DateTime.now().microsecondsSinceEpoch % bodyPrompts.length;
+    final String body = bodyPrompts[index];
 
     final scheduledDate = _nextInstanceOfTime(
       targetTime.hour,
@@ -164,8 +178,8 @@ class HabitXNotificationService {
       // 2. The Main Execution with specific habit task details
       await _notifications.zonedSchedule(
         id: baseId,
-        title: "Habit Reminder: $name 🚀",
-        body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona, gender: gender)}",
+        title: title,
+        body: body,
         scheduledDate: scheduledDate,
         notificationDetails: _missionDetails(),
         androidScheduleMode:
@@ -178,8 +192,8 @@ class HabitXNotificationService {
       try {
         await _notifications.zonedSchedule(
           id: baseId,
-          title: "Habit Reminder: $name 🚀",
-          body: "Time for '$name'! ${NotificationMessages.getRandomPrompt(persona, gender: gender)}",
+          title: title,
+          body: body,
           scheduledDate: scheduledDate,
           notificationDetails: _missionDetails(),
           androidScheduleMode:
@@ -293,7 +307,7 @@ class HabitXNotificationService {
         importance: Importance.max,
         priority: Priority.max,
         icon: 'ic_notif',
-        fullScreenIntent: true, // Wakes lockscreen
+        fullScreenIntent: false, // Wakes lockscreen
         category:
             AndroidNotificationCategory.alarm, // High priority system status
         visibility: NotificationVisibility.public,

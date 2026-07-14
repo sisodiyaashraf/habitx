@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class XpHeader extends StatefulWidget {
   final int currentXp;
@@ -156,7 +157,9 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
       linearGradient: LinearGradient(
         colors: [
           isDark
-              ? Colors.white.withValues(alpha: 0.1 + (_flashAnimation.value * 0.05))
+              ? Colors.white.withValues(
+                  alpha: 0.1 + (_flashAnimation.value * 0.05),
+                )
               : Colors.white.withValues(alpha: 0.25),
           isDark
               ? Colors.white.withValues(alpha: 0.05)
@@ -235,12 +238,12 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
 
   Widget _buildLevelBadge(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Color.lerp(
-          const Color(0xFFAC5DED),
-          const Color(0xFF00E5FF),
+          const Color.fromARGB(255, 193, 100, 250),
+          const Color.fromARGB(255, 164, 29, 243),
           _flashAnimation.value,
         ),
         boxShadow: [
@@ -252,15 +255,15 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
             spreadRadius: 5,
           ),
           BoxShadow(
-            color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
+            color: const Color(0xFF007BFF).withValues(alpha: 0.4),
             blurRadius: 15,
           ),
         ],
       ),
-      child: FaIcon(
-        FontAwesomeIcons.bolt,
-        color: Colors.white,
-        size: 22 + (_flashAnimation.value * 4),
+      child: SvgPicture.asset(
+        'assets/svg_icons/lightning-flash-svgrepo-com.svg',
+        width: 36 + (_flashAnimation.value * 6),
+        height: 36 + (_flashAnimation.value * 10),
       ),
     );
   }
@@ -363,7 +366,12 @@ class LightningPainter extends CustomPainter {
     if (points.isEmpty || opacity <= 0) return;
 
     final Paint glowPaint = Paint()
-      ..color = const Color(0xFF00E5FF).withValues(alpha: opacity * 0.5)
+      ..color = const Color.fromARGB(
+        255,
+        182,
+        135,
+        182,
+      ).withValues(alpha: opacity * 0.5)
       ..strokeWidth = 6.0
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke

@@ -69,7 +69,9 @@ class NotificationMessages {
       }
       final offset = DateTime.now().timeZoneOffset;
       final tzName = DateTime.now().timeZoneName.toLowerCase();
-      return offset.inMinutes == 330 || tzName.contains('kolkata') || tzName == 'ist';
+      return offset.inMinutes == 330 ||
+          tzName.contains('kolkata') ||
+          tzName == 'ist';
     } catch (_) {
       return false;
     }
@@ -83,12 +85,12 @@ class NotificationMessages {
             ? [
                 ...HabitNotificationsGenZForHer.cute,
                 ...HabitNotificationsGenZForHer.flirty,
-                ...HabitNotificationsGenZForHer.romantic
+                ...HabitNotificationsGenZForHer.romantic,
               ]
             : [
                 ...HabitNotificationsGenZ.cute,
                 ...HabitNotificationsGenZ.flirty,
-                ...HabitNotificationsGenZ.romantic
+                ...HabitNotificationsGenZ.romantic,
               ];
       case 'overlord':
       case 'habito':
@@ -96,23 +98,20 @@ class NotificationMessages {
         return isFemale
             ? [
                 ...HabitNotificationsForHer.roast,
-                ...HabitNotificationsForHer.breakup
+                ...HabitNotificationsForHer.breakup,
               ]
-            : [
-                ...HabitNotifications.roast,
-                ...HabitNotifications.breakup
-              ];
+            : [...HabitNotifications.roast, ...HabitNotifications.breakup];
       case 'elite':
       case 'professional':
       default:
         return isFemale
             ? [
                 ...HabitNotificationsForHer.discipline,
-                ...HabitNotificationsForHer.motivational
+                ...HabitNotificationsForHer.motivational,
               ]
             : [
                 ...HabitNotifications.discipline,
-                ...HabitNotifications.motivational
+                ...HabitNotifications.motivational,
               ];
     }
   }
@@ -150,7 +149,11 @@ class NotificationMessages {
     return msg;
   }
 
-  static String getPromptForDay(String persona, int weekday, {String gender = "Male"}) {
+  static String getPromptForDay(
+    String persona,
+    int weekday, {
+    String gender = "Male",
+  }) {
     List<String> messages;
 
     if (_isIndianRegion()) {

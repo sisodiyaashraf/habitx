@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/habit_provider.dart';
 import '../widgets/home/home_mobile_content.dart';
 import '../widgets/shared/glass_bottom_nav.dart';
@@ -81,31 +82,40 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildLevelChip(int level) {
     return Container(
-      margin: const EdgeInsets.only(right: 16, top: 12, bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      margin: const EdgeInsets.only(right: 16, top: 10, bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
+          colors: [Color(0xFF007BFF), Color(0xFF00E5FF)],
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
+            color: const Color(0xFF007BFF).withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Center(
-        child: Text(
-          'LVL $level',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.5,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            'assets/svg_icons/lightning-flash-svgrepo-com.svg',
+            width: 16,
+            height: 16,
           ),
-        ),
+          const SizedBox(width: 6),
+          Text(
+            'LVL $level',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }
