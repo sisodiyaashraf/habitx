@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:habitx/presentation/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
@@ -110,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _settingsTile(
                   Icons.face_rounded,
                   "Edit Avatar",
-                  "Preset: ${provider.userAvatar}",
+                  "Preset: ${provider.userAvatarDisplayName}",
                   textColor,
                   subTextColor,
                   onTap: () => _showAvatarDialog(context, provider),
@@ -1149,12 +1150,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
 
         final presets = [
-          {"name": "Neon Runner", "desc": "Agile speedster tracking high-octane flow state.", "icon": Icons.directions_run_rounded},
-          {"name": "Cyborg Sentinel", "desc": "Reinforced guardian built for iron discipline.", "icon": Icons.security_rounded},
-          {"name": "Zen Architect", "desc": "Peaceful strategist designing habits in silence.", "icon": Icons.spa_rounded},
-          {"name": "Data Scribe", "desc": "Analytical compiler documenting progress values.", "icon": Icons.code_rounded},
-          {"name": "Solar Pioneer", "desc": "Vanguard charting habits in bright stellar paths.", "icon": Icons.wb_sunny_rounded},
-          {"name": "Quantum Druid", "desc": "Mindbender syncing behavior in neural matrices.", "icon": Icons.psychology_rounded},
+          {
+            "name": "panda.svg",
+            "displayName": "Zen Panda",
+            "desc": "Peaceful strategist designing habits in absolute calm.",
+            "path": "assets/profile svg icons/panda.svg"
+          },
+          {
+            "name": "fox.svg",
+            "displayName": "Clever Fox",
+            "desc": "Agile speedster navigating challenges with sharp wit.",
+            "path": "assets/profile svg icons/fox.svg"
+          },
+          {
+            "name": "bear.svg",
+            "displayName": "Cyber Bear",
+            "desc": "Reinforced guardian built for brute physical & mental discipline.",
+            "path": "assets/profile svg icons/bear.svg"
+          },
+          {
+            "name": "bear br.svg",
+            "displayName": "Brown Bear",
+            "desc": "Stout warrior tracking progress across rugged terrain.",
+            "path": "assets/profile svg icons/bear br.svg"
+          },
+          {
+            "name": "cat.svg",
+            "displayName": "Discipline Cat",
+            "desc": "Nimble and focus-driven mind, locking in on target habits.",
+            "path": "assets/profile svg icons/cat.svg"
+          },
+          {
+            "name": "dog.svg",
+            "displayName": "Loyal Canine",
+            "desc": "Reliable partner executing daily routines with steady devotion.",
+            "path": "assets/profile svg icons/dog.svg"
+          },
+          {
+            "name": "elephant.svg",
+            "displayName": "Memory Elephant",
+            "desc": "Unwavering memory bank tracking vast historic streaks.",
+            "path": "assets/profile svg icons/elephant.svg"
+          },
+          {
+            "name": "kangaroo.svg",
+            "displayName": "Tempo Kangaroo",
+            "desc": "Springing forward with energetic bounds of high momentum.",
+            "path": "assets/profile svg icons/kangaroo.svg"
+          },
+          {
+            "name": "lion.svg",
+            "displayName": "Pride Leader",
+            "desc": "Vanguard charting daily triumphs on majestic stellar paths.",
+            "path": "assets/profile svg icons/lion.svg"
+          },
+          {
+            "name": "penguin.svg",
+            "displayName": "Chilled Penguin",
+            "desc": "Analytical documenter maintaining cool composure under pressure.",
+            "path": "assets/profile svg icons/penguin.svg"
+          },
+          {
+            "name": "rabit.svg",
+            "displayName": "Agile Rabbit",
+            "desc": "Swift and dynamic action taker jumping over obstacles.",
+            "path": "assets/profile svg icons/rabit.svg"
+          },
         ];
 
         return Center(
@@ -1197,9 +1258,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         itemBuilder: (context, index) {
                           final item = presets[index];
                           final name = item["name"] as String;
+                          final displayName = item["displayName"] as String;
                           final desc = item["desc"] as String;
-                          final icon = item["icon"] as IconData;
-                          final isSelected = provider.userAvatar == name;
+                          final path = item["path"] as String;
+                          final isSelected = provider.userAvatar == name ||
+                              (provider.userAvatar == "Neon Runner" && name == "fox.svg") ||
+                              (provider.userAvatar == "Cyborg Sentinel" && name == "bear.svg") ||
+                              (provider.userAvatar == "Zen Architect" && name == "panda.svg") ||
+                              (provider.userAvatar == "Data Scribe" && name == "penguin.svg") ||
+                              (provider.userAvatar == "Solar Pioneer" && name == "lion.svg") ||
+                              (provider.userAvatar == "Quantum Druid" && name == "cat.svg");
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 5.0),
@@ -1231,10 +1299,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                                   child: Row(
                                     children: [
-                                      Icon(
-                                        icon,
-                                        color: isSelected ? Colors.white : dialogTextColor.withValues(alpha: 0.7),
-                                        size: 24,
+                                      Container(
+                                        width: 44,
+                                        height: 44,
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? Colors.white.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: ClipOval(
+                                          child: SvgPicture.asset(
+                                            path,
+                                            width: 36,
+                                            height: 36,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
@@ -1242,7 +1322,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              name,
+                                              displayName,
                                               style: TextStyle(
                                                 color: isSelected ? Colors.white : dialogTextColor,
                                                 fontWeight: FontWeight.bold,

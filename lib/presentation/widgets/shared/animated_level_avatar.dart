@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../providers/habit_provider.dart';
 
 class AnimatedLevelAvatar extends StatefulWidget {
@@ -76,9 +77,6 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
   @override
   Widget build(BuildContext context) {
     final colors = _gradientPalettes[_paletteIndex];
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final levelTextColor = isDark ? Colors.white : Colors.black;
-
     return GestureDetector(
       onTap: _handleTap,
       child: ScaleTransition(
@@ -127,8 +125,8 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withValues(alpha: 0.3),
-                      Colors.white.withValues(alpha: 0.02),
+                      Colors.white.withValues(alpha: 0.35),
+                      Colors.white.withValues(alpha: 0.05),
                     ],
                     stops: const [0.2, 0.9],
                   ),
@@ -137,29 +135,54 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
                     end: Alignment.bottomRight,
                     colors: colors,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "CORE",
-                        style: TextStyle(
-                          color: colors[0].withValues(alpha: 0.5),
-                          fontSize: 8,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 6,
-                        ),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    child: ClipOval(
+                      child: SvgPicture.asset(
+                        widget.provider.userAvatarSvgPath,
+                        width: 110,
+                        height: 110,
+                        fit: BoxFit.cover,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.provider.userLevel.toString(),
-                        style: TextStyle(
-                          color: levelTextColor,
-                          fontSize: 58,
-                          fontWeight: FontWeight.w900,
-                          height: 0.9,
-                        ),
+                    ),
+                  ),
+                ),
+
+                // 4. THE GAMIFIED LEVEL BADGE (Bottom-Right Overlay)
+                Positioned(
+                  bottom: 32,
+                  right: 32,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: colors,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colors[0].withValues(alpha: 0.6),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      widget.provider.userLevel.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
                 ),
               ],

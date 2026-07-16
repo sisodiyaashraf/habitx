@@ -69,6 +69,61 @@ class HabitProvider extends ChangeNotifier {
   int get userAge => _userAge;
   String get userPersona => _userPersona;
   String get userAvatar => _userAvatar;
+  String get userAvatarSvgPath {
+    final avatar = _userAvatar;
+    if (avatar.endsWith('.svg')) {
+      return 'assets/profile svg icons/$avatar';
+    }
+    switch (avatar) {
+      case 'Neon Runner':
+        return 'assets/profile svg icons/fox.svg';
+      case 'Cyborg Sentinel':
+        return 'assets/profile svg icons/bear.svg';
+      case 'Zen Architect':
+        return 'assets/profile svg icons/panda.svg';
+      case 'Data Scribe':
+        return 'assets/profile svg icons/penguin.svg';
+      case 'Solar Pioneer':
+        return 'assets/profile svg icons/lion.svg';
+      case 'Quantum Druid':
+        return 'assets/profile svg icons/cat.svg';
+      default:
+        return 'assets/profile svg icons/panda.svg';
+    }
+  }
+
+  String get userAvatarDisplayName {
+    final avatar = _userAvatar;
+    if (avatar.endsWith('.svg')) {
+      switch (avatar) {
+        case 'bear.svg':
+          return 'Cyber Bear';
+        case 'bear br.svg':
+          return 'Brown Bear';
+        case 'cat.svg':
+          return 'Discipline Cat';
+        case 'dog.svg':
+          return 'Loyal Canine';
+        case 'elephant.svg':
+          return 'Memory Elephant';
+        case 'fox.svg':
+          return 'Clever Fox';
+        case 'kangaroo.svg':
+          return 'Tempo Kangaroo';
+        case 'lion.svg':
+          return 'Pride Leader';
+        case 'panda.svg':
+          return 'Zen Panda';
+        case 'penguin.svg':
+          return 'Chilled Penguin';
+        case 'rabit.svg':
+          return 'Agile Rabbit';
+        default:
+          return avatar.replaceAll('.svg', '');
+      }
+    }
+    return avatar;
+  }
   String get userGender => _userGender;
   bool get isNewUser => _isNewUser;
   bool get isHapticsEnabled => _isHapticsEnabled;

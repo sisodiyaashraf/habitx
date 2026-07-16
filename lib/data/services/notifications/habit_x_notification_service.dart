@@ -175,34 +175,48 @@ class HabitXNotificationService {
     );
 
     try {
-      // 2. The Main Execution with specific habit task details
+      // 1. Try with AlarmClock mode for absolute precision
       await _notifications.zonedSchedule(
         id: baseId,
         title: title,
         body: body,
         scheduledDate: scheduledDate,
         notificationDetails: _missionDetails(),
-        androidScheduleMode:
-            AndroidScheduleMode.exactAllowWhileIdle, // Bypasses system 'Doze'
+        androidScheduleMode: AndroidScheduleMode.alarmClock, // Bypasses all Doze restrictions, most precise
         matchDateTimeComponents: DateTimeComponents.time,
       );
-      debugPrint("HabitX: Armed exact reminder for habit '$name' at $scheduledDate");
+      debugPrint("HabitX: Armed exact alarmClock reminder for habit '$name' at $scheduledDate");
     } catch (e) {
-      debugPrint("HabitX: Exact alarm scheduling failed for '$name', trying inexact fallback: $e");
+      debugPrint("HabitX: alarmClock scheduling failed for '$name', trying exactAllowWhileIdle fallback: $e");
       try {
+        // 2. Fallback to exactAllowWhileIdle if alarmClock mode fails or is restricted
         await _notifications.zonedSchedule(
           id: baseId,
           title: title,
           body: body,
           scheduledDate: scheduledDate,
           notificationDetails: _missionDetails(),
-          androidScheduleMode:
-              AndroidScheduleMode.inexactAllowWhileIdle, // Fallback without permission
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           matchDateTimeComponents: DateTimeComponents.time,
         );
-        debugPrint("HabitX: Armed inexact fallback reminder for habit '$name' at $scheduledDate");
+        debugPrint("HabitX: Armed exactAllowWhileIdle fallback reminder for habit '$name' at $scheduledDate");
       } catch (innerErr) {
-        debugPrint("HabitX Critical: Failed to schedule fallback reminder for '$name': $innerErr");
+        debugPrint("HabitX: exactAllowWhileIdle failed for '$name', trying inexact fallback: $innerErr");
+        try {
+          // 3. Fallback to inexactAllowWhileIdle if exact permissions are denied completely
+          await _notifications.zonedSchedule(
+            id: baseId,
+            title: title,
+            body: body,
+            scheduledDate: scheduledDate,
+            notificationDetails: _missionDetails(),
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            matchDateTimeComponents: DateTimeComponents.time,
+          );
+          debugPrint("HabitX: Armed inexact fallback reminder for habit '$name' at $scheduledDate");
+        } catch (finalErr) {
+          debugPrint("HabitX Critical: Failed to schedule any reminder for '$name': $finalErr");
+        }
       }
     }
   }

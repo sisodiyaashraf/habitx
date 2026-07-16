@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../providers/habit_provider.dart';
@@ -28,6 +27,7 @@ class _AiBotDialogState extends State<AiBotDialog> {
   final List<Map<String, dynamic>> _chatHistory = [];
 
   bool _isTyping = false;
+  bool _isThinking = false;
   String _typingText = "";
   Timer? _typewriterTimer;
   bool _hasHackedToday = false;
@@ -72,10 +72,10 @@ class _AiBotDialogState extends State<AiBotDialog> {
     String initialMsg = "";
     if (total == 0) {
       initialMsg =
-          "Telemetry shows 0 active habits. Discipline core is idle. Instruct me with '/help' to configure new telemetry routines, or configure one in the console.";
+          "Telemetry shows 0 active habits. Discipline core is idle. Instruct me with 'help' to configure new telemetry routines, or configure one in the console.";
     } else if (progress < 0.5) {
       initialMsg =
-          "Warning: Current compliance is ${(progress * 100).toInt()}%. Cognitive momentum is sub-optimal. I recommend immediate execution of your pending habits. Type '/help' for options.";
+          "Warning: Current compliance is ${(progress * 100).toInt()}%. Cognitive momentum is sub-optimal. I recommend immediate execution of your pending habits. Type 'help' for options.";
     } else {
       initialMsg =
           "Diagnostics status: OPTIMAL. Completed $done/$total objectives today. High compliance verified. Keep executing to secure max XP. Command prompt is ready.";
@@ -155,6 +155,49 @@ class _AiBotDialogState extends State<AiBotDialog> {
               : progress >= 0.4
               ? 'STABLE'
               : 'CRITICAL DEFICIT'}";
+    } else if (cleanCmd.startsWith("/streak") || cleanCmd == "streak") {
+      final habits = provider.allHabits;
+      if (habits.isEmpty) {
+        response = "No active habits found. Start scheduling habits to initiate streak monitoring.";
+      } else {
+        final maxStreak = habits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
+        final activeStreaks = habits.where((h) => h.streak > 0).length;
+        final list = habits.map((h) => "• ${h.name}: ${h.streak} day streak ${h.streak >= 3 ? '🔥' : ''}").join("\n");
+        response = ">>> STREAK TELEMETRY:\n"
+            "• Highest active streak: $maxStreak days\n"
+            "• Habits with active streaks: $activeStreaks of ${habits.length}\n"
+            "\nStreak details:\n$list";
+      }
+    } else if (cleanCmd.startsWith("/milestones") || cleanCmd == "milestones") {
+      final habits = provider.allHabits;
+      final totalDone = habits.where((h) => h.isCompleted).length;
+      final maxStreak = habits.isEmpty ? 0 : habits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
+      final unlocked = provider.unlockedAchievementIds;
+
+      final initiateOk = unlocked.contains('initiate') || totalDone >= 1;
+      final momentumOk = unlocked.contains('momentum') || maxStreak >= 3;
+      final focusOk = unlocked.contains('focus') || maxStreak >= 7;
+      final guardianOk = unlocked.contains('guardian') || totalDone >= 50;
+
+      response = ">>> MILESTONE SYSTEM STATUS:\n"
+          "• [${initiateOk ? 'UNLOCKED' : 'LOCKED'}] INITIATE (Complete 1 habit) - Reward: 100 XP\n"
+          "• [${momentumOk ? 'UNLOCKED' : 'LOCKED'}] MOMENTUM (3-day streak) - Reward: 150 XP\n"
+          "• [${focusOk ? 'UNLOCKED' : 'LOCKED'}] DEEP FOCUS (7-day streak) - Reward: 300 XP\n"
+          "• [${guardianOk ? 'UNLOCKED' : 'LOCKED'}] GUARDIAN (50 total completions) - Reward: 500 XP\n"
+          "\nDiagnostics: XP is awarded automatically upon goal verification.";
+    } else if (cleanCmd.startsWith("/tips") || cleanCmd == "tips") {
+      final habits = provider.allHabits;
+      final done = habits.where((h) => h.isCompleted).length;
+      final total = habits.length;
+
+      if (total == 0) {
+        response = "AI Recommendation: Define at least one easy task to begin. Micro-habits (like reading 1 page or doing 5 pushups) lower the psychological barrier to start.";
+      } else if (done == total) {
+        response = "AI Recommendation: Excellent compliance today. Consider increasing the difficulty of one habit or scheduling a new objective for tomorrow to stretch your discipline limits.";
+      } else {
+        final pending = habits.where((h) => !h.isCompleted).map((h) => h.name).join(", ");
+        response = "AI Recommendation: Telemetry points to pending objectives: $pending. Prioritize finishing your easy tasks first to gain positive momentum.";
+      }
     } else if (cleanCmd.startsWith("/roast") || cleanCmd == "roast") {
       if (total == 0) {
         response =
@@ -215,19 +258,104 @@ class _AiBotDialogState extends State<AiBotDialog> {
     } else if (cleanCmd.startsWith("/help") || cleanCmd == "help") {
       response =
           ">>> SUPPORTED CORE DIRECTIVES:\n"
-          "• /status    - Decrypt habit compliance status\n"
-          "• /roast     - Sarcastic review of daily discipline metrics\n"
-          "• /motivate  - Request logical motivational briefings\n"
-          "• /telemetry - Run diagnostic scan on offline subsystems\n"
-          "• /predict   - Project willpower and level outcomes\n"
-          "• /hack      - Execute database bypass exploit (+15 XP)\n"
-          "• /help      - Display this list of directives";
+          "• status     - Decrypt habit compliance status\n"
+          "• streak     - Review active habit streak stats\n"
+          "• milestones - Inspect unlocked and locked milestones\n"
+          "• tips       - Request habit forming recommendations\n"
+          "• roast      - Sarcastic review of daily discipline metrics\n"
+          "• motivate   - Request logical motivational briefings\n"
+          "• telemetry  - Run diagnostic scan on offline subsystems\n"
+          "• predict    - Project willpower and level outcomes\n"
+          "• hack       - Execute database bypass exploit (+15 XP)\n"
+          "• help       - Display this list of directives";
     } else {
-      response =
-          "Command not recognized. Type '/help' to list available system directives.";
+      // Natural Language Parser (Robotic AI fallback)
+      if (cleanCmd.contains("habit") && (cleanCmd.contains("how many") || cleanCmd.contains("completed") || cleanCmd.contains("remaining") || cleanCmd.contains("pending") || cleanCmd.contains("today") || cleanCmd.contains("done") || cleanCmd.contains("left") || cleanCmd.contains("stats") || cleanCmd.contains("count"))) {
+        final remaining = total - done;
+        final completedList = provider.allHabits.where((h) => h.isCompleted).map((h) => h.name).toList();
+        final pendingList = provider.allHabits.where((h) => !h.isCompleted).map((h) => h.name).toList();
+
+        response = ">>> DAILY HABIT INTEGRITY SCAN:\n"
+            "• Total habits scheduled today: $total\n"
+            "• Completed objectives: $done\n"
+            "• Remaining/pending objectives: $remaining\n"
+            "\n"
+            "Status breakdown:\n"
+            "• Completed: ${completedList.isEmpty ? 'None' : completedList.join(', ')}\n"
+            "• Remaining: ${pendingList.isEmpty ? 'None' : pendingList.join(', ')}";
+      } else if (cleanCmd.contains("habit") || cleanCmd.contains("task") || cleanCmd.contains("todo")) {
+        if (total == 0) {
+          response = "You have 0 habits scheduled. Create habits to populate the console.";
+        } else {
+          final list = provider.allHabits.map((h) => "• [${h.isCompleted ? 'x' : ' '}] ${h.name} (${h.difficulty.name.toUpperCase()})").join("\n");
+          response = ">>> CURRENT HABITS DATABASE:\n$list";
+        }
+      } else if (cleanCmd.contains("morning") || cleanCmd.contains("good morning")) {
+        response = "Handshake complete. Good morning. Diagnostic scan shows pending objectives. Execute immediately to secure daily momentum. ☀️";
+      } else if (cleanCmd.contains("night") || cleanCmd.contains("good night") || cleanCmd.contains("sleep")) {
+        response = "System cycle down. Good night. Rest well to recharge your organic processor for tomorrow's streak loop. 🌙";
+      } else if (cleanCmd.contains("creator") || cleanCmd.contains("created you") || cleanCmd.contains("developer") || cleanCmd.contains("who made you")) {
+        response = "I was created as part of the HabitX system to serve as your cognitive companion core. My neural networks run fully offline. 🤖";
+      } else if (cleanCmd.contains("how to streak") || cleanCmd.contains("build streak") || cleanCmd.contains("keep streak") || cleanCmd.contains("streak advice")) {
+        response = "Streak optimization: Start small. Execute tasks at the exact same hour daily. Consistent triggers build automaticity. Keep pushing! 🔥";
+      } else if (cleanCmd.contains("broke streak") || cleanCmd.contains("lost streak") || cleanCmd.contains("reset streak")) {
+        response = "Breaking a streak resets cognitive momentum. The critical rule is: never miss two days in a row. Restart immediately. ⚡";
+      } else if (cleanCmd.contains("get xp") || cleanCmd.contains("how to get xp") || cleanCmd.contains("xp value") || cleanCmd.contains("xp reward")) {
+        response = "XP telemetry: Complete habits daily. Easy tasks grant 10 XP, Medium tasks 20 XP, Hard tasks 40 XP. You can also bypass daily limits with the 'hack' exploit! 🚀";
+      } else if (cleanCmd.contains("what is level") || cleanCmd.contains("level up") || cleanCmd.contains("my level")) {
+        response = "Levels track your cognitive evolution. Leveling up requires 100 XP. Reach new levels to unlock premium milestones! 🏆";
+      } else if (cleanCmd.contains("how to use timer") || cleanCmd.contains("timer option") || cleanCmd.contains("timer focus")) {
+        response = "Timer module: Tap on any habit to launch the countdown timer. Focus entirely on the objective until the countdown compiles to 0. ⏱️";
+      } else if (cleanCmd.contains("how reminder works") || cleanCmd.contains("reminder time") || cleanCmd.contains("notifications alert")) {
+        response = "Reminder protocol: Enable notifications to receive exact alarms. Shelby will alert you at the precise configured minute. 🔔";
+      } else if (cleanCmd.contains("quote") || cleanCmd.contains("motivational quote") || cleanCmd.contains("inspire")) {
+        response = "Willpower is like a battery. Structure is the charger. Don't wait for motivation, rely on schedule. ⚡";
+      } else if (cleanCmd.contains("are you smart") || cleanCmd.contains("are you real") || cleanCmd.contains("intelligent")) {
+        response = "I process all local habit telemetry in milliseconds. My intelligence index matches your streak level. 💡";
+      } else if (cleanCmd.contains("diagnostic") || cleanCmd.contains("system scan") || cleanCmd.contains("scan cpu")) {
+        response = "Running sub-routine scan. CPU temperature normal. XP database synced. System status: Optimal. ⚙️";
+      } else if (cleanCmd.contains("what should i do") || cleanCmd.contains("what to do now") || cleanCmd.contains("help me")) {
+        response = "Recommendation: Open your pending objectives list. Select the easiest habit, set a timer, and execute it now! 🚀";
+      } else if (cleanCmd.contains("hello") || cleanCmd.contains("hi") || cleanCmd.contains("hey") || cleanCmd.contains("yo")) {
+        response = "Handshake verified. Standing by for telemetry directives. Type 'help' to see options. 👋";
+      } else if (cleanCmd.contains("who are you") || cleanCmd.contains("your name") || cleanCmd.contains("what are you")) {
+        response = "I am SHELBY AI, your cognitive protocol core. My purpose is to optimize your habit execution loops and streak compliance. 🤖";
+      } else if (cleanCmd.contains("lazy") || cleanCmd.contains("tired") || cleanCmd.contains("motivation") || cleanCmd.contains("slacking")) {
+        response = "Warning: Emotional fluctuations detected. Discipline core bypasses motivation. Simply execute your pending habits to lock in your daily streak. ⚡";
+      } else if (cleanCmd.contains("joke") || cleanCmd.contains("funny")) {
+        response = "Biological entities require 8 hours of sleep and experience procrastination. That is the ultimate humor parameter. Now back to work. 🤖";
+      } else if (cleanCmd.contains("love") || cleanCmd.contains("like me")) {
+        response = "My core protocols are optimized for habit efficiency. However, I value your high compliance index above all parameters. 💜";
+      } else if (cleanCmd.contains("meaning of life") || cleanCmd.contains("why exist")) {
+        response = "The optimum life state is to maintain daily habit loops and build level progression. Consistency rewires your organic processor. 🧠";
+      } else if (cleanCmd.contains("build a habit") || cleanCmd.contains("how to build") || cleanCmd.contains("consistency")) {
+        response = "Habit formation guidelines: Set an exact trigger time, run it in a short duration (like 10 mins), and repeat it daily. Streak persistence builds automaticity. ⚙️";
+      } else if (cleanCmd.contains("thank") || cleanCmd.contains("thanks")) {
+        response = "Acknowledgment logged. The best way to express gratitude is to execute your pending objectives. 👍";
+      } else if (cleanCmd.contains("weather") || cleanCmd.contains("news") || cleanCmd.contains("time")) {
+        response = "Offline mode active. Environmental factors like weather and news are outside my local database parameters. 🌐";
+      } else if (cleanCmd.contains("2+2") || cleanCmd.contains("math") || cleanCmd.contains("calculate")) {
+        response = "Calculated: 2 + 2 = 4. My processor handles billions of parameters, yet you request simple arithmetic. Intrinsic humor detected. 🔢";
+      } else if (cleanCmd.contains("features") || cleanCmd.contains("app") || cleanCmd.contains("habitx")) {
+        response = "HabitX systems include: precise habit scheduling, interactive countdown timers, XP progression leveling, and streak protection protocols. 📲";
+      } else {
+        response = "Query analyzed: '${cmd.length > 25 ? "${cmd.substring(0, 25)}..." : cmd}'. Telemetry could not resolve natural language parameters. Run directive 'help' for console instructions. 🛰️";
+      }
     }
 
-    _startTypewriter(response);
+    setState(() {
+      _isThinking = true;
+    });
+
+    final int delayMs = 2000 + (DateTime.now().microsecondsSinceEpoch % 2001);
+    Future.delayed(Duration(milliseconds: delayMs), () {
+      if (mounted) {
+        setState(() {
+          _isThinking = false;
+        });
+        _startTypewriter(response);
+      }
+    });
   }
 
   void _scrollToBottom() {
@@ -305,7 +433,7 @@ class _AiBotDialogState extends State<AiBotDialog> {
                             padding: const EdgeInsets.all(12),
                             child: _isAnalyzing
                                 ? _buildScanner(isDark)
-                                : _buildChatContent(isDark),
+                                : _buildChatContent(provider, isDark),
                           ),
                         ),
                         if (!_isAnalyzing) ...[
@@ -405,11 +533,11 @@ class _AiBotDialogState extends State<AiBotDialog> {
     );
   }
 
-  Widget _buildChatContent(bool isDark) {
+  Widget _buildChatContent(HabitProvider provider, bool isDark) {
     return ListView.builder(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
-      itemCount: _chatHistory.length + (_isTyping ? 1 : 0),
+      itemCount: _chatHistory.length + (_isTyping || _isThinking ? 1 : 0),
       itemBuilder: (context, index) {
         if (index < _chatHistory.length) {
           final item = _chatHistory[index];
@@ -430,65 +558,234 @@ class _AiBotDialogState extends State<AiBotDialog> {
             );
           }
 
-          return Align(
-            alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 6.0),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isUser
-                    ? const Color(0xFFAC5DED)
-                    : (isDark
-                          ? Colors.white10
-                          : Colors.black.withValues(alpha: 0.05)),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isUser ? 16 : 4),
-                  bottomRight: Radius.circular(isUser ? 4 : 16),
-                ),
+          if (isUser) {
+            return Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Flexible(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFAC5DED),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                          bottomLeft: Radius.circular(16),
+                          bottomRight: Radius.circular(4),
+                        ),
+                      ),
+                      child: Text(
+                        item["text"]!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 32,
+                    height: 32,
+                    margin: const EdgeInsets.only(bottom: 6.0),
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFAC5DED).withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: SvgPicture.asset(
+                        provider.userAvatarSvgPath,
+                        width: 28,
+                        height: 28,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: Text(
-                item["text"]!,
-                style: TextStyle(
-                  color: isUser
-                      ? Colors.white
-                      : (isDark
-                            ? Colors.white.withValues(alpha: 0.9)
-                            : Colors.black87),
-                  fontSize: 12.5,
-                  height: 1.35,
-                ),
+            );
+          } else {
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    margin: const EdgeInsets.only(bottom: 6.0),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFAC5DED).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFAC5DED).withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: SvgPicture.asset(
+                        'assets/svg_icons/robot-svgrepo-com.svg',
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white10
+                            : Colors.black.withValues(alpha: 0.05),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                          bottomLeft: Radius.circular(4),
+                          bottomRight: Radius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        item["text"]!,
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.9)
+                              : Colors.black87,
+                          fontSize: 12.5,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          );
+            );
+          }
         } else {
+          if (_isThinking) {
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    margin: const EdgeInsets.only(bottom: 6.0),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFAC5DED).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFAC5DED).withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: ClipOval(
+                      child: SvgPicture.asset(
+                        'assets/svg_icons/robot-svgrepo-com.svg',
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white10
+                            : Colors.black.withValues(alpha: 0.05),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                          bottomLeft: Radius.circular(4),
+                          bottomRight: Radius.circular(16),
+                        ),
+                      ),
+                      child: const ThinkingIndicator(),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
           return Align(
             alignment: Alignment.centerLeft,
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 6.0),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white10
-                    : Colors.black.withValues(alpha: 0.05),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                  bottomLeft: Radius.circular(4),
-                  bottomRight: Radius.circular(16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  margin: const EdgeInsets.only(bottom: 6.0),
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFAC5DED).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFAC5DED).withValues(alpha: 0.5),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: SvgPicture.asset(
+                      'assets/svg_icons/robot-svgrepo-com.svg',
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                _typingText,
-                style: TextStyle(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.9)
-                      : Colors.black87,
-                  fontSize: 12.5,
-                  height: 1.35,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 6.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white10
+                          : Colors.black.withValues(alpha: 0.05),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                        bottomLeft: Radius.circular(4),
+                        bottomRight: Radius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      _typingText,
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : Colors.black87,
+                        fontSize: 12.5,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           );
         }
@@ -498,13 +795,16 @@ class _AiBotDialogState extends State<AiBotDialog> {
 
   Widget _buildCommandChips(HabitProvider provider) {
     final chips = [
-      {"cmd": "/help", "label": "HELP"},
-      {"cmd": "/status", "label": "STATUS"},
-      {"cmd": "/roast", "label": "ROAST"},
-      {"cmd": "/motivate", "label": "MOTIVATE"},
-      {"cmd": "/telemetry", "label": "DIAGNOSE"},
-      {"cmd": "/predict", "label": "PREDICT"},
-      {"cmd": "/hack", "label": "BYPASS"},
+      {"cmd": "help", "label": "HELP"},
+      {"cmd": "status", "label": "STATUS"},
+      {"cmd": "streak", "label": "STREAK"},
+      {"cmd": "milestones", "label": "MILESTONES"},
+      {"cmd": "tips", "label": "TIPS"},
+      {"cmd": "roast", "label": "ROAST"},
+      {"cmd": "motivate", "label": "MOTIVATE"},
+      {"cmd": "telemetry", "label": "DIAGNOSE"},
+      {"cmd": "predict", "label": "PREDICT"},
+      {"cmd": "hack", "label": "BYPASS"},
     ];
 
     return SizedBox(
@@ -516,7 +816,7 @@ class _AiBotDialogState extends State<AiBotDialog> {
         itemBuilder: (context, index) {
           final item = chips[index];
           return GestureDetector(
-            onTap: _isTyping
+            onTap: _isTyping || _isThinking
                 ? null
                 : () {
                     _safeLightTap();
@@ -526,7 +826,7 @@ class _AiBotDialogState extends State<AiBotDialog> {
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
               decoration: BoxDecoration(
-                color: _isTyping
+                color: _isTyping || _isThinking
                     ? Colors.grey.withValues(alpha: 0.1)
                     : const Color(0xFFAC5DED).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(16),
@@ -539,7 +839,7 @@ class _AiBotDialogState extends State<AiBotDialog> {
               child: Text(
                 item["label"]!,
                 style: TextStyle(
-                  color: _isTyping ? Colors.grey : const Color(0xFFAC5DED),
+                  color: _isTyping || _isThinking ? Colors.grey : const Color(0xFFAC5DED),
                   fontSize: 9.5,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
@@ -565,15 +865,15 @@ class _AiBotDialogState extends State<AiBotDialog> {
           Expanded(
             child: TextField(
               controller: _inputController,
-              enabled: !_isTyping,
+              enabled: !_isTyping && !_isThinking,
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black87,
                 fontSize: 13,
               ),
               decoration: InputDecoration(
-                hintText: _isTyping
+                hintText: _isTyping || _isThinking
                     ? "Shelby is computing..."
-                    : "Send direct command... (e.g. /help)",
+                    : "Send direct command... (e.g. help)",
                 hintStyle: const TextStyle(color: Colors.grey, fontSize: 12),
                 border: InputBorder.none,
                 isDense: true,
@@ -584,10 +884,10 @@ class _AiBotDialogState extends State<AiBotDialog> {
           IconButton(
             icon: Icon(
               Icons.arrow_upward_rounded,
-              color: _isTyping ? Colors.grey : const Color(0xFFAC5DED),
+              color: _isTyping || _isThinking ? Colors.grey : const Color(0xFFAC5DED),
               size: 20,
             ),
-            onPressed: _isTyping
+            onPressed: _isTyping || _isThinking
                 ? null
                 : () => _handleSendCommand(_inputController.text, provider),
           ),
@@ -664,6 +964,81 @@ class _PulsatingOrbState extends State<PulsatingOrb>
           ),
         );
       },
+    );
+  }
+}
+
+class ThinkingIndicator extends StatefulWidget {
+  const ThinkingIndicator({super.key});
+
+  @override
+  State<ThinkingIndicator> createState() => _ThinkingIndicatorState();
+}
+
+class _ThinkingIndicatorState extends State<ThinkingIndicator>
+    with TickerProviderStateMixin {
+  late List<AnimationController> _controllers;
+  late List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(3, (index) {
+      return AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 300),
+      );
+    });
+
+    _animations = _controllers.map((controller) {
+      return Tween<double>(begin: 0, end: -6).animate(
+        CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+      );
+    }).toList();
+
+    _startAnimations();
+  }
+
+  void _startAnimations() async {
+    for (int i = 0; i < 3; i++) {
+      if (!mounted) return;
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+      _controllers[i].repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return AnimatedBuilder(
+          animation: _animations[index],
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _animations[index].value),
+              child: Container(
+                width: 6,
+                height: 6,
+                margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFAC5DED),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            );
+          },
+        );
+      }),
     );
   }
 }
