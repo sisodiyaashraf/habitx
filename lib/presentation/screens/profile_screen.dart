@@ -124,14 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   subTextColor,
                   onTap: () => _showPersonaDialog(context, provider),
                 ),
-                _settingsTile(
-                  Icons.wc_rounded,
-                  "Gender Voice",
-                  "Tone: ${provider.userGender}",
-                  textColor,
-                  subTextColor,
-                  onTap: () => _showGenderDialog(context, provider),
-                ),
+
                 _settingsTile(
                   Icons.notifications_active_rounded,
                   "Reminders",
@@ -312,6 +305,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final TextEditingController ageController = TextEditingController(
       text: provider.userAge.toString(),
     );
+    final FocusNode nameFocusNode = FocusNode();
+    final FocusNode ageFocusNode = FocusNode();
+
+    // Reference to dialog's local StateSetter to trigger state updates once per focus transition
+    StateSetter? dialogSetState;
+
+    nameFocusNode.addListener(() {
+      if (dialogSetState != null) {
+        dialogSetState!(() {});
+      }
+    });
+    ageFocusNode.addListener(() {
+      if (dialogSetState != null) {
+        dialogSetState!(() {});
+      }
+    });
 
     showDialog(
       context: context,
@@ -320,158 +329,245 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final dialogTextColor = isDark ? Colors.white : Colors.black;
         final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
 
-        return Center(
-          child: SingleChildScrollView(
-            child: Material(
-              color: Colors.transparent,
-              child: GlassmorphicContainer(
-                width: MediaQuery.of(context).size.width * 0.85,
-                height: 320,
-                borderRadius: 30,
-                blur: 20,
-                alignment: Alignment.center,
-                border: 2,
-                linearGradient: LinearGradient(
-                  colors: [
-                    Colors.white.withValues(alpha: 0.2),
-                    Colors.white.withValues(alpha: 0.1),
-                  ],
-                ),
-                borderGradient: const LinearGradient(
-                  colors: [Color(0xFFAC5DED), Colors.white24],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text(
-                          "UPDATE IDENTITY",
-                          style: TextStyle(
-                            color: dialogTextColor,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.5,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Material(
-                          color: Colors.transparent,
-                          child: Column(
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 6.0),
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.06),
-                                  borderRadius: BorderRadius.circular(15),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                child: TextField(
-                                  controller: nameController,
-                                  style: TextStyle(
-                                    color: dialogTextColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    icon: Icon(
-                                      Icons.person_rounded,
-                                      color: const Color(0xFFAC5DED).withValues(alpha: 0.8),
-                                    ),
-                                    hintText: "Name",
-                                    hintStyle: TextStyle(
-                                      color: dialogSubTextColor.withValues(alpha: 0.4),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 6.0),
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.06),
-                                  borderRadius: BorderRadius.circular(15),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                                child: TextField(
-                                  controller: ageController,
-                                  keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
-                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                  style: TextStyle(
-                                    color: dialogTextColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    icon: Icon(
-                                      Icons.cake_rounded,
-                                      color: const Color(0xFFAC5DED).withValues(alpha: 0.8),
-                                    ),
-                                    hintText: "Age",
-                                    hintStyle: TextStyle(
-                                      color: dialogSubTextColor.withValues(alpha: 0.4),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            dialogSetState = setStateDialog;
+
+            return Center(
+              child: SingleChildScrollView(
+                child: Material(
+                  color: Colors.transparent,
+                  child: GlassmorphicContainer(
+                    width: MediaQuery.of(context).size.width * 0.85,
+                    height: 380,
+                    borderRadius: 30,
+                    blur: 20,
+                    alignment: Alignment.center,
+                    border: 2,
+                    linearGradient: LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.2),
+                        Colors.white.withValues(alpha: 0.1),
+                      ],
+                    ),
+                    borderGradient: const LinearGradient(
+                      colors: [Color(0xFFAC5DED), Colors.white24],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text(
-                                "CANCEL",
-                                style: TextStyle(color: dialogSubTextColor),
+                            Text(
+                              "UPDATE IDENTITY",
+                              style: TextStyle(
+                                color: dialogTextColor,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.5,
+                                fontSize: 12,
                               ),
                             ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFAC5DED),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
+                            const SizedBox(height: 16),
+                            Material(
+                              color: Colors.transparent,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(vertical: 6.0),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                                    decoration: BoxDecoration(
+                                      color: nameFocusNode.hasFocus
+                                          ? const Color(0xFFAC5DED).withValues(alpha: 0.1)
+                                          : Colors.white.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(15),
+                                      border: Border.all(
+                                        color: nameFocusNode.hasFocus
+                                            ? const Color(0xFFAC5DED)
+                                            : Colors.white.withValues(alpha: 0.1),
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: nameFocusNode.hasFocus
+                                          ? [
+                                              BoxShadow(
+                                                color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 4),
+                                              )
+                                            ]
+                                          : [],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.person_rounded,
+                                          color: nameFocusNode.hasFocus ? const Color(0xFFAC5DED) : dialogTextColor.withValues(alpha: 0.7),
+                                          size: 24,
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                "USER NAME",
+                                                style: TextStyle(
+                                                  color: nameFocusNode.hasFocus ? const Color(0xFFAC5DED) : dialogSubTextColor.withValues(alpha: 0.6),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10,
+                                                  letterSpacing: 1.0,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              TextField(
+                                                controller: nameController,
+                                                focusNode: nameFocusNode,
+                                                style: TextStyle(
+                                                  color: dialogTextColor,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                                decoration: const InputDecoration(
+                                                  border: InputBorder.none,
+                                                  isDense: true,
+                                                  contentPadding: EdgeInsets.zero,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(vertical: 6.0),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                                    decoration: BoxDecoration(
+                                      color: ageFocusNode.hasFocus
+                                          ? const Color(0xFFAC5DED).withValues(alpha: 0.1)
+                                          : Colors.white.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(15),
+                                      border: Border.all(
+                                        color: ageFocusNode.hasFocus
+                                            ? const Color(0xFFAC5DED)
+                                            : Colors.white.withValues(alpha: 0.1),
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: ageFocusNode.hasFocus
+                                          ? [
+                                              BoxShadow(
+                                                color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 4),
+                                              )
+                                            ]
+                                          : [],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.cake_rounded,
+                                          color: ageFocusNode.hasFocus ? const Color(0xFFAC5DED) : dialogTextColor.withValues(alpha: 0.7),
+                                          size: 24,
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                "USER AGE",
+                                                style: TextStyle(
+                                                  color: ageFocusNode.hasFocus ? const Color(0xFFAC5DED) : dialogSubTextColor.withValues(alpha: 0.6),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10,
+                                                  letterSpacing: 1.0,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              TextField(
+                                                controller: ageController,
+                                                focusNode: ageFocusNode,
+                                                keyboardType: const TextInputType.numberWithOptions(decimal: false, signed: false),
+                                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                                style: TextStyle(
+                                                  color: dialogTextColor,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                                decoration: const InputDecoration(
+                                                  border: InputBorder.none,
+                                                  isDense: true,
+                                                  contentPadding: EdgeInsets.zero,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                              onPressed: () {
-                                if (nameController.text.isNotEmpty &&
-                                    ageController.text.isNotEmpty) {
-                                  provider.setupUser(
-                                    name: nameController.text,
-                                    age: int.tryParse(ageController.text) ?? 18,
-                                    persona: provider.userPersona,
-                                  );
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: const Text(
-                                "UPDATE",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    nameFocusNode.dispose();
+                                    ageFocusNode.dispose();
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(
+                                    "CANCEL",
+                                    style: TextStyle(color: dialogSubTextColor),
+                                  ),
                                 ),
-                              ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFAC5DED),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    if (nameController.text.isNotEmpty &&
+                                        ageController.text.isNotEmpty) {
+                                      provider.setupUser(
+                                        name: nameController.text,
+                                        age: int.tryParse(ageController.text) ?? 18,
+                                        persona: provider.userPersona,
+                                        gender: provider.userGender,
+                                      );
+                                      nameFocusNode.dispose();
+                                      ageFocusNode.dispose();
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                  child: const Text(
+                                    "UPDATE",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
@@ -667,106 +763,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showGenderDialog(BuildContext context, HabitProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final dialogTextColor = isDark ? Colors.white : Colors.black;
-        final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
 
-        return Center(
-          child: Material(
-            color: Colors.transparent,
-            child: GlassmorphicContainer(
-              width: MediaQuery.of(context).size.width * 0.85,
-              height: 280,
-              borderRadius: 30,
-              blur: 20,
-              alignment: Alignment.center,
-              border: 2,
-              linearGradient: LinearGradient(
-                colors: [
-                  Colors.white.withValues(alpha: 0.2),
-                  Colors.white.withValues(alpha: 0.1),
-                ],
-              ),
-              borderGradient: const LinearGradient(
-                colors: [Color(0xFFAC5DED), Colors.white24],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(
-                      "GENDER TONE",
-                      style: TextStyle(
-                        color: dialogTextColor,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildGenderBtn(context, provider, "Male", dialogTextColor),
-                    _buildGenderBtn(context, provider, "Female", dialogTextColor),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        "CLOSE",
-                        style: TextStyle(color: dialogSubTextColor),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGenderBtn(
-    BuildContext context,
-    HabitProvider provider,
-    String gender,
-    Color activeTextColor,
-  ) {
-    final bool isSelected = provider.userGender.toLowerCase() == gender.toLowerCase();
-
-    return Container(
-      width: double.infinity,
-      height: 48,
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: TextButton(
-        style: TextButton.styleFrom(
-          backgroundColor: isSelected
-              ? const Color(0xFFAC5DED).withValues(alpha: 0.2)
-              : Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: BorderSide(
-              color: isSelected ? const Color(0xFFAC5DED) : Colors.white12,
-            ),
-          ),
-        ),
-        onPressed: () {
-          provider.updateGender(gender);
-          Navigator.pop(context);
-        },
-        child: Text(
-          gender.toUpperCase(),
-          style: TextStyle(
-            color: isSelected ? const Color(0xFFAC5DED) : activeTextColor.withValues(alpha: 0.6),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
 
   void _showLogoutDialog(BuildContext context, HabitProvider provider) {
     showDialog(
@@ -1271,82 +1268,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 5.0),
-                            child: InkWell(
-                              onTap: () {
-                                provider.updateAvatar(name);
-                                Navigator.pop(context);
-                              },
-                              borderRadius: BorderRadius.circular(15),
-                              child: Ink(
-                                decoration: BoxDecoration(
-                                  gradient: isSelected
-                                      ? const LinearGradient(
-                                          colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        )
-                                      : null,
-                                  color: isSelected ? null : Colors.white.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(15),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? const Color(0xFF00E5FF).withValues(alpha: 0.5)
-                                        : Colors.white.withValues(alpha: 0.1),
-                                    width: 1.5,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  provider.updateAvatar(name);
+                                  Navigator.pop(context);
+                                },
+                                borderRadius: BorderRadius.circular(15),
+                                child: Ink(
+                                  decoration: BoxDecoration(
+                                    gradient: isSelected
+                                        ? const LinearGradient(
+                                            colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          )
+                                        : null,
+                                    color: isSelected ? null : Colors.white.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(15),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? const Color(0xFF00E5FF).withValues(alpha: 0.5)
+                                          : Colors.white.withValues(alpha: 0.1),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: isSelected
+                                        ? [
+                                            BoxShadow(
+                                              color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 4),
+                                            )
+                                          ]
+                                        : [],
                                   ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: isSelected ? Colors.white.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: ClipOval(
-                                          child: SvgPicture.asset(
-                                            path,
-                                            width: 36,
-                                            height: 36,
-                                            fit: BoxFit.cover,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 44,
+                                          height: 44,
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? Colors.white.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: ClipOval(
+                                            child: SvgPicture.asset(
+                                              path,
+                                              width: 36,
+                                              height: 36,
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              displayName,
-                                              style: TextStyle(
-                                                color: isSelected ? Colors.white : dialogTextColor,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                displayName,
+                                                style: TextStyle(
+                                                  color: isSelected ? Colors.white : dialogTextColor,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              desc,
-                                              style: TextStyle(
-                                                color: isSelected ? Colors.white70 : dialogSubTextColor.withValues(alpha: 0.6),
-                                                fontSize: 10,
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                desc,
+                                                style: TextStyle(
+                                                  color: isSelected ? Colors.white70 : dialogSubTextColor.withValues(alpha: 0.6),
+                                                  fontSize: 10,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      if (isSelected)
-                                        const Icon(
-                                          Icons.check_circle_rounded,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                    ],
+                                        if (isSelected)
+                                          const Icon(
+                                            Icons.check_circle_rounded,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
