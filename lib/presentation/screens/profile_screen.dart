@@ -4,6 +4,7 @@ import 'package:glassmorphism/glassmorphism.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:habitx/presentation/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
+import '../../domain/models/habit.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../../providers/habit_provider.dart';
 import '../../core/constants/notification_messages.dart';
@@ -1024,16 +1025,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   bool _isDayActive(HabitProvider provider, DateTime date) {
-    for (var habit in provider.allHabits) {
-      for (var completedDate in habit.completedDates) {
-        if (completedDate.year == date.year &&
-            completedDate.month == date.month &&
-            completedDate.day == date.day) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return provider.allHabits.any((h) => h.completedDates.any((d) => d.isSameDay(date)));
   }
 
   Widget _buildWeeklyPerformance(
