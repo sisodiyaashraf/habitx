@@ -176,10 +176,7 @@ class HabitProvider extends ChangeNotifier {
     bool needsSave = false;
 
     for (var habit in loadedHabits) {
-      bool isDifferentDay =
-          habit.lastCompleted.year != now.year ||
-          habit.lastCompleted.month != now.month ||
-          habit.lastCompleted.day != now.day;
+      bool isDifferentDay = !habit.lastCompleted.isSameDay(now);
 
       if (habit.isCompleted && isDifferentDay) {
         _allHabits.add(habit.copyWith(isCompleted: false));
@@ -605,8 +602,6 @@ class HabitProvider extends ChangeNotifier {
     final bool isNowCompleted = !habit.isCompleted;
     final List<DateTime> updatedCompletedDates = List.from(habit.completedDates);
     final now = DateTime.now();
-    final todayStr = "${now.year}-${now.month}-${now.day}";
-
     if (isNowCompleted) {
       if (_isHapticsEnabled) HapticHelper.success();
       _applyGamification(habit.xpValue);
@@ -617,17 +612,13 @@ class HabitProvider extends ChangeNotifier {
         body: "Goal '${habit.name}' verified. XP secured.",
       );
 
-      bool alreadyAdded = updatedCompletedDates.any(
-        (d) => "${d.year}-${d.month}-${d.day}" == todayStr,
-      );
+      bool alreadyAdded = updatedCompletedDates.any((d) => d.isSameDay(now));
       if (!alreadyAdded) {
         updatedCompletedDates.add(now);
       }
     } else {
       _reverseGamification(habit.xpValue);
-      updatedCompletedDates.removeWhere(
-        (d) => "${d.year}-${d.month}-${d.day}" == todayStr,
-      );
+      updatedCompletedDates.removeWhere((d) => d.isSameDay(now));
 
       if (habit.reminderTime != null) {
         HabitXNotificationService().scheduleHabitReminder(
