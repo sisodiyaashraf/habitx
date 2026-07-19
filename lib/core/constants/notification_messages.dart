@@ -116,37 +116,34 @@ class NotificationMessages {
     }
   }
 
+  static List<String> _getMessagesForPersona(String persona, String gender) {
+    if (_isIndianRegion()) {
+      return _getIndianMessages(persona, gender);
+    }
+    switch (persona.toLowerCase()) {
+      case 'genz':
+        return genZMessages;
+      case 'overlord':
+      case 'habito':
+      case 'shelby':
+        return overlordMessages;
+      case 'elite':
+      case 'professional':
+      default:
+        return eliteMessages;
+    }
+  }
+
+  static String _cleanMessage(String msg) {
+    return msg.replaceAll('Streak: {X} din.', 'Daily streak');
+  }
+
   /// Helper to get a random motivational prompt based on persona.
   /// Defaults to [eliteMessages] if persona is unknown.
   static String getRandomPrompt(String persona, {String gender = "Male"}) {
     final Random random = Random();
-    List<String> messages;
-
-    if (_isIndianRegion()) {
-      messages = _getIndianMessages(persona, gender);
-    } else {
-      switch (persona.toLowerCase()) {
-        case 'genz':
-          messages = genZMessages;
-          break;
-        case 'overlord':
-        case 'habito':
-        case 'shelby':
-          messages = overlordMessages;
-          break;
-        case 'elite':
-        case 'professional':
-        default:
-          messages = eliteMessages;
-          break;
-      }
-    }
-
-    String msg = messages[random.nextInt(messages.length)];
-    if (msg.contains('{X}')) {
-      msg = msg.replaceAll('Streak: {X} din.', 'Daily streak');
-    }
-    return msg;
+    final List<String> messages = _getMessagesForPersona(persona, gender);
+    return _cleanMessage(messages[random.nextInt(messages.length)]);
   }
 
   static String getPromptForDay(
@@ -154,62 +151,16 @@ class NotificationMessages {
     int weekday, {
     String gender = "Male",
   }) {
-    List<String> messages;
-
-    if (_isIndianRegion()) {
-      messages = _getIndianMessages(persona, gender);
-    } else {
-      switch (persona.toLowerCase()) {
-        case 'genz':
-          messages = genZMessages;
-          break;
-        case 'overlord':
-        case 'habito':
-        case 'shelby':
-          messages = overlordMessages;
-          break;
-        case 'elite':
-        case 'professional':
-        default:
-          messages = eliteMessages;
-          break;
-      }
-    }
-
+    final List<String> messages = _getMessagesForPersona(persona, gender);
     final int index = (weekday - 1) % messages.length;
-    String msg = messages[index];
-    if (msg.contains('{X}')) {
-      msg = msg.replaceAll('Streak: {X} din.', 'Daily streak');
-    }
-    return msg;
+    return _cleanMessage(messages[index]);
   }
 
   static List<String> getUniquePromptsForWeek(
     String persona, {
     String gender = "Male",
   }) {
-    List<String> pool;
-
-    if (_isIndianRegion()) {
-      pool = List.from(_getIndianMessages(persona, gender));
-    } else {
-      switch (persona.toLowerCase()) {
-        case 'genz':
-          pool = List.from(genZMessages);
-          break;
-        case 'overlord':
-        case 'habito':
-        case 'shelby':
-          pool = List.from(overlordMessages);
-          break;
-        case 'elite':
-        case 'professional':
-        default:
-          pool = List.from(eliteMessages);
-          break;
-      }
-    }
-
+    final pool = _getMessagesForPersona(persona, gender);
     final random = Random();
     final List<String> result = List.filled(14, "");
 
@@ -238,9 +189,7 @@ class NotificationMessages {
 
     // Replace templates/placeholders
     for (int i = 0; i < result.length; i++) {
-      if (result[i].contains('{X}')) {
-        result[i] = result[i].replaceAll('Streak: {X} din.', 'Daily streak');
-      }
+      result[i] = _cleanMessage(result[i]);
     }
 
     return result;
