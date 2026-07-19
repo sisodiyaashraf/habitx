@@ -655,16 +655,7 @@ class HabitProvider extends ChangeNotifier {
 
   void setAiTimer(int minutes) {
     _currentSeconds = minutes * 60;
-    _timer?.cancel();
-    _isTimerRunning = true;
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_currentSeconds > 0) {
-        _currentSeconds--;
-        notifyListeners();
-      } else {
-        _handleTimerCompletion();
-      }
-    });
+    _resumeCountdown();
     notifyListeners();
   }
 
