@@ -4,6 +4,8 @@ import 'package:habitx/providers/habit_provider.dart';
 import 'package:habitx/domain/models/habit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:habitx/data/services/notifications/habit_x_notification_service.dart';
+import 'package:habitx/core/constants/notification_messages.dart';
+import 'package:habitx/presentation/widgets/tracking/achievement_tracker.dart';
 
 class MockHabitXNotificationService extends HabitXNotificationService {
   MockHabitXNotificationService._() : super.internal();
@@ -150,5 +152,57 @@ void main() {
     provider.addHabit(habit);
     expect(provider.allHabits.length, 1);
     expect(mockNotificationService.scheduleReminderCalled, true);
+  });
+
+  test('HabitX Daily Motivations: getUniquePromptsForWeek must return unique and randomized prompts for morning and evening briefings in a day', () {
+    final personas = ['genz', 'overlord', 'elite'];
+    for (final persona in personas) {
+      final prompts = NotificationMessages.getUniquePromptsForWeek(persona);
+      
+      expect(prompts.length, 14);
+
+      for (int day = 1; day <= 7; day++) {
+        final morningPrompt = prompts[day - 1];
+        final eveningPrompt = prompts[day + 6];
+        expect(morningPrompt, isNot(equals(eveningPrompt)));
+        expect(morningPrompt.isNotEmpty, true);
+        expect(eveningPrompt.isNotEmpty, true);
+      }
+    }
+  });
+
+  test('HabitX Achievements: getAchievementData computes 11 achievements correctly based on provider state', () {
+    final provider = HabitProvider();
+
+    var achievements = AchievementTracker.getAchievementData(provider);
+    expect(achievements.length, 11);
+    
+    for (final a in achievements) {
+      expect(a['unlocked'], false);
+    }
+
+    final habit1 = Habit(
+      id: 'h1',
+      name: 'Read Book',
+      difficulty: HabitDifficulty.easy,
+      timerDuration: 10,
+      createdAt: DateTime.now(),
+      lastCompleted: DateTime.now(),
+      isCompleted: true,
+      streak: 5,
+      completedDates: [DateTime.now(), DateTime.now().subtract(const Duration(days: 1))],
+    );
+    provider.addHabit(habit1);
+
+    achievements = AchievementTracker.getAchievementData(provider);
+    
+    final initiate = achievements.firstWhere((a) => a['id'] == 'initiate');
+    expect(initiate['unlocked'], true);
+
+    final momentum = achievements.firstWhere((a) => a['id'] == 'momentum');
+    expect(momentum['unlocked'], true);
+
+    final focus = achievements.firstWhere((a) => a['id'] == 'focus');
+    expect(focus['unlocked'], false);
   });
 }

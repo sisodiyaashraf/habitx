@@ -137,6 +137,17 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
                   ),
                   child: Container(
                     padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          colors[0].withValues(alpha: 0.25),
+                          colors[1].withValues(alpha: 0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
                     child: ClipOval(
                       child: SvgPicture.asset(
                         widget.provider.userAvatarSvgPath,

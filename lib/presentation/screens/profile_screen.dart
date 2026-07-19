@@ -66,33 +66,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.fromLTRB(20, 120, 20, 110),
           child: Column(
             children: [
-              _buildLevelAvatar(provider),
-              const SizedBox(height: 24),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    provider.userName.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
-                    ),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/habitxbackground.jpeg'),
+                    fit: BoxFit.cover,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 20.0),
+                child: Column(
+                  children: [
+                    _buildLevelAvatar(provider),
+                    const SizedBox(height: 20),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        provider.userName.toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Elite Habit Builder",
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Text(
-                "Elite Habit Builder",
-                style: TextStyle(
-                  color: subTextColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              const SizedBox(height: 24),
 
               _buildWeeklyPerformance(provider, textColor, subTextColor, isDark),
 

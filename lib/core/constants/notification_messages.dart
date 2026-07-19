@@ -184,6 +184,68 @@ class NotificationMessages {
     return msg;
   }
 
+  static List<String> getUniquePromptsForWeek(
+    String persona, {
+    String gender = "Male",
+  }) {
+    List<String> pool;
+
+    if (_isIndianRegion()) {
+      pool = List.from(_getIndianMessages(persona, gender));
+    } else {
+      switch (persona.toLowerCase()) {
+        case 'genz':
+          pool = List.from(genZMessages);
+          break;
+        case 'overlord':
+        case 'habito':
+        case 'shelby':
+          pool = List.from(overlordMessages);
+          break;
+        case 'elite':
+        case 'professional':
+        default:
+          pool = List.from(eliteMessages);
+          break;
+      }
+    }
+
+    final random = Random();
+    final List<String> result = List.filled(14, "");
+
+    // Shuffle the pool for morning slots
+    final List<String> morningPool = List.from(pool)..shuffle(random);
+    for (int i = 0; i < 7; i++) {
+      result[i] = morningPool[i % morningPool.length];
+    }
+
+    // Select evening slots ensuring morning & evening of the same day differ
+    final List<String> eveningPool = List.from(pool)..shuffle(random);
+    for (int i = 0; i < 7; i++) {
+      final morningMsg = result[i];
+      String chosen = "";
+      for (int j = 0; j < eveningPool.length; j++) {
+        if (eveningPool[j] != morningMsg) {
+          chosen = eveningPool.removeAt(j);
+          break;
+        }
+      }
+      if (chosen.isEmpty) {
+        chosen = morningMsg;
+      }
+      result[i + 7] = chosen;
+    }
+
+    // Replace templates/placeholders
+    for (int i = 0; i < result.length; i++) {
+      if (result[i].contains('{X}')) {
+        result[i] = result[i].replaceAll('Streak: {X} din.', 'Daily streak');
+      }
+    }
+
+    return result;
+  }
+
   static String getStatusTitle(String persona) {
     switch (persona.toLowerCase()) {
       case 'genz':

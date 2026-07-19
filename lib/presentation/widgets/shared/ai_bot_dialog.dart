@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../providers/habit_provider.dart';
+import '../tracking/achievement_tracker.dart';
 
 class AiBotDialog extends StatefulWidget {
   const AiBotDialog({super.key});
@@ -169,21 +170,19 @@ class _AiBotDialogState extends State<AiBotDialog> {
             "\nStreak details:\n$list";
       }
     } else if (cleanCmd.startsWith("/milestones") || cleanCmd == "milestones") {
-      final habits = provider.allHabits;
-      final totalDone = habits.where((h) => h.isCompleted).length;
-      final maxStreak = habits.isEmpty ? 0 : habits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
       final unlocked = provider.unlockedAchievementIds;
+      final achievements = AchievementTracker.getAchievementData(provider);
 
-      final initiateOk = unlocked.contains('initiate') || totalDone >= 1;
-      final momentumOk = unlocked.contains('momentum') || maxStreak >= 3;
-      final focusOk = unlocked.contains('focus') || maxStreak >= 7;
-      final guardianOk = unlocked.contains('guardian') || totalDone >= 50;
+      final String listStr = achievements.map((a) {
+        final id = a['id'] as String;
+        final label = a['label'] as String;
+        final target = a['m'] as String;
+        final isUnlocked = unlocked.contains(id) || (a['unlocked'] as bool);
+        return "• [${isUnlocked ? 'UNLOCKED' : 'LOCKED'}] $label ($target)";
+      }).join("\n");
 
       response = ">>> MILESTONE SYSTEM STATUS:\n"
-          "• [${initiateOk ? 'UNLOCKED' : 'LOCKED'}] INITIATE (Complete 1 habit) - Reward: 100 XP\n"
-          "• [${momentumOk ? 'UNLOCKED' : 'LOCKED'}] MOMENTUM (3-day streak) - Reward: 150 XP\n"
-          "• [${focusOk ? 'UNLOCKED' : 'LOCKED'}] DEEP FOCUS (7-day streak) - Reward: 300 XP\n"
-          "• [${guardianOk ? 'UNLOCKED' : 'LOCKED'}] GUARDIAN (50 total completions) - Reward: 500 XP\n"
+          "$listStr\n"
           "\nDiagnostics: XP is awarded automatically upon goal verification.";
     } else if (cleanCmd.startsWith("/tips") || cleanCmd == "tips") {
       final habits = provider.allHabits;

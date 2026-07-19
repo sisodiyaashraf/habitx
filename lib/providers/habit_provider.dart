@@ -250,12 +250,13 @@ class HabitProvider extends ChangeNotifier {
   }
 
   void checkMilestones(BuildContext context) {
-    final int totalDone = _allHabits.where((h) => h.isCompleted).length;
+    final int totalCompletions = _allHabits.fold(0, (sum, h) => sum + h.completedDates.length);
     final int maxStreak = _allHabits.isEmpty
         ? 0
         : _allHabits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
+    final int userLevel = _userLevel;
 
-    if (totalDone >= 1) {
+    if (totalCompletions >= 1) {
       _unlockAchievement(
         context,
         'initiate',
@@ -282,13 +283,76 @@ class HabitProvider extends ChangeNotifier {
         300,
       );
     }
-    if (totalDone >= 50) {
+    if (maxStreak >= 14) {
+      _unlockAchievement(
+        context,
+        'unstoppable',
+        "UNSTOPPABLE",
+        FontAwesomeIcons.bolt,
+        500,
+      );
+    }
+    if (maxStreak >= 30) {
+      _unlockAchievement(
+        context,
+        'consistency_guru',
+        "CONSISTENCY GURU",
+        FontAwesomeIcons.infinity,
+        1000,
+      );
+    }
+    if (totalCompletions >= 50) {
       _unlockAchievement(
         context,
         'guardian',
         "GUARDIAN",
         FontAwesomeIcons.shieldHalved,
         500,
+      );
+    }
+    if (totalCompletions >= 100) {
+      _unlockAchievement(
+        context,
+        'centurion',
+        "CENTURION",
+        FontAwesomeIcons.shield,
+        1000,
+      );
+    }
+    if (totalCompletions >= 250) {
+      _unlockAchievement(
+        context,
+        'diamond',
+        "DIAMOND",
+        FontAwesomeIcons.gem,
+        2000,
+      );
+    }
+    if (userLevel >= 10) {
+      _unlockAchievement(
+        context,
+        'level_10',
+        "DECATHLON",
+        FontAwesomeIcons.star,
+        500,
+      );
+    }
+    if (userLevel >= 25) {
+      _unlockAchievement(
+        context,
+        'elite_king',
+        "ELITE KING",
+        FontAwesomeIcons.crown,
+        1500,
+      );
+    }
+    if (userLevel >= 50) {
+      _unlockAchievement(
+        context,
+        'grandmaster',
+        "GRANDMASTER",
+        FontAwesomeIcons.trophy,
+        3000,
       );
     }
   }

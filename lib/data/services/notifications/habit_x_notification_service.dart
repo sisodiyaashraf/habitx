@@ -228,9 +228,15 @@ class HabitXNotificationService {
         await StorageService().getUserPersona() ?? "Professional";
     final String gender =
         await StorageService().getUserGender() ?? "Male";
+
+    final messagesForWeek = NotificationMessages.getUniquePromptsForWeek(
+      persona,
+      gender: gender,
+    );
+
     final briefings = [
-      {'baseId': 7000, 'h': 9, 'm': 0, 't': 'Morning Motivation'},
-      {'baseId': 7010, 'h': 18, 'm': 0, 't': 'Evening Motivation'},
+      {'baseId': 7000, 'h': 9, 'm': 0, 't': 'Morning Motivation', 'msgIndexOffset': 0},
+      {'baseId': 7010, 'h': 18, 'm': 0, 't': 'Evening Motivation', 'msgIndexOffset': 7},
     ];
 
     String titlePrefix;
@@ -259,11 +265,12 @@ class HabitXNotificationService {
       final int hour = b['h'] as int;
       final int minute = b['m'] as int;
       final String titleLabel = b['t'] as String;
+      final int msgIndexOffset = b['msgIndexOffset'] as int;
 
       for (int day = 1; day <= 7; day++) {
         final int id = baseId + day;
         final scheduledDate = _nextInstanceOfWeekdayTime(day, hour, minute);
-        final String bodyText = NotificationMessages.getPromptForDay(persona, day, gender: gender);
+        final String bodyText = messagesForWeek[msgIndexOffset + (day - 1)];
 
         try {
           await _notifications.zonedSchedule(
