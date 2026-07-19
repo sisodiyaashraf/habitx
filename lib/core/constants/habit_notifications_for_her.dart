@@ -1,3 +1,5 @@
+import 'habit_notifications.dart';
+
 // ============================================================
 // Variant for female users (voice/tone written as if from a guy)
 // ============================================================
@@ -19,18 +21,8 @@ class HabitNotificationsForHer {
   ];
 
   // ❤️ Romantic
-  static const List<String> romantic = [
-    "Har din thoda better bano, proud hona hai tumpe ❤️",
-    "Roz karne se pyaar jhalakta hai, chhoti si cheez hai 💕",
-    "Tumhara best version dekhna chahta hoon main 🌟",
-    "Wahi promise nibhao jo khud se kiya tha ✨",
-    "Ye ek chhota sa vaada tha, yaad hai na? 🤝",
-    "Tumhari growth dekhkar sukoon milta hai 🧿",
-    "Khud se kiya pyaar, isi se dikhta hai 🌸",
-    "Aaj bhi apna khayal rakhna, ek kadam aur 💫",
-    "Tumhare liye hi ye reminder bheja hai 💌",
-    "Chalo saath mein aaj ka goal pura karein 🎯",
-  ];
+  static const List<String> romantic = HabitNotifications.romantic;
+
 
   // 🙄 Roast / Sarcastic
   static const List<String> roast = [
