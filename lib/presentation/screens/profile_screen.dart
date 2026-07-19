@@ -1091,9 +1091,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   final date = pastWeek[index];
                   final isActive = _isDayActive(provider, date);
                   final dayLabel = weekdays[date.weekday - 1];
-                  final isToday = date.day == DateTime.now().day &&
-                      date.month == DateTime.now().month &&
-                      date.year == DateTime.now().year;
+                  final isToday = date.isSameDay(DateTime.now());
 
                   return Column(
                     children: [
