@@ -4,6 +4,7 @@ import 'package:glassmorphism/glassmorphism.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import '../../../domain/models/habit.dart';
 import '../../../providers/habit_provider.dart';
 
 class EliteHeatmap extends StatefulWidget {
@@ -325,9 +326,7 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
               final value = dataMap[normalizedDate] ?? 0;
               final isSelected =
                   _selectedCellDate != null &&
-                  _selectedCellDate!.year == date.year &&
-                  _selectedCellDate!.month == date.month &&
-                  _selectedCellDate!.day == date.day;
+                  _selectedCellDate!.isSameDay(date);
 
               return GestureDetector(
                 onTap: () {
@@ -463,9 +462,7 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
                     final value = dataMap[normalizedDate] ?? 0;
                     final isSelected =
                         _selectedCellDate != null &&
-                        _selectedCellDate!.year == date.year &&
-                        _selectedCellDate!.month == date.month &&
-                        _selectedCellDate!.day == date.day;
+                        _selectedCellDate!.isSameDay(date);
 
                     return GestureDetector(
                       onTap: () {
@@ -822,10 +819,7 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
         );
         if (heatmapData.containsKey(lastCompDate)) {
           bool alreadyCounted = habit.completedDates.any(
-            (d) =>
-                d.year == lastCompDate.year &&
-                d.month == lastCompDate.month &&
-                d.day == lastCompDate.day,
+            (d) => d.isSameDay(lastCompDate),
           );
           if (!alreadyCounted) {
             heatmapData[lastCompDate] = (heatmapData[lastCompDate] ?? 0) + 1;
