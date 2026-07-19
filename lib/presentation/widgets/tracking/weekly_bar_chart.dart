@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../../../domain/models/habit.dart';
 import '../../../providers/habit_provider.dart';
 
 class WeeklyBarChart extends StatelessWidget {
