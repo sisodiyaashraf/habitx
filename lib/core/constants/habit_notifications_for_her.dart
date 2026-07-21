@@ -81,18 +81,9 @@ class HabitNotificationsForHer {
   ];
 
   // 📏 Discipline / Consistency
-  static const List<String> discipline = [
-    "Discipline talent se zyada powerful hota hai 🧠",
-    "Streak: {X} din. Isse tootne mat dena 🎯",
-    "Chhoti aadatein badi tabdeeli laati hain 📈",
-    "Aaj miss mat karo, kal khud ko thank karogi ⏳",
-    "Consistency hi asli talent hai 💎",
-    "Ek din ka gap, mahine ki mehnat barbaad karta hai 📉",
-    "Roz ka thoda sa, hamesha ka bahut sa banta hai 📊",
-    "Habit banao, motivation ki zarurat khatam karo ⚙️",
-    "Aaj ka commitment, kal ka character hai 🛡️",
-    "Break mat lo, streak hi tumhara pehchaan hai 🏆",
-  ];
+  static final List<String> discipline = HabitNotifications.discipline
+      .map((msg) => msg.replaceAll("thank karoge", "thank karogi"))
+      .toList();
 
   static Map<String, List<String>> get allCategories => {
         'flirty': flirty,
