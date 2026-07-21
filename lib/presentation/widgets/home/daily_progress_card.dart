@@ -37,7 +37,7 @@ class _DailyProgressCardState extends State<DailyProgressCard>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     int completedCount = habits.where((h) => h.isCompleted).length;
-    double progress = habits.isEmpty ? 0 : completedCount / habits.length;
+    double progress = provider.dailyProgress;
     int percentage = (progress * 100).toInt();
 
     final textColor = isDark ? Colors.white : Colors.black;
