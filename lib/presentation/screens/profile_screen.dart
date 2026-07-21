@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:habitx/presentation/screens/settings_screen.dart';
+import 'settings_screen.dart';
 import 'package:provider/provider.dart';
 import '../../domain/models/habit.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
