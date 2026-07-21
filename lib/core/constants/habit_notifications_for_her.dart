@@ -68,17 +68,12 @@ class HabitNotificationsForHer {
   ];
 
   // 💔 Breakup Style (guilt-trip tone)
-  static const List<String> breakup = [
-    "Tumne mujhse (habit se) breakup kar liya kya? 💔",
-    "3 din se baat nahi hui, sab theek hai na? 😢",
-    "Wapas aane ka wait kar raha tha, bhool gayi 🥀",
-    "Rishta tabhi chalta hai jab effort dono se ho 🤝",
-    "Lagta hai ab meri zarurat nahi rahi 🤫",
-    "Ek reminder aur bhejoon, ya samajh jao? 💬",
-    "Humara connection toot raha hai dheere dheere 📉",
-    "Itni jaldi bhool gayi humara roz ka wada? 😔",
-    "Main abhi bhi wait kar raha hoon tumhara ⌛",
-  ];
+  static final List<String> breakup = HabitNotifications.breakup
+      .map((msg) => msg
+          .replaceAll("kar rahi thi, bhool gaye", "kar raha tha, bhool gayi")
+          .replaceAll("bhool gaye", "bhool gayi")
+          .replaceAll("kar rahi hoon", "kar raha hoon"))
+      .toList();
 
   // 📏 Discipline / Consistency
   static final List<String> discipline = HabitNotifications.discipline
