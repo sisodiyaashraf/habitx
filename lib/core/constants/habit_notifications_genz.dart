@@ -94,16 +94,9 @@ class HabitNotificationsGenZ {
 // ============================================================
 class HabitNotificationsGenZForHer {
   // 💘 Flirty
-  static const List<String> flirty = [
-    "Aaj bhi ghost kar diya? Not cool bestie 😏",
-    "Streak maintain karo, main toh sirf yahi maang raha 😉",
-    "Consistency is the new rizz, no cap 💯",
-    "Ignore karogi? Bet, dekhte hain kitna 🫣",
-    "Ek baar try karo, full addictive hai ye habit fr 🚀",
-    "Roz ka commitment tha na? Follow through karo 🤝",
-    "Late aana ho gaya trend kya tumhara? ⏰",
-    "Streak break mat karo, low-key mera bhi mood kharab hoga 💔",
-  ];
+  static final List<String> flirty = HabitNotificationsGenZ.flirty
+      .map((msg) => msg.replaceAll("Ignore karoge?", "Ignore karogi?"))
+      .toList();
 
   static const List<String> romantic = HabitNotificationsGenZ.romantic;
   static const List<String> roast = HabitNotificationsGenZ.roast;
