@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:intl/intl.dart';
+import '../../domain/models/habit.dart';
 
 class GlassHorizontalCalendar extends StatelessWidget {
   const GlassHorizontalCalendar({super.key});
@@ -18,7 +19,7 @@ class GlassHorizontalCalendar extends StatelessWidget {
         itemCount: 14, // Show two weeks
         itemBuilder: (context, index) {
           final date = DateTime.now().add(Duration(days: index - 3));
-          final isToday = index == 3;
+          final isToday = date.isSameDay(DateTime.now());
 
           return Padding(
             padding: const EdgeInsets.only(right: 12),
