@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../../domain/models/habit.dart';
 import '../../../providers/habit_provider.dart';
 
 class GlassCalendar extends StatelessWidget {
@@ -21,10 +22,7 @@ class GlassCalendar extends StatelessWidget {
         itemBuilder: (context, index) {
           // Logic to show dates around the current date
           DateTime date = DateTime.now().add(Duration(days: index - 3));
-          bool isSelected =
-              date.day == selectedDate.day &&
-              date.month == selectedDate.month &&
-              date.year == selectedDate.year;
+          bool isSelected = date.isSameDay(selectedDate);
 
           return GestureDetector(
             onTap: () => habitProvider.setSelectedDate(date),
