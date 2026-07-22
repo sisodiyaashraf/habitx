@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:intl/intl.dart';
-import '../../domain/models/habit.dart';
+import '../../../domain/models/habit.dart';
 
 class GlassHorizontalCalendar extends StatelessWidget {
   const GlassHorizontalCalendar({super.key});
