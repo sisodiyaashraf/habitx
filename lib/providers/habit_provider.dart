@@ -9,6 +9,7 @@ import '../data/services/home_widget_service.dart';
 import '../data/services/notifications/habit_x_notification_service.dart';
 import '../presentation/widgets/shared/level_up_overlay.dart';
 import '../core/constants/notification_messages.dart';
+import '../core/constants/achievement_constants.dart';
 
 class HabitProvider extends ChangeNotifier {
   // --- Core State ---
@@ -256,7 +257,7 @@ class HabitProvider extends ChangeNotifier {
     if (totalCompletions >= 1) {
       _unlockAchievement(
         context,
-        'initiate',
+        AchievementConstants.initiate,
         "INITIATE",
         FontAwesomeIcons.rocket,
         100,
@@ -265,7 +266,7 @@ class HabitProvider extends ChangeNotifier {
     if (maxStreak >= 3) {
       _unlockAchievement(
         context,
-        'momentum',
+        AchievementConstants.momentum,
         "MOMENTUM",
         FontAwesomeIcons.fire,
         150,
@@ -274,7 +275,7 @@ class HabitProvider extends ChangeNotifier {
     if (maxStreak >= 7) {
       _unlockAchievement(
         context,
-        'focus',
+        AchievementConstants.focus,
         "DEEP FOCUS",
         FontAwesomeIcons.brain,
         300,
@@ -283,7 +284,7 @@ class HabitProvider extends ChangeNotifier {
     if (maxStreak >= 14) {
       _unlockAchievement(
         context,
-        'unstoppable',
+        AchievementConstants.unstoppable,
         "UNSTOPPABLE",
         FontAwesomeIcons.bolt,
         500,
@@ -292,7 +293,7 @@ class HabitProvider extends ChangeNotifier {
     if (maxStreak >= 30) {
       _unlockAchievement(
         context,
-        'consistency_guru',
+        AchievementConstants.consistencyGuru,
         "CONSISTENCY GURU",
         FontAwesomeIcons.infinity,
         1000,
@@ -301,7 +302,7 @@ class HabitProvider extends ChangeNotifier {
     if (totalCompletions >= 50) {
       _unlockAchievement(
         context,
-        'guardian',
+        AchievementConstants.guardian,
         "GUARDIAN",
         FontAwesomeIcons.shieldHalved,
         500,
@@ -310,7 +311,7 @@ class HabitProvider extends ChangeNotifier {
     if (totalCompletions >= 100) {
       _unlockAchievement(
         context,
-        'centurion',
+        AchievementConstants.centurion,
         "CENTURION",
         FontAwesomeIcons.shield,
         1000,
@@ -319,7 +320,7 @@ class HabitProvider extends ChangeNotifier {
     if (totalCompletions >= 250) {
       _unlockAchievement(
         context,
-        'diamond',
+        AchievementConstants.diamond,
         "DIAMOND",
         FontAwesomeIcons.gem,
         2000,
@@ -328,7 +329,7 @@ class HabitProvider extends ChangeNotifier {
     if (userLevel >= 10) {
       _unlockAchievement(
         context,
-        'level_10',
+        AchievementConstants.level10,
         "DECATHLON",
         FontAwesomeIcons.star,
         500,
@@ -337,7 +338,7 @@ class HabitProvider extends ChangeNotifier {
     if (userLevel >= 25) {
       _unlockAchievement(
         context,
-        'elite_king',
+        AchievementConstants.eliteKing,
         "ELITE KING",
         FontAwesomeIcons.crown,
         1500,
@@ -346,7 +347,7 @@ class HabitProvider extends ChangeNotifier {
     if (userLevel >= 50) {
       _unlockAchievement(
         context,
-        'grandmaster',
+        AchievementConstants.grandmaster,
         "GRANDMASTER",
         FontAwesomeIcons.trophy,
         3000,

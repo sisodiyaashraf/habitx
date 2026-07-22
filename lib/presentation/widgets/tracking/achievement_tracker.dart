@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../../core/constants/achievement_constants.dart';
 import '../../../providers/habit_provider.dart';
 
 class AchievementTracker extends StatelessWidget {
@@ -18,7 +19,7 @@ class AchievementTracker extends StatelessWidget {
 
     return [
       {
-        "id": "initiate",
+        "id": AchievementConstants.initiate,
         "icon": FontAwesomeIcons.rocket,
         "label": "Initiate",
         "unlocked": totalCompletions >= 1,
@@ -27,7 +28,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFFAC5DED),
       },
       {
-        "id": "momentum",
+        "id": AchievementConstants.momentum,
         "icon": FontAwesomeIcons.fire,
         "label": "Momentum",
         "unlocked": maxStreak >= 3,
@@ -36,7 +37,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFFFF5722),
       },
       {
-        "id": "focus",
+        "id": AchievementConstants.focus,
         "icon": FontAwesomeIcons.brain,
         "label": "Deep Focus",
         "unlocked": maxStreak >= 7,
@@ -45,7 +46,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFF2196F3),
       },
       {
-        "id": "unstoppable",
+        "id": AchievementConstants.unstoppable,
         "icon": FontAwesomeIcons.bolt,
         "label": "Unstoppable",
         "unlocked": maxStreak >= 14,
@@ -54,7 +55,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFFFFC107),
       },
       {
-        "id": "consistency_guru",
+        "id": AchievementConstants.consistencyGuru,
         "icon": FontAwesomeIcons.infinity,
         "label": "Consistency Guru",
         "unlocked": maxStreak >= 30,
@@ -63,7 +64,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFFE91E63),
       },
       {
-        "id": "guardian",
+        "id": AchievementConstants.guardian,
         "icon": FontAwesomeIcons.shieldHalved,
         "label": "Guardian",
         "unlocked": totalCompletions >= 50,
@@ -72,7 +73,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFF4CAF50),
       },
       {
-        "id": "centurion",
+        "id": AchievementConstants.centurion,
         "icon": FontAwesomeIcons.shield,
         "label": "Centurion",
         "unlocked": totalCompletions >= 100,
@@ -81,7 +82,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFF00BCD4),
       },
       {
-        "id": "diamond",
+        "id": AchievementConstants.diamond,
         "icon": FontAwesomeIcons.gem,
         "label": "Diamond",
         "unlocked": totalCompletions >= 250,
@@ -90,7 +91,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFF9C27B0),
       },
       {
-        "id": "level_10",
+        "id": AchievementConstants.level10,
         "icon": FontAwesomeIcons.star,
         "label": "Decathlon",
         "unlocked": userLevel >= 10,
@@ -99,7 +100,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFFFF9800),
       },
       {
-        "id": "elite_king",
+        "id": AchievementConstants.eliteKing,
         "icon": FontAwesomeIcons.crown,
         "label": "Elite King",
         "unlocked": userLevel >= 25,
@@ -108,7 +109,7 @@ class AchievementTracker extends StatelessWidget {
         "color": const Color(0xFFFFEB3B),
       },
       {
-        "id": "grandmaster",
+        "id": AchievementConstants.grandmaster,
         "icon": FontAwesomeIcons.trophy,
         "label": "Grandmaster",
         "unlocked": userLevel >= 50,
