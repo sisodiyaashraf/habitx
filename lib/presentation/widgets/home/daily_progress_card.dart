@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../providers/habit_provider.dart';
 
 class DailyProgressCard extends StatefulWidget {
-  const DailyProgressCard({super.key, required double progress});
+  const DailyProgressCard({super.key});
 
   @override
   State<DailyProgressCard> createState() => _DailyProgressCardState();

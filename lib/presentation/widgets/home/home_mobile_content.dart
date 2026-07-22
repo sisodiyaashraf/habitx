@@ -38,7 +38,7 @@ class HomeMobileContent extends StatelessWidget {
           const SizedBox(height: 32),
 
           // 3. Daily Stats (Percentage & Level Progress)
-          DailyProgressCard(progress: provider.todayProgress),
+          const DailyProgressCard(),
 
           const SizedBox(height: 32),
 
