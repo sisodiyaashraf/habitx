@@ -8,6 +8,7 @@ import '../../domain/models/habit.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../../providers/habit_provider.dart';
 import '../../core/constants/notification_messages.dart';
+import '../../core/constants/avatar_constants.dart';
 import '../widgets/shared/animated_level_avatar.dart';
 import '../widgets/shared/glass_background.dart';
 import 'onboarding_screen.dart';
@@ -1141,74 +1142,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final dialogTextColor = isDark ? Colors.white : Colors.black;
         final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
 
-        final presets = [
-          {
-            "name": "panda.svg",
-            "displayName": "Zen Panda",
-            "desc": "Peaceful strategist designing habits in absolute calm.",
-            "path": "assets/profile svg icons/panda.svg"
-          },
-          {
-            "name": "fox.svg",
-            "displayName": "Clever Fox",
-            "desc": "Agile speedster navigating challenges with sharp wit.",
-            "path": "assets/profile svg icons/fox.svg"
-          },
-          {
-            "name": "bear.svg",
-            "displayName": "Cyber Bear",
-            "desc": "Reinforced guardian built for brute physical & mental discipline.",
-            "path": "assets/profile svg icons/bear.svg"
-          },
-          {
-            "name": "bear br.svg",
-            "displayName": "Brown Bear",
-            "desc": "Stout warrior tracking progress across rugged terrain.",
-            "path": "assets/profile svg icons/bear br.svg"
-          },
-          {
-            "name": "cat.svg",
-            "displayName": "Discipline Cat",
-            "desc": "Nimble and focus-driven mind, locking in on target habits.",
-            "path": "assets/profile svg icons/cat.svg"
-          },
-          {
-            "name": "dog.svg",
-            "displayName": "Loyal Canine",
-            "desc": "Reliable partner executing daily routines with steady devotion.",
-            "path": "assets/profile svg icons/dog.svg"
-          },
-          {
-            "name": "elephant.svg",
-            "displayName": "Memory Elephant",
-            "desc": "Unwavering memory bank tracking vast historic streaks.",
-            "path": "assets/profile svg icons/elephant.svg"
-          },
-          {
-            "name": "kangaroo.svg",
-            "displayName": "Tempo Kangaroo",
-            "desc": "Springing forward with energetic bounds of high momentum.",
-            "path": "assets/profile svg icons/kangaroo.svg"
-          },
-          {
-            "name": "lion.svg",
-            "displayName": "Pride Leader",
-            "desc": "Vanguard charting daily triumphs on majestic stellar paths.",
-            "path": "assets/profile svg icons/lion.svg"
-          },
-          {
-            "name": "penguin.svg",
-            "displayName": "Chilled Penguin",
-            "desc": "Analytical documenter maintaining cool composure under pressure.",
-            "path": "assets/profile svg icons/penguin.svg"
-          },
-          {
-            "name": "rabit.svg",
-            "displayName": "Agile Rabbit",
-            "desc": "Swift and dynamic action taker jumping over obstacles.",
-            "path": "assets/profile svg icons/rabit.svg"
-          },
-        ];
+        final presets = AvatarConstants.allAvatars;
 
         return Center(
           child: Material(
@@ -1249,10 +1183,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         itemCount: presets.length,
                         itemBuilder: (context, index) {
                           final item = presets[index];
-                          final name = item["name"] as String;
-                          final displayName = item["displayName"] as String;
-                          final desc = item["desc"] as String;
-                          final path = item["path"] as String;
+                          final name = item.name;
+                          final displayName = item.displayName;
+                          final desc = item.desc;
+                          final path = item.path;
                           final isSelected = provider.userAvatar == name ||
                               (provider.userAvatar == "Neon Runner" && name == "fox.svg") ||
                               (provider.userAvatar == "Cyborg Sentinel" && name == "bear.svg") ||

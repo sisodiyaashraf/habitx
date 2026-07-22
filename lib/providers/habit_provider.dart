@@ -10,6 +10,7 @@ import '../data/services/notifications/habit_x_notification_service.dart';
 import '../presentation/widgets/shared/level_up_overlay.dart';
 import '../core/constants/notification_messages.dart';
 import '../core/constants/achievement_constants.dart';
+import '../core/constants/avatar_constants.dart';
 
 class HabitProvider extends ChangeNotifier {
   // --- Core State ---
@@ -93,38 +94,7 @@ class HabitProvider extends ChangeNotifier {
     }
   }
 
-  String get userAvatarDisplayName {
-    final avatar = _userAvatar;
-    if (avatar.endsWith('.svg')) {
-      switch (avatar) {
-        case 'bear.svg':
-          return 'Cyber Bear';
-        case 'bear br.svg':
-          return 'Brown Bear';
-        case 'cat.svg':
-          return 'Discipline Cat';
-        case 'dog.svg':
-          return 'Loyal Canine';
-        case 'elephant.svg':
-          return 'Memory Elephant';
-        case 'fox.svg':
-          return 'Clever Fox';
-        case 'kangaroo.svg':
-          return 'Tempo Kangaroo';
-        case 'lion.svg':
-          return 'Pride Leader';
-        case 'panda.svg':
-          return 'Zen Panda';
-        case 'penguin.svg':
-          return 'Chilled Penguin';
-        case 'rabit.svg':
-          return 'Agile Rabbit';
-        default:
-          return avatar.replaceAll('.svg', '');
-      }
-    }
-    return avatar;
-  }
+  String get userAvatarDisplayName => AvatarConstants.getDisplayName(_userAvatar);
   String get userGender => _userGender;
   bool get isNewUser => _isNewUser;
   bool get isHapticsEnabled => _isHapticsEnabled;
