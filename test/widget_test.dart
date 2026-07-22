@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habitx/domain/models/habit.dart';
 import 'package:habitx/presentation/widgets/tracking/progress_item_tile.dart';
+import 'package:habitx/presentation/widgets/stats/glass_horizontal_calendar.dart';
 
 void main() {
   testWidgets('ProgressItemTile Widget Rendering Test', (WidgetTester tester) async {
@@ -31,5 +32,18 @@ void main() {
 
     // Verify the presence of the standby unchecked icon
     expect(find.byIcon(Icons.radio_button_unchecked), findsOneWidget);
+  });
+
+  testWidgets('GlassHorizontalCalendar Widget Rendering Test', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: GlassHorizontalCalendar(),
+        ),
+      ),
+    );
+
+    // Verify that the horizontal list view pumps without errors
+    expect(find.byType(GlassHorizontalCalendar), findsOneWidget);
   });
 }
