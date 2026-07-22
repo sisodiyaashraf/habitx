@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'habit_notifications.dart';
 import 'habit_notifications_for_her.dart';
 import 'habit_notifications_genz.dart';
@@ -231,6 +232,30 @@ class NotificationMessages {
           return "Professional Coach is active and monitoring daily discipline.";
         }
         return "Professional Coach is active. System Status: OPTIMAL.";
+    }
+  }
+
+  static String getPersonaSubtitle(String persona) {
+    switch (persona) {
+      case "Professional":
+        return "Elite, disciplined reinforcement style";
+      case "GenZ":
+        return "Informal, trendy, high-energy vibes";
+      case "SHELBY AI":
+      default:
+        return "Sarcastic, sentient AI Overlord protocol";
+    }
+  }
+
+  static IconData getPersonaIcon(String persona) {
+    switch (persona) {
+      case "Professional":
+        return Icons.work_rounded;
+      case "GenZ":
+        return Icons.bolt_rounded;
+      case "SHELBY AI":
+      default:
+        return Icons.psychology_rounded;
     }
   }
 }

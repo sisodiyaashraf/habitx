@@ -627,23 +627,8 @@ class SettingsScreen extends StatelessWidget {
       isSelected = currentPersona.toLowerCase() == theme.toLowerCase();
     }
 
-    IconData icon;
-    String subtitle;
-    switch (theme) {
-      case "Professional":
-        icon = Icons.work_rounded;
-        subtitle = "Elite, disciplined reinforcement style";
-        break;
-      case "GenZ":
-        icon = Icons.bolt_rounded;
-        subtitle = "Informal, trendy, high-energy vibes";
-        break;
-      case "SHELBY AI":
-      default:
-        icon = Icons.psychology_rounded;
-        subtitle = "Sarcastic, sentient AI Overlord protocol";
-        break;
-    }
+    final IconData icon = NotificationMessages.getPersonaIcon(theme);
+    final String subtitle = NotificationMessages.getPersonaSubtitle(theme);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5.0),
