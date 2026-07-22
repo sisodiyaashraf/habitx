@@ -62,7 +62,7 @@ class HabitNotifications {
   static const List<String> motivational = [
     "Champions din nahi chhodte, tum bhi mat chhodo 🔥",
     "Ek din ki mehnat, kal ka result banati hai ⚡",
-    "Jo aaj karoge, wahi kal alग banayega 🌟",
+    "Jo aaj karoge, wahi kal alag banayega 🌟",
     "Small steps, big changes. Aaj wala step lo 👣",
     "Future self wait kar raha hai tumhara 📈",
     "Discipline > Motivation. Bas kar do 🦾",
