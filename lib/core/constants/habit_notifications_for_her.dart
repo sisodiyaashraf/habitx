@@ -25,19 +25,12 @@ class HabitNotificationsForHer {
 
 
   // 🙄 Roast / Sarcastic
-  static const List<String> roast = [
-    "Wah! Fir se skip? Records bana rahi ho kya? 🙄",
-    "Motivation dhoondhne gayi thi, wapas hi nahi aayi 🥱",
-    "Kal se start karungi - 47th baar sun raha hoon 🤡",
-    "Itni excuses Bollywood scripts mein bhi nahi hoti 🎬",
-    "Streak aur patience dono khatam ho rahe hain 💀",
-    "App download kiya ya storage bharne ke liye? 💾",
-    "Tumhara 'kal se' wala kal kabhi aayega? ⏳",
-    "Naam habit tracker, kaam excuse tracker 🤐",
-    "Itna toh Monday motivation bhi nahi tikta 📉",
-    "Fir se snooze? Talent hai tumme ye 💤",
-    "Discipline ki jagah drama zyada hai 🎭",
-  ];
+  static final List<String> roast = HabitNotifications.roast
+      .map((msg) => msg
+          .replaceAll("rahe ho kya?", "rahi ho kya?")
+          .replaceAll("gaya, wapas hi nahi aaya", "gayi thi, wapas hi nahi aayi")
+          .replaceAll("start karunga", "start karungi"))
+      .toList();
 
   // 🥺 Cute / Shona
   static const List<String> cute = [
