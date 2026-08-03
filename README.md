@@ -42,6 +42,23 @@
 
 ---
 
+## 📱 Screenshots
+
+<p align="center">
+  <img src="assets/app_images/screen%2001.jpeg" width="210" alt="Screen 1" />
+  <img src="assets/app_images/screen-02.jpeg" width="210" alt="Screen 2" />
+  <img src="assets/app_images/screen-03.jpeg" width="210" alt="Screen 3" />
+  <img src="assets/app_images/screen-04.jpeg" width="210" alt="Screen 4" />
+</p>
+<p align="center">
+  <img src="assets/app_images/screen-05.jpeg" width="210" alt="Screen 5" />
+  <img src="assets/app_images/screen-06.jpeg" width="210" alt="Screen 6" />
+  <img src="assets/app_images/screen-07.jpeg" width="210" alt="Screen 7" />
+  <img src="assets/app_images/screen-8.jpeg" width="210" alt="Screen 8" />
+</p>
+
+---
+
 ## ⚡ Core Systems
 
 ### 🧠 SHELBY AI v4.0 (Contextual Intelligence)

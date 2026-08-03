@@ -65,22 +65,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: GlassBackground(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 120, 20, 110),
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top + kToolbarHeight + 10.0,
+            bottom: 110,
+          ),
           child: Column(
             children: [
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
                   image: const DecorationImage(
                     image: AssetImage('assets/images/habitxbackground.jpeg'),
                     fit: BoxFit.cover,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.25),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
@@ -114,68 +116,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-
-              _buildWeeklyPerformance(provider, textColor, subTextColor, isDark),
-
-              const SizedBox(height: 20),
-
-              _buildSectionHeader("PERSONALIZATION", subTextColor),
-              _buildSettingsGroup([
-                _settingsTile(
-                  Icons.person_outline_rounded,
-                  "Edit Identity",
-                  "Name: ${provider.userName}, Age: ${provider.userAge}",
-                  textColor,
-                  subTextColor,
-                  onTap: () => _showIdentityDialog(context, provider),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 24),
+                    _buildWeeklyPerformance(provider, textColor, subTextColor, isDark),
+                    const SizedBox(height: 20),
+                    _buildSectionHeader("PERSONALIZATION", subTextColor),
+                    _buildSettingsGroup([
+                      _settingsTile(
+                        Icons.person_outline_rounded,
+                        "Edit Identity",
+                        "Name: ${provider.userName}, Age: ${provider.userAge}",
+                        textColor,
+                        subTextColor,
+                        onTap: () => _showIdentityDialog(context, provider),
+                      ),
+                      _settingsTile(
+                        Icons.face_rounded,
+                        "Edit Avatar",
+                        "Preset: ${provider.userAvatarDisplayName}",
+                        textColor,
+                        subTextColor,
+                        onTap: () => _showAvatarDialog(context, provider),
+                      ),
+                      _settingsTile(
+                        Icons.psychology_outlined,
+                        "Persona",
+                        "Style: ${provider.userPersona}",
+                        textColor,
+                        subTextColor,
+                        onTap: () => _showPersonaDialog(context, provider),
+                      ),
+                      _settingsTile(
+                        Icons.notifications_active_rounded,
+                        "Reminders",
+                        "Configure daily alerts",
+                        textColor,
+                        subTextColor,
+                        onTap: () => _showNotificationSettingsDialog(context),
+                      ),
+                    ], isDark),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader("PREFERENCES", subTextColor),
+                    _buildSettingsGroup([
+                      _settingsSwitchTile(
+                        Icons.vibration_rounded,
+                        "Haptic Feedback",
+                        "Vibrate on habit completion",
+                        provider.isHapticsEnabled,
+                        textColor,
+                        subTextColor,
+                        onChanged: (val) {
+                          context.read<HabitProvider>().toggleHaptics(val);
+                        },
+                      ),
+                    ], isDark),
+                    const SizedBox(height: 40),
+                    _buildLogoutButton(context, provider),
+                  ],
                 ),
-                _settingsTile(
-                  Icons.face_rounded,
-                  "Edit Avatar",
-                  "Preset: ${provider.userAvatarDisplayName}",
-                  textColor,
-                  subTextColor,
-                  onTap: () => _showAvatarDialog(context, provider),
-                ),
-                _settingsTile(
-                  Icons.psychology_outlined,
-                  "Persona",
-                  "Style: ${provider.userPersona}",
-                  textColor,
-                  subTextColor,
-                  onTap: () => _showPersonaDialog(context, provider),
-                ),
-
-                _settingsTile(
-                  Icons.notifications_active_rounded,
-                  "Reminders",
-                  "Configure daily alerts",
-                  textColor,
-                  subTextColor,
-                  onTap: () => _showNotificationSettingsDialog(context),
-                ),
-              ], isDark),
-
-              const SizedBox(height: 32),
-
-              _buildSectionHeader("PREFERENCES", subTextColor),
-              _buildSettingsGroup([
-                _settingsSwitchTile(
-                  Icons.vibration_rounded,
-                  "Haptic Feedback",
-                  "Vibrate on habit completion",
-                  provider.isHapticsEnabled,
-                  textColor,
-                  subTextColor,
-                  onChanged: (val) {
-                    context.read<HabitProvider>().toggleHaptics(val);
-                  },
-                ),
-              ], isDark),
-
-              const SizedBox(height: 40),
-              _buildLogoutButton(context, provider),
+              ),
             ],
           ),
         ),
