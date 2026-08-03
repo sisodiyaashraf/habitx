@@ -64,11 +64,24 @@
 
 ## ⚡ Core Systems
 
-### 🧠 SHELBY AI v4.0 (Contextual Intelligence)
+### 🧠 SHELBY AI v5.0 (Contextual & Multi-Persona Intelligence)
 A local, privacy-first offline heuristic analysis engine that optimizes performance:
 * **Focus Strike Protocols**: Smart pomodoro modes targeting 15m, 25m, or 45m sessions depending on daily completion rates.
 * **Neural Status Checks**: Context-aware daily briefings split across 4 distinct phases (Morning Briefing, Mid-Day Audit, Evening Push, Nightly Reflection).
+* **Multi-Persona AI Moods**: Support for 8 distinct Hinglish personality moods (professional, genz, flirty, roast, cute, romantic, breakup, discipline) that shape briefs and notification copy. Selected via a Settings glass card picker.
 * **Zero Cloud Dependence**: Code operates entirely on device for absolute confidentiality.
+
+### ♿ Accessibility & Energy Save (Reduce Motion)
+Engineered for inclusive usage and maximum battery/CPU efficiency:
+* **TalkBack / VoiceOver Semantics**: Wrapped habit items inside comprehensive semantic trees describing name, completion/freeze state, active streaks, durations, and dependency chains.
+* **WCAG Contrast Ratios**: Adaptive smoked glass typography and icon layers transitioning automatically to satisfy dark/light mode readability guidelines.
+* **Reduce Motion Toggle**: Settings switch that completely short-circuits kinetic particle painting, lightning flashes, spring scaling, ripples, and rumble haptic vibration loops.
+
+### 📋 Starter Habit Templates & Stack Chains
+Lowers entry friction with premade layouts and stacking connections:
+* **Premium Preset Library**: 11 default template options pre-filling names, custom icons, suggested timings, and linkage paths.
+* **Onboarding Selection Slide**: PageView step letting users batch-select initial protocols with opt-in suggestions to link chains (e.g. *Drink Water* → *Take Vitamins*).
+* **Form pre-populate option**: "Choose from templates" trigger in the creation form to pre-fill parameters immediately.
 
 ### ⛈ Sensory Storm Engine (Interactive Dial UX)
 Bridges virtual productivity milestones with immersive physical feedback:
@@ -176,7 +189,7 @@ flutter run --release
 - [ ] Biometric authentication (FaceID / Fingerprint)  
 - [ ] AI-generated monthly reports  
 - [ ] Deep Focus Mode (App Blocking)  
-- [ ] Multi-persona AI system  
+- [x] Multi-persona AI system (SHELBY v5.0 Moods)  
 - [ ] Cross-device sync  
 
 ---
