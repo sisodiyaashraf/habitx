@@ -205,4 +205,197 @@ void main() {
     final focus = achievements.firstWhere((a) => a['id'] == 'focus');
     expect(focus['unlocked'], false);
   });
+
+  group('Streak Freeze Token Tests', () {
+    test('Can only freeze if freezes available, today incomplete, and yesterday intact', () {
+      final provider = HabitProvider();
+      final now = DateTime.now();
+      final yesterday = now.subtract(const Duration(days: 1));
+
+      final habit = Habit(
+        id: 'f1',
+        name: 'Gym Workout',
+        difficulty: HabitDifficulty.medium,
+        createdAt: now.subtract(const Duration(days: 2)),
+        lastCompleted: yesterday,
+        completedDates: [yesterday],
+        streak: 1,
+        streakFreezesAvailable: 1,
+      );
+
+      provider.addHabit(habit);
+
+      // Initially eligible to freeze today
+      expect(provider.canFreezeHabit(provider.allHabits.first), true);
+
+      // 1. Cannot freeze if no freezes left
+      final noFreezeHabit = habit.copyWith(streakFreezesAvailable: 0);
+      expect(provider.canFreezeHabit(noFreezeHabit), false);
+
+      // 2. Cannot freeze if today is already completed
+      final completedTodayHabit = habit.copyWith(isCompleted: true, completedDates: [yesterday, now]);
+      expect(provider.canFreezeHabit(completedTodayHabit), false);
+
+      // 3. Cannot freeze if yesterday was NOT intact (missed)
+      final brokenStreakHabit = habit.copyWith(
+        completedDates: [],
+        streak: 0,
+      );
+      expect(provider.canFreezeHabit(brokenStreakHabit), false);
+    });
+
+    test('Consuming freeze decrements token, marks day frozen, preserves streak count', () {
+      final provider = HabitProvider();
+      final now = DateTime.now();
+      final yesterday = now.subtract(const Duration(days: 1));
+
+      final habit = Habit(
+        id: 'f2',
+        name: 'Learn Dart',
+        difficulty: HabitDifficulty.easy,
+        createdAt: now.subtract(const Duration(days: 2)),
+        lastCompleted: yesterday,
+        completedDates: [yesterday],
+        streak: 1,
+        streakFreezesAvailable: 1,
+      );
+
+      provider.addHabit(habit);
+      expect(provider.canFreezeHabit(provider.allHabits.first), true);
+
+      // Trigger freeze
+      // Mocking context
+      provider.useStreakFreeze(null as dynamic, 'f2');
+
+      final updated = provider.allHabits.first;
+      expect(updated.streakFreezesAvailable, 0);
+      expect(updated.frozenDates.length, 1);
+      expect(updated.frozenDates.first.isSameDay(now), true);
+      // Streak count should remain the same (not incremented, but not reset)
+      expect(updated.streak, 1);
+    });
+
+    test('Streak logic correctly bridges over a frozen day on subsequent completion', () {
+      final provider = HabitProvider();
+      final now = DateTime.now();
+      final yesterday = now.subtract(const Duration(days: 1));
+      final twoDaysAgo = now.subtract(const Duration(days: 2));
+
+      // Habit was completed 2 days ago, frozen yesterday
+      final habit = Habit(
+        id: 'f3',
+        name: 'Meditation',
+        difficulty: HabitDifficulty.easy,
+        createdAt: now.subtract(const Duration(days: 3)),
+        lastCompleted: twoDaysAgo,
+        completedDates: [twoDaysAgo],
+        frozenDates: [yesterday],
+        streak: 1, // streak is 1 from the completion 2 days ago
+        streakFreezesAvailable: 0,
+      );
+
+      provider.addHabit(habit);
+
+      // Complete today
+      provider.toggleHabitCompletion(null as dynamic, 'f3');
+
+      final updated = provider.allHabits.first;
+      // Streak should correctly increment to 2 because yesterday was frozen (intact)
+      expect(updated.streak, 2);
+    });
+
+    test('Freezes replenish on Monday threshold crossing', () async {
+      final provider = HabitProvider();
+      final now = DateTime.now();
+
+      // Find the last Monday
+      final daysToSubtract = (now.weekday - DateTime.monday) % 7;
+      final lastMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysToSubtract));
+
+      // Reset date was before last Monday, and freezes are 0
+      final habit = Habit(
+        id: 'f4',
+        name: 'Replenish Test',
+        difficulty: HabitDifficulty.easy,
+        createdAt: now.subtract(const Duration(days: 10)),
+        lastCompleted: now,
+        streakFreezesAvailable: 0,
+        lastFreezeResetDate: lastMonday.subtract(const Duration(days: 2)), // 2 days before last Monday
+      );
+
+      provider.addHabit(habit);
+
+      // Re-triggering init (which calls replenish freezes)
+      await provider.init();
+
+      // Yield execution to allow microtasks / storage callbacks to complete
+      expect(provider.allHabits.first.streakFreezesAvailable, 1);
+      expect(provider.allHabits.first.lastFreezeResetDate.isAfter(lastMonday.subtract(const Duration(days: 1))), true);
+    });
+  });
+
+  group('Habit Stacking / Chaining Tests', () {
+    test('Circular validation detects loop dependencies', () {
+      final provider = HabitProvider();
+
+      final habitA = Habit(
+        id: 'A',
+        name: 'Habit A',
+        difficulty: HabitDifficulty.easy,
+        lastCompleted: DateTime.now(),
+      );
+      final habitB = Habit(
+        id: 'B',
+        name: 'Habit B',
+        difficulty: HabitDifficulty.easy,
+        lastCompleted: DateTime.now(),
+        triggerHabitId: 'A',
+      );
+      final habitC = Habit(
+        id: 'C',
+        name: 'Habit C',
+        difficulty: HabitDifficulty.easy,
+        lastCompleted: DateTime.now(),
+      );
+
+      provider.addHabit(habitA);
+      provider.addHabit(habitB);
+      provider.addHabit(habitC);
+
+      // Setting B trigger to A is fine since B -> A -> null.
+      expect(provider.isCircularChain('B', 'A'), false);
+
+      // Setting C trigger to B is fine since C -> B -> A -> null.
+      expect(provider.isCircularChain('C', 'B'), false);
+
+      // Setting A trigger to B would create: A -> B -> A (Loop!) since B already triggers from A
+      expect(provider.isCircularChain('A', 'B'), true);
+      
+      // Update A to trigger from B
+      final updatedA = habitA.copyWith(triggerHabitId: () => 'B');
+      provider.updateHabit(updatedA);
+
+      // Now checking if B triggering from A is circular
+      expect(provider.isCircularChain('B', 'A'), true);
+    });
+
+    test('Deleting trigger habit cascade-clears stacked triggerHabitId', () {
+      final provider = HabitProvider();
+
+      final parent = Habit(id: 'parent', name: 'Parent', difficulty: HabitDifficulty.easy, lastCompleted: DateTime.now());
+      final child = Habit(id: 'child', name: 'Child', difficulty: HabitDifficulty.easy, lastCompleted: DateTime.now(), triggerHabitId: 'parent');
+
+      provider.addHabit(parent);
+      provider.addHabit(child);
+
+      expect(provider.allHabits.length, 2);
+      expect(provider.allHabits.firstWhere((h) => h.id == 'child').triggerHabitId, 'parent');
+
+      // Delete parent
+      provider.deleteHabit('parent');
+
+      expect(provider.allHabits.length, 1);
+      expect(provider.allHabits.first.triggerHabitId, isNull);
+    });
+  });
 }

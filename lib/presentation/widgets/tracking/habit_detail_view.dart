@@ -249,8 +249,45 @@ class HabitDetailView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        _buildBadge(milestoneText.toUpperCase()),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildBadge(milestoneText.toUpperCase()),
+            const SizedBox(width: 8),
+            _buildFreezeBadge(habit.streakFreezesAvailable),
+          ],
+        ),
       ],
+    );
+  }
+
+  Widget _buildFreezeBadge(int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.ac_unit_rounded,
+            color: Color(0xFF00E5FF),
+            size: 11,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            "$count",
+            style: const TextStyle(
+              color: Color(0xFF00E5FF),
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -465,6 +502,10 @@ class HabitDetailView extends StatelessWidget {
                   (d) => d.year == date.year && d.month == date.month && d.day == date.day
                 ) || (date.year == now.year && date.month == now.month && date.day == now.day && habit.isCompleted);
 
+                final isFrozenOnDay = habit.frozenDates.any(
+                  (d) => d.year == date.year && d.month == date.month && d.day == date.day
+                );
+
                 final dayLabel = weekdays[date.weekday - 1];
                 final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
 
@@ -488,8 +529,12 @@ class HabitDetailView extends StatelessWidget {
                             ? const LinearGradient(
                                 colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
                               )
-                            : null,
-                        color: isCompletedOnDay ? null : (isDark ? Colors.white12 : Colors.black12),
+                            : (isFrozenOnDay
+                                ? const LinearGradient(
+                                    colors: [Color(0xFF00E5FF), Color(0xFF00B0FF)],
+                                  )
+                                : null),
+                        color: (isCompletedOnDay || isFrozenOnDay) ? null : (isDark ? Colors.white12 : Colors.black12),
                         border: isToday
                             ? Border.all(
                                 color: const Color(0xFF00E5FF),
@@ -504,12 +549,22 @@ class HabitDetailView extends StatelessWidget {
                                   offset: const Offset(0, 2),
                                 )
                               ]
-                            : [],
+                            : (isFrozenOnDay
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    )
+                                  ]
+                                : []),
                       ),
                       child: Icon(
-                        isCompletedOnDay ? Icons.check : Icons.close,
+                        isCompletedOnDay
+                            ? Icons.check
+                            : (isFrozenOnDay ? Icons.ac_unit_rounded : Icons.close),
                         size: 12,
-                        color: isCompletedOnDay ? Colors.white : (isDark ? Colors.white30 : Colors.black38),
+                        color: (isCompletedOnDay || isFrozenOnDay) ? Colors.white : (isDark ? Colors.white30 : Colors.black38),
                       ),
                     ),
                   ],
@@ -579,83 +634,138 @@ class HabitDetailView extends StatelessWidget {
 
   Widget _buildActionToggleButton(BuildContext context, bool isDark) {
     final isCompleted = habit.isCompleted;
+    final provider = context.watch<HabitProvider>();
+    final canFreeze = provider.canFreezeHabit(habit);
 
-    return Container(
-      width: double.infinity,
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        gradient: isCompleted
-            ? null
-            : const LinearGradient(
-                colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          height: 60,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            gradient: isCompleted
+                ? null
+                : const LinearGradient(
+                    colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
+                  ),
+            boxShadow: isCompleted
+                ? []
+                : [
+                    BoxShadow(
+                      color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+          ),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isCompleted ? Colors.white.withValues(alpha: 0.08) : Colors.transparent,
+              foregroundColor: Colors.white,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+                side: isCompleted
+                    ? BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1.5)
+                    : BorderSide.none,
               ),
-        boxShadow: isCompleted
-            ? []
-            : [
-                BoxShadow(
-                  color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
+            ),
+            onPressed: () {
+              if (isCompleted) {
+                context.read<HabitProvider>().toggleHabitCompletion(
+                  context,
+                  habit.id,
+                );
+                Navigator.pop(context);
+              } else {
+                context.read<HabitProvider>().startTaskTimer(
+                  habit.id,
+                  habit.timerDuration,
+                );
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HabitTimerScreen(
+                      habitName: habit.name,
+                      initialMinutes: habit.timerDuration,
+                    ),
+                  ),
+                );
+              }
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isCompleted ? Icons.undo_rounded : Icons.check_circle_outline_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  isCompleted ? "MARK AS INCOMPLETE" : "COMPLETE HABIT TASK",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    letterSpacing: 1.2,
+                    color: Colors.white,
+                  ),
                 ),
               ],
-      ),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isCompleted ? Colors.white.withValues(alpha: 0.08) : Colors.transparent,
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: isCompleted
-                ? BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1.5)
-                : BorderSide.none,
+            ),
           ),
         ),
-        onPressed: () {
-          if (isCompleted) {
-            context.read<HabitProvider>().toggleHabitCompletion(
-              context,
-              habit.id,
-            );
-            Navigator.pop(context);
-          } else {
-            context.read<HabitProvider>().startTaskTimer(
-              habit.id,
-              habit.timerDuration,
-            );
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => HabitTimerScreen(
-                  habitName: habit.name,
-                  initialMinutes: habit.timerDuration,
+        if (canFreeze) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00E5FF).withValues(alpha: 0.2),
+                foregroundColor: const Color(0xFF00E5FF),
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  side: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
                 ),
               ),
-            );
-          }
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isCompleted ? Icons.undo_rounded : Icons.check_circle_outline_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              isCompleted ? "MARK AS INCOMPLETE" : "COMPLETE HABIT TASK",
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 14,
-                letterSpacing: 1.2,
-                color: Colors.white,
+              onPressed: () => _showFreezeConfirmation(context),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(
+                    Icons.ac_unit_rounded,
+                    color: Color(0xFF00E5FF),
+                    size: 20,
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                    "FREEZE TODAY'S STREAK",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                      letterSpacing: 1.2,
+                      color: Color(0xFF00E5FF),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -681,6 +791,104 @@ class HabitDetailView extends StatelessWidget {
   // --- Logic Helpers ---
 
   String _formatDate(DateTime date) => "${date.day}/${date.month}/${date.year}";
+
+  void _showFreezeConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final dialogTextColor = isDark ? Colors.white : Colors.black;
+        final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
+
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: GlassmorphicContainer(
+              width: MediaQuery.of(context).size.width * 0.85,
+              height: 240,
+              borderRadius: 30,
+              blur: 20,
+              alignment: Alignment.center,
+              border: 2,
+              linearGradient: LinearGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.1),
+                ],
+              ),
+              borderGradient: const LinearGradient(
+                colors: [Color(0xFF00E5FF), Colors.white24],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    const Icon(
+                      Icons.ac_unit_rounded,
+                      color: Color(0xFF00E5FF),
+                      size: 40,
+                    ),
+                    Text(
+                      "STREAK FREEZE",
+                      style: TextStyle(
+                        color: dialogTextColor,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      "Use your streak freeze for today? This protects your streak without modifying completions.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: dialogSubTextColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: Text(
+                            "CANCEL",
+                            style: TextStyle(color: dialogSubTextColor),
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00E5FF),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          onPressed: () {
+                            context.read<HabitProvider>().useStreakFreeze(context, habit.id);
+                            Navigator.pop(dialogContext); // close dialog
+                            Navigator.pop(context); // return to tracking screen
+                          },
+                          child: const Text(
+                            "FREEZE DAY",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   void _showDeleteConfirmation(BuildContext context) {
     showDialog(

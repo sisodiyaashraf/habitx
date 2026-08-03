@@ -9,99 +9,126 @@ import '../../screens/add_habit_screen.dart';
 
 class HabitTile extends StatelessWidget {
   final Habit habit;
+  final int indentLevel;
 
-  const HabitTile({super.key, required this.habit});
+  const HabitTile({super.key, required this.habit, this.indentLevel = 0});
 
   @override
   Widget build(BuildContext context) {
+    final double leftPadding = indentLevel * 16.0;
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: GestureDetector(
-        // Long press for quick manual completion or deletion
-        onLongPress: () => _showQuickActions(context),
-        child: GlassmorphicContainer(
-          width: double.infinity,
-          height: 110,
-          borderRadius: 24,
-          blur: 20,
-          alignment: Alignment.center,
-          border: 1.5,
-          linearGradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.28), // Optimized for Onyx visibility
-              Colors.white.withValues(alpha: 0.12),
-            ],
-          ),
-          borderGradient: LinearGradient(
-            colors: [
-              const Color(0xFFAC5DED).withValues(alpha: 0.4),
-              Colors.white.withValues(alpha: 0.3),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Row(
-              children: [
-                _buildDifficultyIndicator(),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      padding: EdgeInsets.only(left: leftPadding, bottom: 12.0),
+      child: Row(
+        children: [
+          if (indentLevel > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Icon(
+                Icons.subdirectory_arrow_right_rounded,
+                color: const Color(0xFFAC5DED).withValues(alpha: 0.5),
+                size: 20,
+              ),
+            ),
+          Expanded(
+            child: GestureDetector(
+              onLongPress: () => _showQuickActions(context),
+              child: GlassmorphicContainer(
+                width: double.infinity,
+                height: 110,
+                borderRadius: 24,
+                blur: 20,
+                alignment: Alignment.center,
+                border: 1.5,
+                linearGradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.28),
+                    Colors.white.withValues(alpha: 0.12),
+                  ],
+                ),
+                borderGradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFAC5DED).withValues(alpha: 0.4),
+                    Colors.white.withValues(alpha: 0.3),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  child: Row(
                     children: [
-                      Text(
-                        habit.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 17,
-                          letterSpacing: -0.4,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
+                      _buildDifficultyIndicator(),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildInfoBadge(
-                              Icons.timer_outlined,
-                              '${habit.timerDuration}m',
-                              const Color(0xFFAC5DED).withValues(alpha: 0.1),
-                              const Color(0xFFAC5DED),
-                            ),
-                            const SizedBox(width: 8),
                             Text(
-                              '${habit.streak} 🔥',
+                              habit.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                color: Colors.black54,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 17,
+                                letterSpacing: -0.4,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              DateFormat('hh:mm a').format(habit.createdAt),
-                              style: const TextStyle(
-                                color: Colors.black45,
-                                fontSize: 11,
+                            const SizedBox(height: 6),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: Row(
+                                children: [
+                                  _buildInfoBadge(
+                                    Icons.timer_outlined,
+                                    '${habit.timerDuration}m',
+                                    const Color(0xFFAC5DED).withValues(alpha: 0.1),
+                                    const Color(0xFFAC5DED),
+                                  ),
+                                  if (habit.triggerHabitId != null) ...[
+                                    const SizedBox(width: 8),
+                                    _buildInfoBadge(
+                                      Icons.link_rounded,
+                                      'AFTER: ${_getParentName(context)}',
+                                      const Color(0xFF00E5FF).withValues(alpha: 0.1),
+                                      const Color(0xFF00E5FF),
+                                    ),
+                                  ],
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${habit.streak} 🔥',
+                                    style: const TextStyle(
+                                      color: Colors.black54,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    DateFormat('hh:mm a').format(habit.createdAt),
+                                    style: const TextStyle(
+                                      color: Colors.black45,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      _buildActionButton(context),
                     ],
                   ),
                 ),
-                _buildActionButton(context),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -117,6 +144,19 @@ class HabitTile extends StatelessWidget {
       ),
       child: Icon(Icons.bolt_rounded, color: color, size: 24),
     );
+  }
+
+  String _getParentName(BuildContext context) {
+    for (final h in context.read<HabitProvider>().allHabits) {
+      if (h.id == habit.triggerHabitId) {
+        final name = h.name.toUpperCase();
+        if (name.length > 10) {
+          return "${name.substring(0, 10)}...";
+        }
+        return name;
+      }
+    }
+    return "TRIGGER";
   }
 
   Widget _buildInfoBadge(IconData icon, String text, Color bg, Color textCol) {

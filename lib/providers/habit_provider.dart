@@ -142,24 +142,37 @@ class HabitProvider extends ChangeNotifier {
     final loadedHabits = await _storage.loadHabits();
     _allHabits.clear();
 
-    // 🚀 DAILY RESET ENGINE
+    // 🚀 DAILY RESET ENGINE & STREAK DECAY
     final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
     bool needsSave = false;
 
     for (var habit in loadedHabits) {
       bool isDifferentDay = !habit.lastCompleted.isSameDay(now);
+      Habit processedHabit = habit;
 
       if (habit.isCompleted && isDifferentDay) {
-        _allHabits.add(habit.copyWith(isCompleted: false));
+        processedHabit = processedHabit.copyWith(isCompleted: false);
         needsSave = true;
-      } else {
-        _allHabits.add(habit);
       }
+
+      // Check if yesterday was missed (neither completed nor frozen) and streak > 0
+      final wasCompletedYesterday = habit.completedDates.any((d) => d.isSameDay(yesterday));
+      final wasFrozenYesterday = habit.frozenDates.any((d) => d.isSameDay(yesterday));
+
+      if (isDifferentDay && !wasCompletedYesterday && !wasFrozenYesterday && processedHabit.streak > 0) {
+        processedHabit = processedHabit.copyWith(streak: 0);
+        needsSave = true;
+      }
+
+      _allHabits.add(processedHabit);
     }
 
     if (needsSave) {
       await _storage.saveHabits(_allHabits);
     }
+
+    _checkAndReplenishFreezes();
 
     // Initialize Overlord Engine & reschedule notifications in the background
     HabitXNotificationService().init().then((_) {
@@ -557,15 +570,21 @@ class HabitProvider extends ChangeNotifier {
 
   void deleteHabit(String id) {
     _allHabits.removeWhere((h) => h.id == id);
+
+    // Cascade trigger deletion: clear triggerHabitId for child habits
+    for (int i = 0; i < _allHabits.length; i++) {
+      if (_allHabits[i].triggerHabitId == id) {
+        _allHabits[i] = _allHabits[i].copyWith(triggerHabitId: () => null);
+      }
+    }
+
     _storage.saveHabits(_allHabits);
-
     HabitXNotificationService().cancelReminder(id);
-
     _updateHomeWidget();
     notifyListeners();
   }
 
-  void toggleHabitCompletion(BuildContext context, String id) {
+  void toggleHabitCompletion(BuildContext? context, String id) {
     final index = _allHabits.indexWhere((h) => h.id == id);
     if (index == -1) return;
 
@@ -573,10 +592,18 @@ class HabitProvider extends ChangeNotifier {
     final bool isNowCompleted = !habit.isCompleted;
     final List<DateTime> updatedCompletedDates = List.from(habit.completedDates);
     final now = DateTime.now();
+
+    final yesterday = now.subtract(const Duration(days: 1));
+    final bool yesterdayIntact = habit.completedDates.any((d) => d.isSameDay(yesterday)) ||
+                                 habit.frozenDates.any((d) => d.isSameDay(yesterday));
+
+    int newStreak;
     if (isNowCompleted) {
       if (_isHapticsEnabled) HapticHelper.success();
       _applyGamification(habit.xpValue);
-      checkMilestones(context);
+      if (context != null) {
+        checkMilestones(context);
+      }
 
       HabitXNotificationService().showInstantNotification(
         title: "Mission Accomplished 🏆",
@@ -586,6 +613,13 @@ class HabitProvider extends ChangeNotifier {
       bool alreadyAdded = updatedCompletedDates.any((d) => d.isSameDay(now));
       if (!alreadyAdded) {
         updatedCompletedDates.add(now);
+      }
+
+      // Calculate streak based on yesterday being intact (completed or frozen)
+      if (yesterdayIntact || habit.streak == 0) {
+        newStreak = habit.streak + 1;
+      } else {
+        newStreak = 1; // broken yesterday, restart at 1
       }
     } else {
       _reverseGamification(habit.xpValue);
@@ -599,18 +633,27 @@ class HabitProvider extends ChangeNotifier {
           createdAt: habit.createdAt,
         );
       }
+
+      newStreak = habit.streak > 0 ? habit.streak - 1 : 0;
     }
 
     _allHabits[index] = habit.copyWith(
       isCompleted: isNowCompleted,
-      streak: isNowCompleted
-          ? habit.streak + 1
-          : (habit.streak > 0 ? habit.streak - 1 : 0),
+      streak: newStreak,
       lastCompleted: now,
       completedDates: updatedCompletedDates,
     );
 
     _storage.saveHabits(_allHabits);
+
+    // Stack nudge check
+    if (isNowCompleted && context != null) {
+      final stackedHabits = _allHabits.where((h) => h.triggerHabitId == id && !h.isCompleted).toList();
+      if (stackedHabits.isNotEmpty) {
+        _showStackedNudge(context, stackedHabits.first);
+      }
+    }
+
     _updateHomeWidget();
     notifyListeners();
   }
@@ -771,6 +814,184 @@ class HabitProvider extends ChangeNotifier {
         ),
         FaIcon(icon, color: Colors.white, size: 50),
       ],
+    );
+  }
+
+  // --- Streak Freeze Engine ---
+
+  bool _needsFreezeReplenish(DateTime lastReset, DateTime now) {
+    final daysToSubtract = (now.weekday - DateTime.monday) % 7;
+    final thisMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysToSubtract));
+    return lastReset.isBefore(thisMonday);
+  }
+
+  void _checkAndReplenishFreezes() {
+    final now = DateTime.now();
+    bool needsSave = false;
+    for (int i = 0; i < _allHabits.length; i++) {
+      final habit = _allHabits[i];
+      if (_needsFreezeReplenish(habit.lastFreezeResetDate, now)) {
+        _allHabits[i] = habit.copyWith(
+          streakFreezesAvailable: 1,
+          lastFreezeResetDate: now,
+        );
+        needsSave = true;
+      }
+    }
+    if (needsSave) {
+      _storage.saveHabits(_allHabits);
+    }
+  }
+
+  bool canFreezeHabit(Habit habit) {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+
+    final todayCompleted = habit.completedDates.any((d) => d.isSameDay(now)) || habit.isCompleted;
+    final todayFrozen = habit.frozenDates.any((d) => d.isSameDay(now));
+    
+    final yesterdayIntact = habit.completedDates.any((d) => d.isSameDay(yesterday)) || 
+                            habit.frozenDates.any((d) => d.isSameDay(yesterday));
+
+    final hasFreezeAvailable = habit.streakFreezesAvailable > 0;
+
+    return !todayCompleted && !todayFrozen && yesterdayIntact && hasFreezeAvailable;
+  }
+
+  void useStreakFreeze(BuildContext? context, String habitId) {
+    final index = _allHabits.indexWhere((h) => h.id == habitId);
+    if (index == -1) return;
+
+    final habit = _allHabits[index];
+    if (!canFreezeHabit(habit)) return;
+
+    final now = DateTime.now();
+    final updatedFrozenDates = List<DateTime>.from(habit.frozenDates)..add(now);
+
+    _allHabits[index] = habit.copyWith(
+      streakFreezesAvailable: habit.streakFreezesAvailable - 1,
+      frozenDates: updatedFrozenDates,
+    );
+
+    _storage.saveHabits(_allHabits);
+    _updateHomeWidget();
+    notifyListeners();
+  }
+
+  // --- Habit Stacking / Circular Validation ---
+
+  bool isCircularChain(String startId, String? triggerId) {
+    if (triggerId == null) return false;
+    if (startId == triggerId) return true;
+
+    String? currentId = triggerId;
+    final visited = {startId};
+
+    while (currentId != null) {
+      if (!visited.add(currentId)) {
+        return true;
+      }
+      Habit? next;
+      for (final h in _allHabits) {
+        if (h.id == currentId) {
+          next = h;
+          break;
+        }
+      }
+      if (next == null) break;
+      currentId = next.triggerHabitId;
+    }
+    return false;
+  }
+
+  // --- Contextual Nudge Overlay ---
+
+  void _showStackedNudge(BuildContext context, Habit stackedHabit) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+
+    messenger.showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        padding: EdgeInsets.zero,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 90),
+        content: GlassmorphicContainer(
+          width: double.infinity,
+          height: 70,
+          borderRadius: 20,
+          blur: 15,
+          alignment: Alignment.center,
+          border: 1,
+          linearGradient: LinearGradient(
+            colors: [
+              const Color(0xFFAC5DED).withValues(alpha: 0.2),
+              const Color(0xFF00E5FF).withValues(alpha: 0.1),
+            ],
+          ),
+          borderGradient: const LinearGradient(
+            colors: [Color(0xFFAC5DED), Color(0xFF00E5FF)],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                const Icon(Icons.link_rounded, color: Color(0xFF00E5FF), size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "HABIT STACK TRIGGERED",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        "Ready for ${stackedHabit.name}?",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFFAC5DED).withValues(alpha: 0.2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    toggleHabitCompletion(context, stackedHabit.id);
+                    messenger.hideCurrentSnackBar();
+                  },
+                  child: const Text(
+                    "COMPLETE",
+                    style: TextStyle(
+                      color: Color(0xFF00E5FF),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

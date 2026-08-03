@@ -26,6 +26,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
   bool _isReminderEnabled = true;
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
+  String? _selectedTriggerHabitId;
 
   final Map<String, List<Map<String, dynamic>>> _habitLibrary = {
     "Popular": [
@@ -92,6 +93,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
       if (_isReminderEnabled) {
         _selectedTime = TimeOfDay.fromDateTime(widget.habit!.reminderTime!);
       }
+      _selectedTriggerHabitId = widget.habit!.triggerHabitId;
 
       if (![10, 20, 30].contains(_selectedMinutes)) {
         _isCustomTimer = true;
@@ -167,6 +169,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
           timerDuration: finalMinutes,
           createdAt: scheduledDateTime,
           reminderTime: _isReminderEnabled ? scheduledDateTime : null,
+          triggerHabitId: () => _selectedTriggerHabitId,
         );
         habitProvider.updateHabit(updatedHabit);
       } else {
@@ -181,6 +184,7 @@ class _AddHabitFormState extends State<AddHabitForm> {
           isCompleted: false,
           streak: 0,
           lastCompleted: DateTime.now(),
+          triggerHabitId: _selectedTriggerHabitId,
         );
         habitProvider.addHabit(newHabit);
       }
@@ -260,6 +264,8 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       _buildDateTimeRow(context, isDark, textColor),
                       const SizedBox(height: 20),
                       _buildReminderToggle(isDark, textColor),
+                      const SizedBox(height: 20),
+                      _buildStackPicker(isDark, textColor),
                       const SizedBox(height: 30),
                       _buildLabel("INTENSITY & TIME", isDark),
                       _buildGlassDropdown(isDark, textColor),
@@ -747,6 +753,67 @@ class _AddHabitFormState extends State<AddHabitForm> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStackPicker(bool isDark, Color textColor) {
+    final habitProvider = context.read<HabitProvider>();
+    final habits = habitProvider.allHabits;
+    final currentId = widget.habit?.id ?? '';
+
+    // Filter candidates to avoid circular references and self-triggering
+    final candidates = habits.where((h) {
+      if (widget.habit != null && h.id == currentId) return false;
+      return !habitProvider.isCircularChain(currentId, h.id);
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel("STACK AFTER (OPTIONAL)", isDark),
+        DropdownButtonFormField<String?>(
+          initialValue: _selectedTriggerHabitId,
+          dropdownColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+          icon: const Icon(Icons.link_rounded, color: Color(0xFFAC5DED)),
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+          decoration: InputDecoration(
+            hintText: "Select cue habit...",
+            hintStyle: TextStyle(color: textColor.withValues(alpha: 0.4)),
+            filled: true,
+            fillColor: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.04),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: Color(0xFFAC5DED), width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
+          items: [
+            const DropdownMenuItem<String?>(
+              value: null,
+              child: Text("NONE (START OF CHAIN)"),
+            ),
+            ...candidates.map((h) => DropdownMenuItem<String?>(
+              value: h.id,
+              child: Text(h.name.toUpperCase()),
+            )),
+          ],
+          onChanged: (val) {
+            setState(() {
+              _selectedTriggerHabitId = val;
+            });
+          },
+        ),
+      ],
     );
   }
 
