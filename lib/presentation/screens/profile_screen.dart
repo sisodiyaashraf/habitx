@@ -74,13 +74,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  image: const DecorationImage(
-                    image: AssetImage('assets/images/habitxbackground.jpeg'),
-                    fit: BoxFit.cover,
+                  color: Colors.white.withValues(alpha: isDark ? 0.05 : 0.15),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
+                  ),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      width: 1.5,
+                    ),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -97,8 +104,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         provider.userName.toUpperCase(),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: textColor,
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -1,
@@ -106,10 +113,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       "Elite Habit Builder",
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: subTextColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
