@@ -16,6 +16,27 @@ class HabitTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double leftPadding = indentLevel * 16.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white60 : Colors.black54;
+
+    bool todayFrozen = false;
+    final now = DateTime.now();
+    for (final d in habit.frozenDates) {
+      if (d.year == now.year && d.month == now.month && d.day == now.day) {
+        todayFrozen = true;
+        break;
+      }
+    }
+
+    String statusDescription = "Incomplete";
+    if (habit.isCompleted) {
+      statusDescription = "Completed";
+    } else if (todayFrozen) {
+      statusDescription = "Frozen (streak protected)";
+    }
+
+    final String semanticsLabel = "Habit: ${habit.name}. Status: $statusDescription. Streak: ${habit.streak} days. Timer duration: ${habit.timerDuration} minutes. ${habit.triggerHabitId != null ? 'Stacked after another habit.' : ''}";
 
     return Padding(
       padding: EdgeInsets.only(left: leftPadding, bottom: 12.0),
@@ -33,96 +54,98 @@ class HabitTile extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               onLongPress: () => _showQuickActions(context),
-              child: GlassmorphicContainer(
-                width: double.infinity,
-                height: 110,
-                borderRadius: 24,
-                blur: 20,
-                alignment: Alignment.center,
-                border: 1.5,
-                linearGradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.28),
-                    Colors.white.withValues(alpha: 0.12),
-                  ],
-                ),
-                borderGradient: LinearGradient(
-                  colors: [
-                    const Color(0xFFAC5DED).withValues(alpha: 0.4),
-                    Colors.white.withValues(alpha: 0.3),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  child: Row(
-                    children: [
-                      _buildDifficultyIndicator(),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              habit.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 17,
-                                letterSpacing: -0.4,
+              child: Semantics(
+                label: semanticsLabel,
+                button: true,
+                child: GlassmorphicContainer(
+                  width: double.infinity,
+                  height: 110,
+                  borderRadius: 24,
+                  blur: 20,
+                  alignment: Alignment.center,
+                  border: 1.5,
+                  linearGradient: LinearGradient(
+                    colors: [
+                      isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.28),
+                      isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.12),
+                    ],
+                  ),
+                  borderGradient: LinearGradient(
+                    colors: [
+                      const Color(0xFFAC5DED).withValues(alpha: 0.4),
+                      Colors.white.withValues(alpha: 0.3),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    child: Row(
+                      children: [
+                        _buildDifficultyIndicator(),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                habit.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 17,
+                                  letterSpacing: -0.4,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              physics: const BouncingScrollPhysics(),
-                              child: Row(
-                                children: [
-                                  _buildInfoBadge(
-                                    Icons.timer_outlined,
-                                    '${habit.timerDuration}m',
-                                    const Color(0xFFAC5DED).withValues(alpha: 0.1),
-                                    const Color(0xFFAC5DED),
-                                  ),
-                                  if (habit.triggerHabitId != null) ...[
-                                    const SizedBox(width: 8),
+                              const SizedBox(height: 6),
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
+                                child: Row(
+                                  children: [
                                     _buildInfoBadge(
-                                      Icons.link_rounded,
-                                      'AFTER: ${_getParentName(context)}',
-                                      const Color(0xFF00E5FF).withValues(alpha: 0.1),
-                                      const Color(0xFF00E5FF),
+                                      Icons.timer_outlined,
+                                      '${habit.timerDuration}m',
+                                      const Color(0xFFAC5DED).withValues(alpha: 0.1),
+                                      const Color(0xFFAC5DED),
+                                    ),
+                                    if (habit.triggerHabitId != null) ...[
+                                      const SizedBox(width: 8),
+                                      _buildInfoBadge(
+                                        Icons.link_rounded,
+                                        'AFTER: ${_getParentName(context)}',
+                                        const Color(0xFF00E5FF).withValues(alpha: 0.1),
+                                        const Color(0xFF00E5FF),
+                                      ),
+                                    ],
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '${habit.streak} 🔥',
+                                      style: TextStyle(
+                                        color: subTextColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      DateFormat('hh:mm a').format(habit.createdAt),
+                                      style: TextStyle(
+                                        color: subTextColor,
+                                        fontSize: 11,
+                                      ),
                                     ),
                                   ],
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '${habit.streak} 🔥',
-                                    style: const TextStyle(
-                                      color: Colors.black54,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    DateFormat('hh:mm a').format(habit.createdAt),
-                                    style: const TextStyle(
-                                      color: Colors.black45,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      _buildActionButton(context),
-                    ],
+                        const SizedBox(width: 12),
+                        _buildActionButton(context),
+                      ],
+                    ),
                   ),
                 ),
               ),

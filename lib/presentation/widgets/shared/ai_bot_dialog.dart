@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../providers/habit_provider.dart';
+import '../../../core/constants/notification_messages.dart';
 import '../tracking/achievement_tracker.dart';
 
 class AiBotDialog extends StatefulWidget {
@@ -70,17 +71,25 @@ class _AiBotDialogState extends State<AiBotDialog> {
     final done = provider.allHabits.where((h) => h.isCompleted).length;
     final double progress = total == 0 ? 0.0 : done / total;
 
-    String initialMsg = "";
+    String contextType = 'midday';
     if (total == 0) {
-      initialMsg =
-          "Telemetry shows 0 active habits. Discipline core is idle. Instruct me with 'help' to configure new telemetry routines, or configure one in the console.";
+      contextType = 'empty';
+    } else if (done == total) {
+      contextType = 'celebration';
     } else if (progress < 0.5) {
-      initialMsg =
-          "Warning: Current compliance is ${(progress * 100).toInt()}%. Cognitive momentum is sub-optimal. I recommend immediate execution of your pending habits. Type 'help' for options.";
-    } else {
-      initialMsg =
-          "Diagnostics status: OPTIMAL. Completed $done/$total objectives today. High compliance verified. Keep executing to secure max XP. Command prompt is ready.";
+      contextType = 'nudge';
     }
+
+    final initialMsg = NotificationMessages.getInAppBriefing(
+      persona: provider.activePersona,
+      context: contextType,
+      username: provider.userName,
+      completed: done,
+      total: total,
+      streak: provider.allHabits.isNotEmpty
+          ? provider.allHabits.map((h) => h.streak).reduce((a, b) => a > b ? a : b)
+          : 0,
+    );
 
     _startTypewriter(initialMsg);
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
+import '../../../providers/habit_provider.dart';
 
 class HabitTimerDial extends StatefulWidget {
   final double progress;
@@ -70,6 +72,9 @@ class _HabitTimerDialState extends State<HabitTimerDial> with TickerProviderStat
     if (widget.onTap != null) {
       widget.onTap!();
     }
+
+    final provider = context.read<HabitProvider>();
+    if (provider.isReduceMotionActive) return;
 
     // Trigger spring squeeze-and-bounce
     _scaleController.forward().then((_) {
@@ -191,7 +196,9 @@ class _HabitTimerDialState extends State<HabitTimerDial> with TickerProviderStat
             width: 230,
             height: 230,
             child: TweenAnimationBuilder<double>(
-              duration: const Duration(milliseconds: 800),
+              duration: context.read<HabitProvider>().isReduceMotionActive
+                  ? Duration.zero
+                  : const Duration(milliseconds: 800),
               curve: Curves.easeOutCubic,
               tween: Tween<double>(begin: 0, end: widget.progress),
               builder: (context, value, child) {

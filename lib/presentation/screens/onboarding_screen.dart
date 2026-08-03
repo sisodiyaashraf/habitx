@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../../providers/habit_provider.dart';
+import '../../domain/models/habit.dart';
+import '../../core/constants/habit_templates.dart';
 import 'home_screen.dart';
 import '../widgets/shared/glass_background.dart';
 
@@ -23,6 +25,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   int _currentPage = 0;
   String _selectedGender = "Male";
+  final Set<String> _selectedTemplateIds = {};
+  bool _linkWaterVitamins = true;
+  bool _linkReadPlanning = true;
 
   late AnimationController _glowController;
   late AnimationController _typingController;
@@ -85,7 +90,20 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   void _nextPage() {
-    if (_currentPage < 3) {
+    if (_currentPage == 3) {
+      final isValid =
+          _nameController.text.isNotEmpty && _ageController.text.isNotEmpty;
+      if (!isValid) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Complete all neural fields to proceed."),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+    }
+    if (_currentPage < 4) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 600),
         curve: Curves.easeOutQuint,
@@ -121,6 +139,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         (data) => _buildFeatureSlide(data),
                       ),
                       _buildIdentityForm(),
+                      _buildTemplateSelectorSlide(),
                     ],
                   ),
                 ),
@@ -145,7 +164,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Row(
-        children: List.generate(4, (index) {
+        children: List.generate(5, (index) {
           bool isActive = index <= _currentPage;
           return Expanded(
             child: AnimatedContainer(
@@ -332,7 +351,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ? activeColor.withValues(alpha: 0.15)
               : Colors.white.withValues(alpha: 0.05),
           border: Border.all(
-            color: isSelected ? activeColor : Colors.white.withValues(alpha: 0.1),
+            color: isSelected
+                ? activeColor
+                : Colors.white.withValues(alpha: 0.1),
             width: 1.5,
           ),
           boxShadow: isSelected
@@ -417,12 +438,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
-
-
   Widget _buildBottomControls() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: _currentPage == 3 ? _buildStartButton() : _buildNextButton(),
+      child: _currentPage == 4 ? _buildStartButton() : _buildNextButton(),
     );
   }
 
@@ -458,12 +477,74 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       onTap: () async {
         if (isValid) {
           HapticFeedback.heavyImpact();
-          await context.read<HabitProvider>().setupUser(
+          final provider = context.read<HabitProvider>();
+
+          await provider.setupUser(
             name: _nameController.text,
             age: int.tryParse(_ageController.text) ?? 18,
             persona: "Professional",
             gender: _selectedGender,
           );
+
+          // Create the habits from selected templates
+          final List<Habit> habitsToAdd = [];
+          final Map<String, String> templateIdToRealId = {};
+
+          // First pass: assign target IDs
+          for (final templateId in _selectedTemplateIds) {
+            final realId =
+                "${DateTime.now().millisecondsSinceEpoch}_$templateId";
+            templateIdToRealId[templateId] = realId;
+          }
+
+          // Second pass: instantiate templates and map parent stack triggers
+          for (final templateId in _selectedTemplateIds) {
+            final template = HabitTemplates.presets.firstWhere(
+              (t) => t.id == templateId,
+            );
+
+            String? parentHabitId;
+            if (template.suggestedTriggerHabitId != null &&
+                _selectedTemplateIds.contains(
+                  template.suggestedTriggerHabitId,
+                )) {
+              final bool linkThem =
+                  (template.id == 'template_vitamins' && _linkWaterVitamins) ||
+                  (template.id == 'template_planning' && _linkReadPlanning);
+              if (linkThem) {
+                parentHabitId =
+                    templateIdToRealId[template.suggestedTriggerHabitId];
+              }
+            }
+
+            final now = DateTime.now();
+            final reminderDateTime = DateTime(
+              now.year,
+              now.month,
+              now.day,
+              template.defaultReminderTime.hour,
+              template.defaultReminderTime.minute,
+            );
+
+            final newHabit = Habit(
+              id: templateIdToRealId[templateId]!,
+              name: template.name,
+              difficulty: HabitDifficulty.easy,
+              timerDuration: 10,
+              createdAt: now,
+              reminderTime: reminderDateTime,
+              isCompleted: false,
+              streak: 0,
+              lastCompleted: now,
+              triggerHabitId: parentHabitId,
+            );
+            habitsToAdd.add(newHabit);
+          }
+
+          if (habitsToAdd.isNotEmpty) {
+            provider.addHabits(habitsToAdd);
+          }
+
           if (!mounted) return;
           Navigator.pushAndRemoveUntil(
             context,
@@ -472,9 +553,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Complete all neural fields to proceed."),
-            ),
+            const SnackBar(content: Text("Complete all fields to proceed.")),
           );
         }
       },
@@ -493,7 +572,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   ],
           ),
           border: Border.all(
-            color: isValid ? Colors.transparent : Colors.white.withValues(alpha: 0.1),
+            color: isValid
+                ? Colors.transparent
+                : Colors.white.withValues(alpha: 0.1),
             width: 1.0,
           ),
           boxShadow: isValid
@@ -514,7 +595,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             Text(
               "ACTIVATE CORE",
               style: TextStyle(
-                color: isValid ? Colors.white : Colors.white.withValues(alpha: 0.2),
+                color: isValid
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.2),
                 fontWeight: FontWeight.w900,
                 letterSpacing: 2,
                 fontSize: 13,
@@ -534,6 +617,184 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
+  Widget _buildTemplateSelectorSlide() {
+    final descColor = Colors.white70;
+
+    final hasWaterAndVitamins =
+        _selectedTemplateIds.contains('template_water') &&
+        _selectedTemplateIds.contains('template_vitamins');
+    final hasReadAndPlanning =
+        _selectedTemplateIds.contains('template_read') &&
+        _selectedTemplateIds.contains('template_planning');
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+      child: Center(
+        child: _buildGlassCard(
+          borderColor: const Color(0xFFAC5DED),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "CHOOSE STARTER PROTOCOLS",
+                  style: TextStyle(
+                    color: Color(0xFFAC5DED),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.0,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "Select 2-3 routines to pre-fill your discipline core",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: descColor, fontSize: 11),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 250,
+                  child: GridView.builder(
+                    padding: EdgeInsets.zero,
+                    physics: const BouncingScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 2.3,
+                        ),
+                    itemCount: HabitTemplates.presets.length,
+                    itemBuilder: (context, index) {
+                      final template = HabitTemplates.presets[index];
+                      final isSelected = _selectedTemplateIds.contains(
+                        template.id,
+                      );
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (isSelected) {
+                              _selectedTemplateIds.remove(template.id);
+                            } else {
+                              _selectedTemplateIds.add(template.id);
+                            }
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            color: isSelected
+                                ? const Color(
+                                    0xFFAC5DED,
+                                  ).withValues(alpha: 0.15)
+                                : Colors.white.withValues(alpha: 0.05),
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFFAC5DED)
+                                  : Colors.white.withValues(alpha: 0.1),
+                              width: 1.5,
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FaIcon(
+                                template.icon as FaIconData?,
+                                size: 14,
+                                color: isSelected
+                                    ? const Color(0xFFAC5DED)
+                                    : Colors.white60,
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  template.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.white70,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                if (hasWaterAndVitamins || hasReadAndPlanning) ...[
+                  const SizedBox(height: 10),
+                  const Text(
+                    "SUGGESTED CHAINS (OPT-IN)",
+                    style: TextStyle(
+                      color: Color(0xFF00E5FF),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (hasWaterAndVitamins)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Checkbox(
+                          value: _linkWaterVitamins,
+                          activeColor: const Color(0xFFAC5DED),
+                          onChanged: (val) {
+                            setState(() => _linkWaterVitamins = val ?? true);
+                          },
+                        ),
+                        const Flexible(
+                          child: Text(
+                            "Link 'Take Vitamins' after 'Drink Water'",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (hasReadAndPlanning)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Checkbox(
+                          value: _linkReadPlanning,
+                          activeColor: const Color(0xFFAC5DED),
+                          onChanged: (val) {
+                            setState(() => _linkReadPlanning = val ?? true);
+                          },
+                        ),
+                        const Flexible(
+                          child: Text(
+                            "Link 'Plan Tomorrow' after 'Read 10 Pages'",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildGlassCard({
     required Widget child,
     required Color borderColor,
@@ -548,7 +809,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.07),
             borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: borderColor.withValues(alpha: 0.3), width: 1.5),
+            border: Border.all(
+              color: borderColor.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
           ),
           child: child,
         ),

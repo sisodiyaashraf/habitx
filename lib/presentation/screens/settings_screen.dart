@@ -8,6 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../providers/habit_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../domain/models/shelby_persona.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../../core/constants/notification_messages.dart';
 import '../widgets/shared/glass_background.dart';
@@ -152,6 +153,17 @@ class SettingsScreen extends StatelessWidget {
                     provider.toggleDailyMotivation(val);
                   },
                 ),
+                _switchSettingsTile(
+                  FontAwesomeIcons.circleHalfStroke,
+                  "Reduce Motion & Effects",
+                  "Quiet animations, particles, and heavy rumble haptics",
+                  provider.isReduceMotionActive,
+                  textColor,
+                  subTextColor,
+                  onChanged: (val) {
+                    provider.toggleReduceMotion(val);
+                  },
+                ),
                 _settingsTile(
                   FontAwesomeIcons.bell,
                   "System Alerts Permission",
@@ -218,7 +230,7 @@ class SettingsScreen extends StatelessWidget {
                   },
                 ),
               ],
-              height: 432,
+              height: 504,
               isDark: isDark,
             ),
 
@@ -552,14 +564,25 @@ class SettingsScreen extends StatelessWidget {
     final dialogTextColor = isDark ? Colors.white : Colors.black;
     final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
 
+    final displayPersonas = [
+      ShelbyPersona.professional,
+      ShelbyPersona.genz,
+      ShelbyPersona.overlord,
+      ShelbyPersona.flirty,
+      ShelbyPersona.roast,
+      ShelbyPersona.cute,
+      ShelbyPersona.romantic,
+      ShelbyPersona.breakup,
+    ];
+
     showDialog(
       context: context,
       builder: (context) => Center(
         child: Material(
           color: Colors.transparent,
           child: GlassmorphicContainer(
-            width: MediaQuery.of(context).size.width * 0.85,
-            height: 380,
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: 480,
             borderRadius: 30,
             blur: 20,
             alignment: Alignment.center,
@@ -575,34 +598,38 @@ class SettingsScreen extends StatelessWidget {
             ),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(
-                      "NOTIFICATION THEME",
-                      style: TextStyle(
-                        color: dialogTextColor,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
-                        fontSize: 12,
-                      ),
+              child: Column(
+                children: [
+                  Text(
+                    "SHELBY PERSONALITY MOOD",
+                    style: TextStyle(
+                      color: dialogTextColor,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                      fontSize: 12,
                     ),
-                    const SizedBox(height: 16),
-                    _buildThemeOptionBtn(context, provider, "Professional", dialogTextColor),
-                    _buildThemeOptionBtn(context, provider, "GenZ", dialogTextColor),
-                    _buildThemeOptionBtn(context, provider, "SHELBY AI", dialogTextColor),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        "CLOSE",
-                        style: TextStyle(color: dialogSubTextColor),
-                      ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: displayPersonas.length,
+                      itemBuilder: (context, index) {
+                        final p = displayPersonas[index];
+                        final name = NotificationMessages.getPersonaDisplayName(p);
+                        return _buildThemeOptionBtn(context, provider, name, dialogTextColor);
+                      },
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      "CLOSE",
+                      style: TextStyle(color: dialogSubTextColor),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -619,7 +646,7 @@ class SettingsScreen extends StatelessWidget {
   ) {
     final String currentPersona = provider.userPersona;
     bool isSelected = false;
-    if (theme == "SHELBY AI") {
+    if (theme.toLowerCase() == "shelby ai" || theme.toLowerCase() == "shelby" || theme.toLowerCase() == "overlord") {
       isSelected = currentPersona == "SHELBY AI" ||
           currentPersona.toLowerCase() == "shelby" ||
           currentPersona.toLowerCase() == "overlord";

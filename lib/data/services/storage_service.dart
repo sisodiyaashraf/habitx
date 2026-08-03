@@ -152,9 +152,21 @@ class StorageService {
     return prefs.getString(_avatarKey);
   }
 
+  static const String _reduceMotionKey = 'reduce_motion_enabled';
+
   // --- 5. System Actions ---
   Future<void> clearAllData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+  }
+
+  Future<void> saveReduceMotionPreference(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_reduceMotionKey, enabled);
+  }
+
+  Future<bool> loadReduceMotionPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_reduceMotionKey) ?? false;
   }
 }

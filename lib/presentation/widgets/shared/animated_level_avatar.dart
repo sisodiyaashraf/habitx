@@ -39,7 +39,10 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 8),
-    )..repeat();
+    );
+    if (!widget.provider.isReduceMotionActive) {
+      _controller.repeat();
+    }
 
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
@@ -57,6 +60,16 @@ class _AnimatedLevelAvatarState extends State<AnimatedLevelAvatar>
         weight: 50,
       ),
     ]).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(AnimatedLevelAvatar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.provider.isReduceMotionActive) {
+      _controller.stop();
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
   }
 
   @override

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import '../domain/models/habit.dart';
+import '../domain/models/shelby_persona.dart';
 import '../core/utils/haptic_feedback_helper.dart';
 import '../data/services/storage_service.dart';
 import '../data/services/home_widget_service.dart';
@@ -28,6 +29,7 @@ class HabitProvider extends ChangeNotifier {
   // --- Preferences & Calendar ---
   bool _isHapticsEnabled = true;
   bool _isDailyMotivationEnabled = true;
+  bool _isReduceMotionActive = false;
   DateTime _selectedDate = DateTime.now();
   List<DateTime> _pastWeekDates = [];
 
@@ -99,6 +101,36 @@ class HabitProvider extends ChangeNotifier {
   bool get isNewUser => _isNewUser;
   bool get isHapticsEnabled => _isHapticsEnabled;
   bool get isDailyMotivationEnabled => _isDailyMotivationEnabled;
+  bool get isReduceMotionActive => _isReduceMotionActive;
+
+  ShelbyPersona get activePersona {
+    switch (_userPersona.toLowerCase()) {
+      case 'flirty':
+        return ShelbyPersona.flirty;
+      case 'roast':
+        return ShelbyPersona.roast;
+      case 'cute':
+        return ShelbyPersona.cute;
+      case 'romantic':
+        return ShelbyPersona.romantic;
+      case 'breakup':
+        return ShelbyPersona.breakup;
+      case 'discipline':
+        return ShelbyPersona.discipline;
+      case 'genz':
+        return ShelbyPersona.genz;
+      case 'overlord':
+      case 'shelby ai':
+      case 'shelby':
+        return ShelbyPersona.overlord;
+      case 'professional':
+      case 'elite':
+      case 'motivational':
+      default:
+        return ShelbyPersona.motivational;
+    }
+  }
+
   DateTime get selectedDate => _selectedDate;
   List<DateTime> get pastWeekDates => _pastWeekDates;
   int get currentSeconds => _currentSeconds;
@@ -138,6 +170,7 @@ class HabitProvider extends ChangeNotifier {
     _unlockedAchievementIds = await _storage.loadUnlockedAchievements();
     _isHapticsEnabled = await _storage.loadHapticPreference();
     _isDailyMotivationEnabled = await _storage.loadDailyMotivationPreference();
+    _isReduceMotionActive = await _storage.loadReduceMotionPreference();
 
     final loadedHabits = await _storage.loadHabits();
     _allHabits.clear();
@@ -438,6 +471,12 @@ class HabitProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleReduceMotion(bool value) {
+    _isReduceMotionActive = value;
+    _storage.saveReduceMotionPreference(value);
+    notifyListeners();
+  }
+
   // --- Calendar Logic ---
 
   void _generatePastWeekDates() {
@@ -533,6 +572,25 @@ class HabitProvider extends ChangeNotifier {
       if (habit.isCompleted) {
         HabitXNotificationService().cancelReminder(habit.id);
       } else {
+        HabitXNotificationService().scheduleHabitReminder(
+          habit.id,
+          habit.name,
+          habit.reminderTime!,
+          createdAt: habit.createdAt,
+        );
+      }
+    }
+
+    _updateHomeWidget();
+    notifyListeners();
+  }
+
+  void addHabits(List<Habit> habits) {
+    _allHabits.addAll(habits);
+    _storage.saveHabits(_allHabits);
+
+    for (final habit in habits) {
+      if (habit.reminderTime != null && !habit.isCompleted) {
         HabitXNotificationService().scheduleHabitReminder(
           habit.id,
           habit.name,

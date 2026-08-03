@@ -1,7 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:provider/provider.dart';
+import '../../../providers/habit_provider.dart';
 class Raindrop {
   double x;
   double y;
@@ -76,7 +77,8 @@ class _StormOverlayState extends State<StormOverlay> with SingleTickerProviderSt
   }
 
   void _updateAnimation() {
-    if (!widget.isStormActive) {
+    final provider = context.read<HabitProvider>();
+    if (!widget.isStormActive || provider.isReduceMotionActive) {
       if (_raindrops.isNotEmpty) _raindrops.clear();
       if (_windStreaks.isNotEmpty) _windStreaks.clear();
       if (_lightningOpacity > 0) _lightningOpacity = 0.0;

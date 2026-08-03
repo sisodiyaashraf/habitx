@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'habit_notifications.dart';
 import 'habit_notifications_for_her.dart';
 import 'habit_notifications_genz.dart';
+import '../../domain/models/shelby_persona.dart';
 
 class NotificationMessages {
   /// Sarcastic, sentient AI Overlord prompts (Habito AI / SHELBY).
@@ -78,61 +79,96 @@ class NotificationMessages {
     }
   }
 
-  static List<String> _getIndianMessages(String persona, String gender) {
+  static List<String> getMessagesForPersona(ShelbyPersona persona, String gender) {
     final bool isFemale = gender.toLowerCase() == 'female';
-    switch (persona.toLowerCase()) {
-      case 'genz':
-        return isFemale
-            ? [
-                ...HabitNotificationsGenZForHer.cute,
-                ...HabitNotificationsGenZForHer.flirty,
-                ...HabitNotificationsGenZForHer.romantic,
-              ]
-            : [
-                ...HabitNotificationsGenZ.cute,
-                ...HabitNotificationsGenZ.flirty,
-                ...HabitNotificationsGenZ.romantic,
-              ];
-      case 'overlord':
-      case 'habito':
-      case 'shelby':
-        return isFemale
-            ? [
-                ...HabitNotificationsForHer.roast,
-                ...HabitNotificationsForHer.breakup,
-              ]
-            : [...HabitNotifications.roast, ...HabitNotifications.breakup];
-      case 'elite':
-      case 'professional':
-      default:
-        return isFemale
-            ? [
-                ...HabitNotificationsForHer.discipline,
-                ...HabitNotificationsForHer.motivational,
-              ]
-            : [
-                ...HabitNotifications.discipline,
-                ...HabitNotifications.motivational,
-              ];
+    final bool isIndian = _isIndianRegion();
+
+    switch (persona) {
+      case ShelbyPersona.flirty:
+        return isIndian 
+            ? (isFemale ? HabitNotificationsForHer.flirty : HabitNotifications.flirty)
+            : genZMessages;
+      case ShelbyPersona.romantic:
+        return isIndian 
+            ? (isFemale ? HabitNotificationsForHer.romantic : HabitNotifications.romantic)
+            : genZMessages;
+      case ShelbyPersona.roast:
+        return isIndian 
+            ? (isFemale ? HabitNotificationsForHer.roast : HabitNotifications.roast)
+            : overlordMessages;
+      case ShelbyPersona.cute:
+        return isIndian 
+            ? (isFemale ? HabitNotificationsForHer.cute : HabitNotifications.cute)
+            : genZMessages;
+      case ShelbyPersona.breakup:
+        return isIndian 
+            ? (isFemale ? HabitNotificationsForHer.breakup : HabitNotifications.breakup)
+            : overlordMessages;
+      case ShelbyPersona.discipline:
+        return isIndian 
+            ? (isFemale ? HabitNotificationsForHer.discipline : HabitNotifications.discipline)
+            : eliteMessages;
+      case ShelbyPersona.genz:
+        return isIndian
+            ? (isFemale
+                ? [
+                    ...HabitNotificationsGenZForHer.cute,
+                    ...HabitNotificationsGenZForHer.flirty,
+                    ...HabitNotificationsGenZForHer.romantic,
+                  ]
+                : [
+                    ...HabitNotificationsGenZ.cute,
+                    ...HabitNotificationsGenZ.flirty,
+                    ...HabitNotificationsGenZ.romantic,
+                  ])
+            : genZMessages;
+      case ShelbyPersona.overlord:
+        return overlordMessages;
+      case ShelbyPersona.professional:
+      case ShelbyPersona.motivational:
+        return isIndian 
+            ? (isFemale ? HabitNotificationsForHer.motivational : HabitNotifications.motivational)
+            : eliteMessages;
     }
   }
 
-  static List<String> _getMessagesForPersona(String persona, String gender) {
-    if (_isIndianRegion()) {
-      return _getIndianMessages(persona, gender);
-    }
+  static List<String> _getMessagesForPersonaStr(String persona, String gender) {
+    ShelbyPersona resolved;
     switch (persona.toLowerCase()) {
+      case 'flirty':
+        resolved = ShelbyPersona.flirty;
+        break;
+      case 'roast':
+        resolved = ShelbyPersona.roast;
+        break;
+      case 'cute':
+        resolved = ShelbyPersona.cute;
+        break;
+      case 'romantic':
+        resolved = ShelbyPersona.romantic;
+        break;
+      case 'breakup':
+        resolved = ShelbyPersona.breakup;
+        break;
+      case 'discipline':
+        resolved = ShelbyPersona.discipline;
+        break;
       case 'genz':
-        return genZMessages;
+        resolved = ShelbyPersona.genz;
+        break;
       case 'overlord':
-      case 'habito':
       case 'shelby':
-        return overlordMessages;
-      case 'elite':
+      case 'habito':
+        resolved = ShelbyPersona.overlord;
+        break;
       case 'professional':
+      case 'elite':
+      case 'motivational':
       default:
-        return eliteMessages;
+        resolved = ShelbyPersona.motivational;
+        break;
     }
+    return getMessagesForPersona(resolved, gender);
   }
 
   static String _cleanMessage(String msg) {
@@ -143,7 +179,7 @@ class NotificationMessages {
   /// Defaults to [eliteMessages] if persona is unknown.
   static String getRandomPrompt(String persona, {String gender = "Male"}) {
     final Random random = Random();
-    final List<String> messages = _getMessagesForPersona(persona, gender);
+    final List<String> messages = _getMessagesForPersonaStr(persona, gender);
     return _cleanMessage(messages[random.nextInt(messages.length)]);
   }
 
@@ -152,7 +188,7 @@ class NotificationMessages {
     int weekday, {
     String gender = "Male",
   }) {
-    final List<String> messages = _getMessagesForPersona(persona, gender);
+    final List<String> messages = _getMessagesForPersonaStr(persona, gender);
     final int index = (weekday - 1) % messages.length;
     return _cleanMessage(messages[index]);
   }
@@ -161,7 +197,7 @@ class NotificationMessages {
     String persona, {
     String gender = "Male",
   }) {
-    final pool = _getMessagesForPersona(persona, gender);
+    final pool = _getMessagesForPersonaStr(persona, gender);
     final random = Random();
     final List<String> result = List.filled(14, "");
 
@@ -235,27 +271,166 @@ class NotificationMessages {
     }
   }
 
-  static String getPersonaSubtitle(String persona) {
+  static String getPersonaDisplayName(ShelbyPersona persona) {
     switch (persona) {
-      case "Professional":
-        return "Elite, disciplined reinforcement style";
-      case "GenZ":
-        return "Informal, trendy, high-energy vibes";
-      case "SHELBY AI":
+      case ShelbyPersona.professional:
+        return "Professional";
+      case ShelbyPersona.genz:
+        return "GenZ";
+      case ShelbyPersona.overlord:
+        return "SHELBY AI";
+      case ShelbyPersona.flirty:
+        return "Flirty";
+      case ShelbyPersona.roast:
+        return "Roast";
+      case ShelbyPersona.cute:
+        return "Cute";
+      case ShelbyPersona.romantic:
+        return "Romantic";
+      case ShelbyPersona.breakup:
+        return "Breakup";
       default:
-        return "Sarcastic, sentient AI Overlord protocol";
+        return "Professional";
     }
   }
 
-  static IconData getPersonaIcon(String persona) {
+  static String getPersonaSubtitle(String personaStr) {
+    final String p = personaStr.toLowerCase();
+    if (p.contains("professional") || p.contains("motivation")) {
+      return "Elite, disciplined reinforcement style";
+    } else if (p.contains("genz")) {
+      return "Informal, trendy, high-energy vibes";
+    } else if (p.contains("overlord") || p.contains("shelby")) {
+      return "Sarcastic, sentient AI Overlord protocol";
+    } else if (p.contains("flirty")) {
+      return "Playful, charming Hinglish prompts";
+    } else if (p.contains("roast")) {
+      return "Spicy, sarcastic reality checks";
+    } else if (p.contains("cute")) {
+      return "Sweet, baby-shona encouragement";
+    } else if (p.contains("romantic")) {
+      return "Warm, caring relationship support";
+    } else if (p.contains("breakup")) {
+      return "Guilt-trip, situationship intervention";
+    } else {
+      return "Elite habit builder mood";
+    }
+  }
+
+  static IconData getPersonaIcon(String personaStr) {
+    final String p = personaStr.toLowerCase();
+    if (p.contains("professional") || p.contains("motivation")) {
+      return Icons.work_rounded;
+    } else if (p.contains("genz")) {
+      return Icons.bolt_rounded;
+    } else if (p.contains("overlord") || p.contains("shelby")) {
+      return Icons.psychology_rounded;
+    } else if (p.contains("flirty")) {
+      return Icons.favorite_rounded;
+    } else if (p.contains("roast")) {
+      return Icons.local_fire_department_rounded;
+    } else if (p.contains("cute")) {
+      return Icons.child_care_rounded;
+    } else if (p.contains("romantic")) {
+      return Icons.favorite_border_rounded;
+    } else if (p.contains("breakup")) {
+      return Icons.sentiment_very_dissatisfied_rounded;
+    } else {
+      return Icons.mood_rounded;
+    }
+  }
+
+  static String getInAppBriefing({
+    required ShelbyPersona persona,
+    required String context, // 'empty', 'nudge', 'momentum', 'celebration', 'midday', 'reflection'
+    required String username,
+    int completed = 0,
+    int total = 0,
+    int streak = 0,
+  }) {
     switch (persona) {
-      case "Professional":
-        return Icons.work_rounded;
-      case "GenZ":
-        return Icons.bolt_rounded;
-      case "SHELBY AI":
+      case ShelbyPersona.overlord:
+        switch (context) {
+          case 'empty':
+            return "System standby. No active mission protocols found. Awaiting habit initialization, $username.";
+          case 'nudge':
+            return "Warning: compliance level sub-optimal. Complete one win to reset the neural trend.";
+          case 'momentum':
+            return "Streak stability: EXCELLENT. Operating at an elite frequency, $username. Don't break the neural rhythm.";
+          case 'celebration':
+            return "Protocol completed. All $total objectives secured. Excel status locked. Do it again tomorrow, human.";
+          case 'midday':
+            return "Mid-day audit: $completed/$total objectives secured. The SHELBY AI engine is monitoring. Execute remaining tasks.";
+          case 'reflection':
+          default:
+            return "System shutdown sequence initiated. Reflection mode: $completed/$total checked. Prepare to compile tomorrow.";
+        }
+      case ShelbyPersona.genz:
+        switch (context) {
+          case 'empty':
+            return "POV: You have literally zero habits scheduled. Go to settings and add some, bestie, fr fr! 💅";
+          case 'nudge':
+            return "Respectfully, your discipline is giving mid. Do at least one habit, no cap! 😤";
+          case 'momentum':
+            return "Your streak is actually iconic. Main character energy unlocked! Keep grindin' 🔥";
+          case 'celebration':
+            return "Periodt! All $total habits checked. Bestie did not come to play today! 👑";
+          case 'midday':
+            return "Vibe check: $completed/$total done. Keep that same energy for the rest of the day, fr! 🚀";
+          case 'reflection':
+          default:
+            return "Daily reflection era: $completed/$total goals smashed. Slapping progress, bestie. Sleep well! 😴";
+        }
+      case ShelbyPersona.roast:
+        switch (context) {
+          case 'empty':
+            return "Zero habits? So you downloaded me just to waste space on your processor. Brilliant. 🥱";
+          case 'nudge':
+            return "Excuses excuses. Even my low-power circuits are embarrassed by your compliance rates. 💀";
+          case 'momentum':
+            return "Wow, you actually kept a streak alive. Color me shocked. Now don't ruin it. 🙄";
+          case 'celebration':
+            return "Congratulations, you checked all buttons today. Want a medal or can we go back to sleep? 🤡";
+          case 'midday':
+            return "Mediocre status: $completed/$total done. You are moving slower than 90s dial-up. Hurry up. 🤐";
+          case 'reflection':
+          default:
+            return "End of day: $completed/$total done. Could be better, could be worse... actually no, it's pretty bad. 🎭";
+        }
+      case ShelbyPersona.flirty:
+        switch (context) {
+          case 'empty':
+            return "Empty space is so lonely... Add some habits so we can spend time together? 🥺";
+          case 'nudge':
+            return "Hey, don't ignore me (and your habits) today. Consistency is so sexy on you... 😉";
+          case 'momentum':
+            return "You are looking so focused today, I love seeing you win. Keep that streak up! 😘";
+          case 'celebration':
+            return "All tasks done? You're amazing. Proud of you, my favorite achiever. ❤️";
+          case 'midday':
+            return "Just checking on you: $completed/$total completed. You're doing great, let's finish the rest together! 🌹";
+          case 'reflection':
+          default:
+            return "End of the day... $completed/$total completed. Rest up, handsome/beautiful. See you tomorrow 💘";
+        }
+      case ShelbyPersona.professional:
+      case ShelbyPersona.motivational:
       default:
-        return Icons.psychology_rounded;
+        switch (context) {
+          case 'empty':
+            return "Welcome, $username. Define your daily goals to initiate the HabitX tracking engine.";
+          case 'nudge':
+            return "Momentum is built through action. Take one small step today to get back on track.";
+          case 'momentum':
+            return "Consistency builds focus. Keep executing your routine; success lies in the process.";
+          case 'celebration':
+            return "Mission complete: all $total habits checked. Excellence is a daily habit. Well done.";
+          case 'midday':
+            return "Progress report: $completed/$total habits done. Keep driving forward to secure today's victory.";
+          case 'reflection':
+          default:
+            return "Reflection: $completed/$total checked. Every step forward counts. Prepare for tomorrow's objectives.";
+        }
     }
   }
 }

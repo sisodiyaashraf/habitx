@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../domain/models/habit.dart';
+import '../../../core/constants/habit_templates.dart';
 import '../../../providers/habit_provider.dart';
 
 class AddHabitForm extends StatefulWidget {
@@ -199,6 +200,125 @@ class _AddHabitFormState extends State<AddHabitForm> {
     });
   }
 
+  void _showTemplatesBottomSheet(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? Colors.white : Colors.black;
+    final subtitleColor = isDark ? Colors.white70 : Colors.black54;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => GlassmorphicContainer(
+        width: double.infinity,
+        height: 380,
+        borderRadius: 30,
+        blur: 20,
+        alignment: Alignment.center,
+        border: 2,
+        linearGradient: LinearGradient(
+          colors: [
+            isDark ? Colors.black.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.8),
+            isDark ? Colors.black.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.6),
+          ],
+        ),
+        borderGradient: const LinearGradient(
+          colors: [Color(0xFFAC5DED), Colors.white24],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              Text(
+                "SELECT PRESET TEMPLATE",
+                style: TextStyle(
+                  color: titleColor,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "Tapping will pre-fill this creation form",
+                style: TextStyle(color: subtitleColor, fontSize: 10),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: GridView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 2.3,
+                  ),
+                  itemCount: HabitTemplates.presets.length,
+                  itemBuilder: (context, index) {
+                    final template = HabitTemplates.presets[index];
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                          _nameController.text = template.name;
+                          _currentIcon = template.icon;
+                          _isReminderEnabled = true;
+                          _selectedTime = template.defaultReminderTime;
+                          
+                          // Autolink stacking triggers if parent exists in active habits
+                          if (template.suggestedTriggerHabitId != null) {
+                            final provider = context.read<HabitProvider>();
+                            try {
+                              final parent = provider.allHabits.firstWhere(
+                                (h) => h.name.toLowerCase().contains('water') || h.name.toLowerCase().contains('read'),
+                              );
+                              _selectedTriggerHabitId = parent.id;
+                            } catch (_) {}
+                          }
+                        });
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(15),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.04),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            FaIcon(
+                              template.icon as FaIconData?,
+                              size: 14,
+                              color: const Color(0xFFAC5DED),
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                template.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: titleColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -246,7 +366,24 @@ class _AddHabitFormState extends State<AddHabitForm> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildLabel("MISSION LIBRARY", isDark),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildLabel("MISSION LIBRARY", isDark),
+                          TextButton.icon(
+                            onPressed: () => _showTemplatesBottomSheet(context),
+                            icon: const Icon(Icons.auto_awesome_motion_rounded, size: 14, color: Color(0xFFAC5DED)),
+                            label: const Text(
+                              "CHOOSE FROM TEMPLATES",
+                              style: TextStyle(
+                                color: Color(0xFFAC5DED),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       _buildCategorySelector(isDark),
                       const SizedBox(height: 12),
                       _buildPresetGrid(isDark, textColor),

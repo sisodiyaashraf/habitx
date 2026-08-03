@@ -80,7 +80,7 @@ class _HabitTimerScreenState extends State<HabitTimerScreen> {
                   const SizedBox(height: 10),
   
                   // Header Status
-                  _buildFocusHeader(isRunning, subTextColor),
+                  _buildFocusHeader(isRunning, subTextColor, provider),
   
                   const SizedBox(height: 20),
   
@@ -138,9 +138,11 @@ class _HabitTimerScreenState extends State<HabitTimerScreen> {
     );
   }
 
-  Widget _buildFocusHeader(bool isRunning, Color color) {
+  Widget _buildFocusHeader(bool isRunning, Color color, HabitProvider provider) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
+      duration: provider.isReduceMotionActive
+          ? Duration.zero
+          : const Duration(milliseconds: 500),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isRunning
