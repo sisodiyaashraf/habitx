@@ -45,13 +45,16 @@
 ## 📱 Screenshots
 
 <p align="center">
-  <img src="assets/app_images/screen%2001.jpeg" width="200" alt="Screen 1" style="border-radius: 16px; margin: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" />
+  <img src="assets/app_images/screen%2001.jpeg" width="850" alt="HabitX Banner" style="border-radius: 16px; margin: 12px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.35);" />
+</p>
+
+<p align="center">
   <img src="assets/app_images/screen-02.jpeg" width="200" alt="Screen 2" style="border-radius: 16px; margin: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" />
   <img src="assets/app_images/screen-03.jpeg" width="200" alt="Screen 3" style="border-radius: 16px; margin: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" />
   <img src="assets/app_images/screen-04.jpeg" width="200" alt="Screen 4" style="border-radius: 16px; margin: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" />
+  <img src="assets/app_images/screen-05.jpeg" width="200" alt="Screen 5" style="border-radius: 16px; margin: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" />
 </p>
 <p align="center">
-  <img src="assets/app_images/screen-05.jpeg" width="200" alt="Screen 5" style="border-radius: 16px; margin: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" />
   <img src="assets/app_images/screen-06.jpeg" width="200" alt="Screen 6" style="border-radius: 16px; margin: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" />
   <img src="assets/app_images/screen-07.jpeg" width="200" alt="Screen 7" style="border-radius: 16px; margin: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" />
   <img src="assets/app_images/screen-8.jpeg" width="200" alt="Screen 8" style="border-radius: 16px; margin: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);" />
