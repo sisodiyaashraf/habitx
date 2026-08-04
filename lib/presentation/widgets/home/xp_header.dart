@@ -3,7 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'lightning_painter.dart';
+import 'xp_header_widgets.dart';
 
 class XpHeader extends StatefulWidget {
   final int currentXp;
@@ -45,19 +46,13 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
 
     _flashAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(
-          begin: 0.0,
-          end: 1.0,
-        ).chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut)),
         weight: 15,
       ),
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.3), weight: 10),
       TweenSequenceItem(tween: Tween(begin: 0.3, end: 1.0), weight: 10),
       TweenSequenceItem(
-        tween: Tween(
-          begin: 1.0,
-          end: 0.0,
-        ).chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeIn)),
         weight: 65,
       ),
     ]).animate(_lightningController);
@@ -72,10 +67,8 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
 
   void _generateBolt() {
     _boltPoints.clear();
-    // Start at the bolt icon position (approximate Alignment(0.8, -0.6))
     double x = 0.85;
     double y = 0.25;
-
     _boltPoints.add(Offset(x, y));
     for (int i = 0; i < 8; i++) {
       x += (_random.nextDouble() - 0.5) * 0.4;
@@ -87,13 +80,11 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
   void _triggerLightning() async {
     _lightningController.forward(from: 0.0);
     _shakeController.forward(from: 0.0).then((_) => _shakeController.reverse());
-
-    // Jagged haptic sequence to match the lightning flicker
     HapticFeedback.lightImpact();
     await Future.delayed(const Duration(milliseconds: 50));
     HapticFeedback.lightImpact();
     await Future.delayed(const Duration(milliseconds: 100));
-    HapticFeedback.vibrate(); // The final boom
+    HapticFeedback.vibrate();
   }
 
   @override
@@ -106,14 +97,12 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     double progress = (widget.currentXp % 100) / 100;
     int xpToNextLevel = 100 - (widget.currentXp % 100);
 
     return AnimatedBuilder(
       animation: Listenable.merge([_lightningController, _shakeController]),
       builder: (context, child) {
-        // Screen Shake Logic
         final double shake =
             math.sin(_shakeController.value * math.pi * 10) *
             4 *
@@ -124,7 +113,6 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
           child: Stack(
             children: [
               _buildMainCard(isDark, progress, xpToNextLevel),
-              // Jagged Lightning Painter
               if (_flashAnimation.value > 0)
                 IgnorePointer(
                   child: CustomPaint(
@@ -156,9 +144,7 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
       linearGradient: LinearGradient(
         colors: [
           isDark
-              ? Colors.white.withValues(
-                  alpha: 0.1 + (_flashAnimation.value * 0.05),
-                )
+              ? Colors.white.withValues(alpha: 0.1 + (_flashAnimation.value * 0.05))
               : Colors.white.withValues(alpha: 0.25),
           isDark
               ? Colors.white.withValues(alpha: 0.05)
@@ -167,9 +153,7 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
       ),
       borderGradient: LinearGradient(
         colors: [
-          const Color(
-            0xFFAC5DED,
-          ).withValues(alpha: 0.5 + (_flashAnimation.value * 0.5)),
+          const Color(0xFFAC5DED).withValues(alpha: 0.5 + (_flashAnimation.value * 0.5)),
           const Color(0xFF00E5FF).withValues(alpha: _flashAnimation.value),
         ],
       ),
@@ -180,219 +164,24 @@ class _XpHeaderState extends State<XpHeader> with TickerProviderStateMixin {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: _buildUserText(textColor, subTextColor)),
+                Expanded(
+                  child: XpHeaderWidgets.userText(
+                    widget.userName, widget.level, textColor, subTextColor,
+                  ),
+                ),
                 GestureDetector(
                   onTap: _triggerLightning,
-                  child: _buildLevelBadge(isDark),
+                  child: XpHeaderWidgets.levelBadge(isDark, _flashAnimation.value),
                 ),
               ],
             ),
             const Spacer(),
-            _buildProgressSection(
-              progress,
-              isDark,
-              xpToNextLevel,
-              subTextColor,
+            XpHeaderWidgets.progressSection(
+              progress, isDark, xpToNextLevel, subTextColor, _flashAnimation.value,
             ),
           ],
         ),
       ),
     );
   }
-
-  Widget _buildUserText(Color textColor, Color subTextColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            _getGreeting(widget.userName),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: subTextColor,
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          "Level ${widget.level}",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 34,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -1.0,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLevelBadge(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Color.lerp(
-          const Color.fromARGB(255, 193, 100, 250),
-          const Color.fromARGB(255, 164, 29, 243),
-          _flashAnimation.value,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(
-              0xFF00E5FF,
-            ).withValues(alpha: _flashAnimation.value * 0.8),
-            blurRadius: 20,
-            spreadRadius: 5,
-          ),
-          BoxShadow(
-            color: const Color(0xFF007BFF).withValues(alpha: 0.4),
-            blurRadius: 15,
-          ),
-        ],
-      ),
-      child: SvgPicture.asset(
-        'assets/svg_icons/lightning-flash-svgrepo-com.svg',
-        width: 36 + (_flashAnimation.value * 6),
-        height: 36 + (_flashAnimation.value * 10),
-      ),
-    );
-  }
-
-  Widget _buildProgressSection(
-    double progress,
-    bool isDark,
-    int xpToNextLevel,
-    Color subTextColor,
-  ) {
-    return Column(
-      children: [
-        _buildProgressBar(progress, isDark),
-        const SizedBox(height: 14),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "ASCENDING IN $xpToNextLevel XP",
-              style: TextStyle(
-                color: subTextColor,
-                fontSize: 9,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.0,
-              ),
-            ),
-            Text(
-              "${(progress * 100).toInt()}%",
-              style: const TextStyle(
-                color: Color(0xFFAC5DED),
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgressBar(double progress, bool isDark) {
-    return Stack(
-      children: [
-        Container(
-          height: 12,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            return Container(
-              height: 12,
-              width: constraints.maxWidth * progress,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFFAC5DED),
-                    Color.lerp(
-                      const Color(0xFF7B61FF),
-                      const Color(0xFF00E5FF),
-                      _flashAnimation.value,
-                    )!,
-                    const Color(0xFFAC5DED),
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFAC5DED).withValues(alpha: 0.5),
-                    blurRadius: 10 + (_flashAnimation.value * 10),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  String _getGreeting(String name) {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return "GOOD MORNING, ${name.toUpperCase()}";
-    if (hour < 17) return "GOOD AFTERNOON, ${name.toUpperCase()}";
-    return "GOOD EVENING, ${name.toUpperCase()}";
-  }
-}
-
-class LightningPainter extends CustomPainter {
-  final List<Offset> points;
-  final double opacity;
-
-  LightningPainter({required this.points, required this.opacity});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (points.isEmpty || opacity <= 0) return;
-
-    final Paint glowPaint = Paint()
-      ..color = const Color.fromARGB(
-        255,
-        182,
-        135,
-        182,
-      ).withValues(alpha: opacity * 0.5)
-      ..strokeWidth = 6.0
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-
-    final Paint boltPaint = Paint()
-      ..color = Colors.white.withValues(alpha: opacity)
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    final Path path = Path();
-    path.moveTo(points[0].dx * size.width, points[0].dy * size.height);
-
-    for (var i = 1; i < points.length; i++) {
-      path.lineTo(points[i].dx * size.width, points[i].dy * size.height);
-    }
-
-    canvas.drawPath(path, glowPaint);
-    canvas.drawPath(path, boltPaint);
-  }
-
-  @override
-  bool shouldRepaint(LightningPainter oldDelegate) => true;
 }

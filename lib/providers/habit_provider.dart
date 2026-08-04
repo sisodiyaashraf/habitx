@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import '../domain/models/habit.dart';
 import '../domain/models/shelby_persona.dart';
 import '../core/utils/haptic_feedback_helper.dart';
+import '../core/utils/streak_engine.dart';
+import '../core/utils/xp_level_calculator.dart';
+import '../core/utils/habit_stacking_validator.dart';
+import '../core/utils/milestone_checker.dart';
+import '../presentation/widgets/shared/achievement_overlay_helper.dart';
 import '../data/services/storage_service.dart';
 import '../data/services/home_widget_service.dart';
 import '../data/services/notifications/habit_x_notification_service.dart';
 import '../presentation/widgets/shared/level_up_overlay.dart';
 import '../core/constants/notification_messages.dart';
-import '../core/constants/achievement_constants.dart';
 import '../core/constants/avatar_constants.dart';
 
 class HabitProvider extends ChangeNotifier {
@@ -135,7 +137,7 @@ class HabitProvider extends ChangeNotifier {
   List<DateTime> get pastWeekDates => _pastWeekDates;
   int get currentSeconds => _currentSeconds;
   bool get isTimerRunning => _isTimerRunning;
-  double get levelProgress => (_userXP % 100) / 100;
+  double get levelProgress => XpLevelCalculator.getLevelProgress(_userXP);
 
   Habit? get currentActiveHabit {
     if (_allHabits.isEmpty) return null;
@@ -177,27 +179,13 @@ class HabitProvider extends ChangeNotifier {
 
     // 🚀 DAILY RESET ENGINE & STREAK DECAY
     final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
     bool needsSave = false;
 
     for (var habit in loadedHabits) {
-      bool isDifferentDay = !habit.lastCompleted.isSameDay(now);
-      Habit processedHabit = habit;
-
-      if (habit.isCompleted && isDifferentDay) {
-        processedHabit = processedHabit.copyWith(isCompleted: false);
+      Habit processedHabit = StreakEngine.processDailyResetAndStreakDecay(habit, now);
+      if (processedHabit != habit) {
         needsSave = true;
       }
-
-      // Check if yesterday was missed (neither completed nor frozen) and streak > 0
-      final wasCompletedYesterday = habit.completedDates.any((d) => d.isSameDay(yesterday));
-      final wasFrozenYesterday = habit.frozenDates.any((d) => d.isSameDay(yesterday));
-
-      if (isDifferentDay && !wasCompletedYesterday && !wasFrozenYesterday && processedHabit.streak > 0) {
-        processedHabit = processedHabit.copyWith(streak: 0);
-        needsSave = true;
-      }
-
       _allHabits.add(processedHabit);
     }
 
@@ -258,117 +246,20 @@ class HabitProvider extends ChangeNotifier {
       _applyGamification(xpReward);
       _storage.saveUnlockedAchievements(_unlockedAchievementIds);
 
-      _showEliteUnlockDialog(context, title, icon);
+      AchievementOverlayHelper.showEliteUnlockDialog(context, title, icon);
       notifyListeners();
     }
   }
 
   void checkMilestones(BuildContext context) {
-    final int totalCompletions = _allHabits.fold(0, (sum, h) => sum + h.completedDates.length);
-    final int maxStreak = _allHabits.isEmpty
-        ? 0
-        : _allHabits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
-    final int userLevel = _userLevel;
-
-    if (totalCompletions >= 1) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.initiate,
-        "INITIATE",
-        FontAwesomeIcons.rocket,
-        100,
-      );
-    }
-    if (maxStreak >= 3) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.momentum,
-        "MOMENTUM",
-        FontAwesomeIcons.fire,
-        150,
-      );
-    }
-    if (maxStreak >= 7) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.focus,
-        "DEEP FOCUS",
-        FontAwesomeIcons.brain,
-        300,
-      );
-    }
-    if (maxStreak >= 14) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.unstoppable,
-        "UNSTOPPABLE",
-        FontAwesomeIcons.bolt,
-        500,
-      );
-    }
-    if (maxStreak >= 30) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.consistencyGuru,
-        "CONSISTENCY GURU",
-        FontAwesomeIcons.infinity,
-        1000,
-      );
-    }
-    if (totalCompletions >= 50) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.guardian,
-        "GUARDIAN",
-        FontAwesomeIcons.shieldHalved,
-        500,
-      );
-    }
-    if (totalCompletions >= 100) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.centurion,
-        "CENTURION",
-        FontAwesomeIcons.shield,
-        1000,
-      );
-    }
-    if (totalCompletions >= 250) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.diamond,
-        "DIAMOND",
-        FontAwesomeIcons.gem,
-        2000,
-      );
-    }
-    if (userLevel >= 10) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.level10,
-        "DECATHLON",
-        FontAwesomeIcons.star,
-        500,
-      );
-    }
-    if (userLevel >= 25) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.eliteKing,
-        "ELITE KING",
-        FontAwesomeIcons.crown,
-        1500,
-      );
-    }
-    if (userLevel >= 50) {
-      _unlockAchievement(
-        context,
-        AchievementConstants.grandmaster,
-        "GRANDMASTER",
-        FontAwesomeIcons.trophy,
-        3000,
-      );
-    }
+    MilestoneChecker.checkMilestones(
+      allHabits: _allHabits,
+      userLevel: _userLevel,
+      unlockedAchievementIds: _unlockedAchievementIds,
+      onUnlock: (id, title, icon, xpReward) {
+        _unlockAchievement(context, id, title, icon, xpReward);
+      },
+    );
   }
 
   // --- Identity Actions ---
@@ -651,11 +542,12 @@ class HabitProvider extends ChangeNotifier {
     final List<DateTime> updatedCompletedDates = List.from(habit.completedDates);
     final now = DateTime.now();
 
-    final yesterday = now.subtract(const Duration(days: 1));
-    final bool yesterdayIntact = habit.completedDates.any((d) => d.isSameDay(yesterday)) ||
-                                 habit.frozenDates.any((d) => d.isSameDay(yesterday));
+    int newStreak = StreakEngine.calculateNewStreak(
+      habit: habit,
+      isNowCompleted: isNowCompleted,
+      now: now,
+    );
 
-    int newStreak;
     if (isNowCompleted) {
       if (_isHapticsEnabled) HapticHelper.success();
       _applyGamification(habit.xpValue);
@@ -672,13 +564,6 @@ class HabitProvider extends ChangeNotifier {
       if (!alreadyAdded) {
         updatedCompletedDates.add(now);
       }
-
-      // Calculate streak based on yesterday being intact (completed or frozen)
-      if (yesterdayIntact || habit.streak == 0) {
-        newStreak = habit.streak + 1;
-      } else {
-        newStreak = 1; // broken yesterday, restart at 1
-      }
     } else {
       _reverseGamification(habit.xpValue);
       updatedCompletedDates.removeWhere((d) => d.isSameDay(now));
@@ -691,8 +576,6 @@ class HabitProvider extends ChangeNotifier {
           createdAt: habit.createdAt,
         );
       }
-
-      newStreak = habit.streak > 0 ? habit.streak - 1 : 0;
     }
 
     _allHabits[index] = habit.copyWith(
@@ -751,13 +634,15 @@ class HabitProvider extends ChangeNotifier {
 
   void _applyGamification(int xp) {
     _userXP += xp;
-    while (_userXP >= _userLevel * 100) {
-      _userLevel++;
-      if (_isHapticsEnabled) HapticHelper.levelUp();
-
-      if (navigatorKey.currentContext != null) {
-        LevelUpOverlay.show(navigatorKey.currentContext!, _userLevel);
+    final newLevel = XpLevelCalculator.calculateNewLevel(_userXP, _userLevel);
+    if (newLevel > _userLevel) {
+      for (int l = _userLevel + 1; l <= newLevel; l++) {
+        if (_isHapticsEnabled) HapticHelper.levelUp();
+        if (navigatorKey.currentContext != null) {
+          LevelUpOverlay.show(navigatorKey.currentContext!, l);
+        }
       }
+      _userLevel = newLevel;
     }
     _storage.saveProgress(_userXP, _userLevel);
     _updateHomeWidget();
@@ -771,124 +656,14 @@ class HabitProvider extends ChangeNotifier {
 
   // --- Elite Achievement UI ---
 
-  void _showEliteUnlockDialog(
-    BuildContext context,
-    String title,
-    dynamic icon,
-  ) {
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: "Achievement",
-      barrierColor: Colors.black.withValues(alpha: 0.9),
-      transitionDuration: const Duration(milliseconds: 600),
-      pageBuilder: (context, anim1, anim2) => Center(
-        child: GlassmorphicContainer(
-          width: MediaQuery.of(context).size.width * 0.85,
-          height: 420,
-          borderRadius: 40,
-          blur: 30,
-          alignment: Alignment.center,
-          border: 2,
-          linearGradient: LinearGradient(
-            colors: [
-              Colors.white.withValues(alpha: 0.1),
-              Colors.white.withValues(alpha: 0.05),
-            ],
-          ),
-          borderGradient: const LinearGradient(
-            colors: [Color(0xFFAC5DED), Colors.transparent],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildGlowingIcon(icon),
-              const SizedBox(height: 40),
-              const Text(
-                "MISSION ACCOMPLISHED",
-                style: TextStyle(
-                  color: Color(0xFFAC5DED),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 4,
-                  decoration: TextDecoration.none,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  decoration: TextDecoration.none,
-                ),
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFAC5DED),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 50,
-                    vertical: 18,
-                  ),
-                ),
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "RECEIVE REWARD",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlowingIcon(dynamic icon) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFAC5DED).withValues(alpha: 0.6),
-                blurRadius: 40,
-                spreadRadius: 5,
-              ),
-            ],
-          ),
-        ),
-        FaIcon(icon, color: Colors.white, size: 50),
-      ],
-    );
-  }
-
   // --- Streak Freeze Engine ---
-
-  bool _needsFreezeReplenish(DateTime lastReset, DateTime now) {
-    final daysToSubtract = (now.weekday - DateTime.monday) % 7;
-    final thisMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysToSubtract));
-    return lastReset.isBefore(thisMonday);
-  }
 
   void _checkAndReplenishFreezes() {
     final now = DateTime.now();
     bool needsSave = false;
     for (int i = 0; i < _allHabits.length; i++) {
       final habit = _allHabits[i];
-      if (_needsFreezeReplenish(habit.lastFreezeResetDate, now)) {
+      if (StreakEngine.needsFreezeReplenish(habit.lastFreezeResetDate, now)) {
         _allHabits[i] = habit.copyWith(
           streakFreezesAvailable: 1,
           lastFreezeResetDate: now,
@@ -902,18 +677,7 @@ class HabitProvider extends ChangeNotifier {
   }
 
   bool canFreezeHabit(Habit habit) {
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
-
-    final todayCompleted = habit.completedDates.any((d) => d.isSameDay(now)) || habit.isCompleted;
-    final todayFrozen = habit.frozenDates.any((d) => d.isSameDay(now));
-    
-    final yesterdayIntact = habit.completedDates.any((d) => d.isSameDay(yesterday)) || 
-                            habit.frozenDates.any((d) => d.isSameDay(yesterday));
-
-    final hasFreezeAvailable = habit.streakFreezesAvailable > 0;
-
-    return !todayCompleted && !todayFrozen && yesterdayIntact && hasFreezeAvailable;
+    return StreakEngine.canFreezeHabit(habit);
   }
 
   void useStreakFreeze(BuildContext? context, String habitId) {
@@ -939,117 +703,20 @@ class HabitProvider extends ChangeNotifier {
   // --- Habit Stacking / Circular Validation ---
 
   bool isCircularChain(String startId, String? triggerId) {
-    if (triggerId == null) return false;
-    if (startId == triggerId) return true;
-
-    String? currentId = triggerId;
-    final visited = {startId};
-
-    while (currentId != null) {
-      if (!visited.add(currentId)) {
-        return true;
-      }
-      Habit? next;
-      for (final h in _allHabits) {
-        if (h.id == currentId) {
-          next = h;
-          break;
-        }
-      }
-      if (next == null) break;
-      currentId = next.triggerHabitId;
-    }
-    return false;
+    return HabitStackingValidator.isCircularChain(
+      startId: startId,
+      triggerId: triggerId,
+      allHabits: _allHabits,
+    );
   }
 
   // --- Contextual Nudge Overlay ---
 
   void _showStackedNudge(BuildContext context, Habit stackedHabit) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-
-    messenger.showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-        padding: EdgeInsets.zero,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 90),
-        content: GlassmorphicContainer(
-          width: double.infinity,
-          height: 70,
-          borderRadius: 20,
-          blur: 15,
-          alignment: Alignment.center,
-          border: 1,
-          linearGradient: LinearGradient(
-            colors: [
-              const Color(0xFFAC5DED).withValues(alpha: 0.2),
-              const Color(0xFF00E5FF).withValues(alpha: 0.1),
-            ],
-          ),
-          borderGradient: const LinearGradient(
-            colors: [Color(0xFFAC5DED), Color(0xFF00E5FF)],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                const Icon(Icons.link_rounded, color: Color(0xFF00E5FF), size: 22),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "HABIT STACK TRIGGERED",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        "Ready for ${stackedHabit.name}?",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFFAC5DED).withValues(alpha: 0.2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () {
-                    toggleHabitCompletion(context, stackedHabit.id);
-                    messenger.hideCurrentSnackBar();
-                  },
-                  child: const Text(
-                    "COMPLETE",
-                    style: TextStyle(
-                      color: Color(0xFF00E5FF),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    AchievementOverlayHelper.showStackedNudge(
+      context: context,
+      stackedHabit: stackedHabit,
+      onComplete: () => toggleHabitCompletion(context, stackedHabit.id),
     );
   }
 

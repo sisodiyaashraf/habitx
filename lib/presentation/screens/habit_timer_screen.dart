@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import '../../providers/habit_provider.dart';
 import '../../core/utils/haptic_feedback_helper.dart';
 import '../widgets/timer/habit_timer_dial.dart';
+import '../widgets/timer/timer_playback_controls.dart';
 import '../widgets/shared/glass_background.dart';
 import '../widgets/timer/storm_overlay.dart';
 
@@ -223,71 +223,10 @@ class _HabitTimerScreenState extends State<HabitTimerScreen> {
   }
 
   Widget _buildPlaybackControls(HabitProvider provider, Color iconColor) {
-    return GlassmorphicContainer(
-      width: 280,
-      height: 100,
-      borderRadius: 50,
-      blur: 20,
-      alignment: Alignment.center,
-      border: 1.5,
-      linearGradient: LinearGradient(
-        colors: [Colors.white.withValues(alpha: 0.2), Colors.white.withValues(alpha: 0.1)],
-      ),
-      borderGradient: LinearGradient(
-        colors: [Colors.white.withValues(alpha: 0.3), Colors.transparent],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _circleIconButton(Icons.replay_rounded, iconColor, () {
-            provider.startTaskTimer("", widget.initialMinutes);
-          }),
-          _buildMainToggleButton(provider),
-          _circleIconButton(
-            Icons.add_circle_outline_outlined, // Improved Icon
-            iconColor,
-            () => provider.addSeconds(60),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _circleIconButton(IconData icon, Color color, VoidCallback onTap) {
-    return IconButton(
-      icon: Icon(icon, color: color, size: 28),
-      onPressed: onTap,
-    );
-  }
-
-  Widget _buildMainToggleButton(HabitProvider provider) {
-    bool isRunning = provider.isTimerRunning;
-    return GestureDetector(
-      onTap: () => provider.toggleTimer(widget.initialMinutes),
-      child: Container(
-        width: 70,
-        height: 70,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Icon(
-          isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
-          color: Colors.white,
-          size: 40,
-        ),
-      ),
+    return TimerPlaybackControls(
+      provider: provider,
+      initialMinutes: widget.initialMinutes,
+      iconColor: iconColor,
     );
   }
 

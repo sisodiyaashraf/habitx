@@ -4,8 +4,9 @@ import 'package:glassmorphism/glassmorphism.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
-import '../../../domain/models/habit.dart';
 import '../../../providers/habit_provider.dart';
+import '../../../core/utils/heatmap_data_generator.dart';
+import 'heatmap_grid.dart';
 
 class EliteHeatmap extends StatefulWidget {
   const EliteHeatmap({super.key});
@@ -32,7 +33,11 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
       Duration(days: _selectedDays - 1),
     );
 
-    final dataMap = _generateRealDataMap(provider, startDate, endDate);
+    final dataMap = HeatmapDataGenerator.generateRealDataMap(
+      provider.allHabits,
+      startDate,
+      endDate,
+    );
     final activeDaysCount = dataMap.values.where((v) => v > 0).length;
 
     return GlassmorphicContainer(
@@ -166,15 +171,20 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
               ),
             ),
             Expanded(
-              child: _selectedDays == 7
-                  ? _build7DayGridView(dataMap, startDate, endDate, isDark)
-                  : _buildMultiDayGridView(
-                      dataMap,
-                      startDate,
-                      endDate,
-                      isDark,
-                      _selectedDays,
-                    ),
+              child: HeatmapGrid(
+                dataMap: dataMap,
+                selectedDays: _selectedDays,
+                startDate: startDate,
+                endDate: endDate,
+                isDark: isDark,
+                selectedCellDate: _selectedCellDate,
+                onCellSelected: (date, value) {
+                  setState(() {
+                    _selectedCellDate = date;
+                    _selectedCellIntensity = value;
+                  });
+                },
+              ),
             ),
 
             const SizedBox(height: 6),
@@ -275,320 +285,6 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
         );
       }).toList(),
     );
-  }
-
-  Widget _build7DayGridView(
-    Map<DateTime, num> dataMap,
-    DateTime startDate,
-    DateTime endDate,
-    bool isDark,
-  ) {
-    final daysList = List.generate(7, (index) {
-      return startDate.add(Duration(days: index));
-    });
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final double availableWidth = constraints.maxWidth;
-          final double availableHeight = constraints.maxHeight;
-          const double spacing = 14.0;
-
-          // 3 columns layout
-          final double cellWidth = (availableWidth - (spacing * 2)) / 3;
-
-          // 3 rows layout (7 items)
-          final double cellHeight = (availableHeight - (spacing * 2)) / 3;
-
-          // Keep aspect ratio beautiful and proportional (clamp between 0.8 and 1.8)
-          double aspectRatio = cellWidth / cellHeight;
-          if (aspectRatio.isNaN || aspectRatio.isInfinite) {
-            aspectRatio = 1.3;
-          } else {
-            aspectRatio = aspectRatio.clamp(0.8, 1.8);
-          }
-
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: spacing,
-              mainAxisSpacing: spacing,
-              childAspectRatio: aspectRatio,
-            ),
-            itemCount: daysList.length,
-            itemBuilder: (context, index) {
-              final date = daysList[index];
-              final normalizedDate = DateTime(date.year, date.month, date.day);
-              final value = dataMap[normalizedDate] ?? 0;
-              final isSelected =
-                  _selectedCellDate != null &&
-                  _selectedCellDate!.isSameDay(date);
-
-              return GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  setState(() {
-                    _selectedCellDate = normalizedDate;
-                    _selectedCellIntensity = value;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOutCubic,
-                  decoration: _getCellDecoration(value, isDark, isSelected),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        DateFormat('EEE').format(date).toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
-                          color: value > 0
-                              ? Colors.white70
-                              : (isDark ? Colors.white38 : Colors.black38),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${date.day}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: value > 0
-                              ? Colors.white
-                              : (isDark ? Colors.white : Colors.black87),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildMultiDayGridView(
-    Map<DateTime, num> dataMap,
-    DateTime startDate,
-    DateTime endDate,
-    bool isDark,
-    int daysCount,
-  ) {
-    final daysList = List.generate(daysCount, (index) {
-      return startDate.add(Duration(days: index));
-    });
-
-    final weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-    const int crossAxisCount = 7;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 6.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Weekday Header Bar (SUN to SAT)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: weekdays.map((day) {
-                return Expanded(
-                  child: Center(
-                    child: Text(
-                      day,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                        color: isDark ? Colors.white54 : Colors.black54,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double availableWidth = constraints.maxWidth;
-                final double availableHeight = constraints.maxHeight;
-                final double spacing = daysCount > 60 ? 6.0 : 8.0;
-
-                // 7 columns layout
-                final double cellWidth = (availableWidth - (spacing * 6)) / 7;
-
-                // Row counts
-                final int rowCount = (daysCount / 7.0).ceil();
-
-                // Compute cell height to fill available height exactly
-                final double cellHeight = (availableHeight - (spacing * (rowCount - 1))) / rowCount;
-
-                // Restrict extreme scale stretches: keep aspect ratio between 0.65 (tall) and 1.5 (flat)
-                double aspectRatio = cellWidth / cellHeight;
-                if (aspectRatio.isNaN || aspectRatio.isInfinite) {
-                  aspectRatio = 1.0;
-                } else {
-                  aspectRatio = aspectRatio.clamp(0.65, 1.5);
-                }
-
-                return GridView.builder(
-                  shrinkWrap: true,
-                  padding: EdgeInsets.zero,
-                  physics: const BouncingScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: spacing,
-                    mainAxisSpacing: spacing,
-                    childAspectRatio: aspectRatio,
-                  ),
-                  itemCount: daysList.length,
-                  itemBuilder: (context, index) {
-                    final date = daysList[index];
-                    final normalizedDate = DateTime(
-                      date.year,
-                      date.month,
-                      date.day,
-                    );
-                    final value = dataMap[normalizedDate] ?? 0;
-                    final isSelected =
-                        _selectedCellDate != null &&
-                        _selectedCellDate!.isSameDay(date);
-
-                    return GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        setState(() {
-                          _selectedCellDate = normalizedDate;
-                          _selectedCellIntensity = value;
-                        });
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOutCubic,
-                        decoration: _getCellDecoration(value, isDark, isSelected),
-                        child: Center(
-                          child: Text(
-                            '${date.day}',
-                            style: TextStyle(
-                              fontSize: daysCount > 60 ? 10 : 12,
-                              fontWeight: FontWeight.w900,
-                              color: value > 0
-                                  ? Colors.white
-                                  : (isDark ? Colors.white38 : Colors.black38),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  BoxDecoration _getCellDecoration(num value, bool isDark, bool isSelected) {
-    Border? border = isSelected
-        ? Border.all(color: Colors.white, width: 2)
-        : null;
-
-    if (value == 0) {
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.04)
-            : Colors.black.withValues(alpha: 0.03),
-        border:
-            border ??
-            Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.black.withValues(alpha: 0.05),
-              width: 1,
-            ),
-      );
-    } else if (value == 1) {
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: border,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF00E676), Color(0xFF00B0FF)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF00E676).withValues(alpha: 0.3),
-            blurRadius: 4,
-            spreadRadius: 0.5,
-          ),
-        ],
-      );
-    } else if (value == 2) {
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: border,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFAC5DED), Color(0xFF00E5FF)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFAC5DED).withValues(alpha: 0.35),
-            blurRadius: 5,
-            spreadRadius: 1,
-          ),
-        ],
-      );
-    } else if (value == 3) {
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: border,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF7B61FF), Color(0xFFFF2A85)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFF2A85).withValues(alpha: 0.4),
-            blurRadius: 6,
-            spreadRadius: 1,
-          ),
-        ],
-      );
-    } else {
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: border,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFF9100), Color(0xFFFF3D00)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFF3D00).withValues(alpha: 0.5),
-            blurRadius: 8,
-            spreadRadius: 1.5,
-          ),
-        ],
-      );
-    }
   }
 
   Widget _buildBadge(String text, bool isDark) {
@@ -780,54 +476,5 @@ class _EliteHeatmapState extends State<EliteHeatmap> {
         ],
       ),
     );
-  }
-
-  Map<DateTime, num> _generateRealDataMap(
-    HabitProvider provider,
-    DateTime start,
-    DateTime end,
-  ) {
-    Map<DateTime, num> heatmapData = {};
-    DateTime current = DateTime(start.year, start.month, start.day);
-    final normalizedEnd = DateTime(end.year, end.month, end.day);
-
-    while (current.isBefore(normalizedEnd) ||
-        current.isAtSameMomentAs(normalizedEnd)) {
-      heatmapData[current] = 0;
-      current = current.add(const Duration(days: 1));
-    }
-
-    for (var habit in provider.allHabits) {
-      // 1. Process historical completed dates stored for this habit
-      for (var compDate in habit.completedDates) {
-        final normalized = DateTime(
-          compDate.year,
-          compDate.month,
-          compDate.day,
-        );
-        if (heatmapData.containsKey(normalized)) {
-          heatmapData[normalized] = (heatmapData[normalized] ?? 0) + 1;
-        }
-      }
-
-      // 2. Fallback for habits completed on lastCompleted date if completedDates array was empty
-      if (habit.isCompleted) {
-        final lastCompDate = DateTime(
-          habit.lastCompleted.year,
-          habit.lastCompleted.month,
-          habit.lastCompleted.day,
-        );
-        if (heatmapData.containsKey(lastCompDate)) {
-          bool alreadyCounted = habit.completedDates.any(
-            (d) => d.isSameDay(lastCompDate),
-          );
-          if (!alreadyCounted) {
-            heatmapData[lastCompDate] = (heatmapData[lastCompDate] ?? 0) + 1;
-          }
-        }
-      }
-    }
-
-    return heatmapData;
   }
 }

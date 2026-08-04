@@ -1,14 +1,13 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
-import '../../providers/habit_provider.dart';
-import '../../domain/models/habit.dart';
-import '../../core/constants/habit_templates.dart';
-import 'home_screen.dart';
 import '../widgets/shared/glass_background.dart';
+import 'onboarding/onboarding_glass_card.dart';
+import 'onboarding/onboarding_feature_slide.dart';
+import 'onboarding/onboarding_start_button.dart';
+import 'onboarding/identity_onboarding_step.dart';
+import 'onboarding/template_onboarding_step.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -118,9 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       body: GlassBackground(
         child: Stack(
           children: [
-            // --- Background Neural Grid Effect ---
             Positioned.fill(child: _buildNeuralGrid()),
-
             Column(
               children: [
                 const SizedBox(height: 60),
@@ -136,10 +133,40 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     physics: const BouncingScrollPhysics(),
                     children: [
                       ..._onboardingData.map(
-                        (data) => _buildFeatureSlide(data),
+                        (data) => OnboardingFeatureSlide(
+                          data: data,
+                          glowController: _glowController,
+                          typingController: _typingController,
+                        ),
                       ),
-                      _buildIdentityForm(),
-                      _buildTemplateSelectorSlide(),
+                      IdentityOnboardingStep(
+                        nameController: _nameController,
+                        ageController: _ageController,
+                        selectedGender: _selectedGender,
+                        onGenderChanged: (gender) {
+                          setState(() => _selectedGender = gender);
+                        },
+                      ),
+                      TemplateOnboardingStep(
+                        selectedTemplateIds: _selectedTemplateIds,
+                        onTemplateToggled: (templateId) {
+                          setState(() {
+                            if (_selectedTemplateIds.contains(templateId)) {
+                              _selectedTemplateIds.remove(templateId);
+                            } else {
+                              _selectedTemplateIds.add(templateId);
+                            }
+                          });
+                        },
+                        linkWaterVitamins: _linkWaterVitamins,
+                        onLinkWaterVitaminsChanged: (val) {
+                          setState(() => _linkWaterVitamins = val ?? true);
+                        },
+                        linkReadPlanning: _linkReadPlanning,
+                        onLinkReadPlanningChanged: (val) {
+                          setState(() => _linkReadPlanning = val ?? true);
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -200,255 +227,26 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
-  Widget _buildFeatureSlide(Map<String, dynamic> data) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-      child: Center(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: _buildGlassCard(
-            borderColor: data['color'],
-            child: Padding(
-              padding: const EdgeInsets.all(28.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildAnimatedIcon(data['icon'], data['color']),
-                  const SizedBox(height: 30),
-                  FadeTransition(
-                    opacity: _typingController,
-                    child: Text(
-                      data['title'],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  FadeTransition(
-                    opacity: _typingController,
-                    child: Text(
-                      data['subtitle'],
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 14,
-                        fontFamily: 'monospace',
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedIcon(dynamic icon, Color color) {
-    return AnimatedBuilder(
-      animation: _glowController,
-      builder: (context, child) {
-        return Container(
-          width: 150,
-          height: 150,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.15 * _glowController.value),
-                blurRadius: 50,
-                spreadRadius: 20,
-              ),
-            ],
-            border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
-          ),
-          child: Center(child: FaIcon(icon, size: 60, color: color)),
-        );
-      },
-    );
-  }
-
-  Widget _buildIdentityForm() {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: _buildGlassCard(
-          borderColor: const Color(0xFFAC5DED),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "NEURAL LINK",
-                  style: TextStyle(
-                    color: Color(0xFFAC5DED),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 4,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Configure Profile",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                _buildInputLabel("USER_DESIGNATION"),
-                _buildTextInput(_nameController, "ENTER NAME"),
-                const SizedBox(height: 20),
-                _buildInputLabel("USER_AGE"),
-                _buildTextInput(_ageController, "ENTER AGE", isNumber: true),
-                const SizedBox(height: 20),
-                _buildInputLabel("NOTIFICATION_TONE_GENDER"),
-                _buildGenderSelector(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGenderSelector() {
-    return Row(
-      children: [
-        Expanded(child: _buildGenderOption("Male")),
-        const SizedBox(width: 16),
-        Expanded(child: _buildGenderOption("Female")),
-      ],
-    );
-  }
-
-  Widget _buildGenderOption(String gender) {
-    bool isSelected = _selectedGender == gender;
-    Color activeColor = const Color(0xFFAC5DED);
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedGender = gender;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        height: 56,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: isSelected
-              ? activeColor.withValues(alpha: 0.15)
-              : Colors.white.withValues(alpha: 0.05),
-          border: Border.all(
-            color: isSelected
-                ? activeColor
-                : Colors.white.withValues(alpha: 0.1),
-            width: 1.5,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: activeColor.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : [],
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          gender.toUpperCase(),
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white60,
-            fontWeight: FontWeight.w900,
-            fontSize: 12,
-            letterSpacing: 2,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputLabel(String label) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 10, bottom: 8),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFFAC5DED),
-            fontSize: 9,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextInput(
-    TextEditingController controller,
-    String hint, {
-    bool isNumber = false,
-  }) {
-    return _buildGlassCard(
-      borderColor: const Color(0xFFAC5DED),
-      borderRadius: 16,
-      blur: 20,
-      child: SizedBox(
-        height: 56,
-        child: TextField(
-          controller: controller,
-          textAlign: TextAlign.center,
-          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          inputFormatters: isNumber
-              ? [FilteringTextInputFormatter.digitsOnly]
-              : [],
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
-            fontSize: 14,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Colors.white.withValues(alpha: 0.2),
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 18),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildBottomControls() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: _currentPage == 4 ? _buildStartButton() : _buildNextButton(),
+      child: _currentPage == 4
+          ? OnboardingStartButton(
+              nameController: _nameController,
+              ageController: _ageController,
+              selectedGender: _selectedGender,
+              selectedTemplateIds: _selectedTemplateIds,
+              linkWaterVitamins: _linkWaterVitamins,
+              linkReadPlanning: _linkReadPlanning,
+            )
+          : _buildNextButton(),
     );
   }
 
   Widget _buildNextButton() {
     return GestureDetector(
       onTap: _nextPage,
-      child: _buildGlassCard(
+      child: OnboardingGlassCard(
         borderColor: const Color(0xFFAC5DED),
         borderRadius: 16,
         blur: 15,
@@ -465,356 +263,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               fontSize: 13,
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStartButton() {
-    bool isValid =
-        _nameController.text.isNotEmpty && _ageController.text.isNotEmpty;
-    return GestureDetector(
-      onTap: () async {
-        if (isValid) {
-          HapticFeedback.heavyImpact();
-          final provider = context.read<HabitProvider>();
-
-          await provider.setupUser(
-            name: _nameController.text,
-            age: int.tryParse(_ageController.text) ?? 18,
-            persona: "Professional",
-            gender: _selectedGender,
-          );
-
-          // Create the habits from selected templates
-          final List<Habit> habitsToAdd = [];
-          final Map<String, String> templateIdToRealId = {};
-
-          // First pass: assign target IDs
-          for (final templateId in _selectedTemplateIds) {
-            final realId =
-                "${DateTime.now().millisecondsSinceEpoch}_$templateId";
-            templateIdToRealId[templateId] = realId;
-          }
-
-          // Second pass: instantiate templates and map parent stack triggers
-          for (final templateId in _selectedTemplateIds) {
-            final template = HabitTemplates.presets.firstWhere(
-              (t) => t.id == templateId,
-            );
-
-            String? parentHabitId;
-            if (template.suggestedTriggerHabitId != null &&
-                _selectedTemplateIds.contains(
-                  template.suggestedTriggerHabitId,
-                )) {
-              final bool linkThem =
-                  (template.id == 'template_vitamins' && _linkWaterVitamins) ||
-                  (template.id == 'template_planning' && _linkReadPlanning);
-              if (linkThem) {
-                parentHabitId =
-                    templateIdToRealId[template.suggestedTriggerHabitId];
-              }
-            }
-
-            final now = DateTime.now();
-            final reminderDateTime = DateTime(
-              now.year,
-              now.month,
-              now.day,
-              template.defaultReminderTime.hour,
-              template.defaultReminderTime.minute,
-            );
-
-            final newHabit = Habit(
-              id: templateIdToRealId[templateId]!,
-              name: template.name,
-              difficulty: HabitDifficulty.easy,
-              timerDuration: 10,
-              createdAt: now,
-              reminderTime: reminderDateTime,
-              isCompleted: false,
-              streak: 0,
-              lastCompleted: now,
-              triggerHabitId: parentHabitId,
-            );
-            habitsToAdd.add(newHabit);
-          }
-
-          if (habitsToAdd.isNotEmpty) {
-            provider.addHabits(habitsToAdd);
-          }
-
-          if (!mounted) return;
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-            (route) => false,
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Complete all fields to proceed.")),
-          );
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: double.infinity,
-        height: 56,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: isValid
-                ? [const Color(0xFFAC5DED), const Color(0xFF7B61FF)]
-                : [
-                    Colors.white.withValues(alpha: 0.08),
-                    Colors.white.withValues(alpha: 0.04),
-                  ],
-          ),
-          border: Border.all(
-            color: isValid
-                ? Colors.transparent
-                : Colors.white.withValues(alpha: 0.1),
-            width: 1.0,
-          ),
-          boxShadow: isValid
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFFAC5DED).withValues(alpha: 0.4),
-                    blurRadius: 25,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 8),
-                  ),
-                ]
-              : [],
-        ),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "ACTIVATE CORE",
-              style: TextStyle(
-                color: isValid
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.2),
-                fontWeight: FontWeight.w900,
-                letterSpacing: 2,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Icon(
-              Icons.bolt_rounded,
-              color: isValid
-                  ? const Color(0xFF00E5FF)
-                  : Colors.white.withValues(alpha: 0.2),
-              size: 20,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTemplateSelectorSlide() {
-    final descColor = Colors.white70;
-
-    final hasWaterAndVitamins =
-        _selectedTemplateIds.contains('template_water') &&
-        _selectedTemplateIds.contains('template_vitamins');
-    final hasReadAndPlanning =
-        _selectedTemplateIds.contains('template_read') &&
-        _selectedTemplateIds.contains('template_planning');
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
-      child: Center(
-        child: _buildGlassCard(
-          borderColor: const Color(0xFFAC5DED),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "CHOOSE STARTER PROTOCOLS",
-                  style: TextStyle(
-                    color: Color(0xFFAC5DED),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2.0,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  "Select 2-3 routines to pre-fill your discipline core",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: descColor, fontSize: 11),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 250,
-                  child: GridView.builder(
-                    padding: EdgeInsets.zero,
-                    physics: const BouncingScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                          childAspectRatio: 2.3,
-                        ),
-                    itemCount: HabitTemplates.presets.length,
-                    itemBuilder: (context, index) {
-                      final template = HabitTemplates.presets[index];
-                      final isSelected = _selectedTemplateIds.contains(
-                        template.id,
-                      );
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            if (isSelected) {
-                              _selectedTemplateIds.remove(template.id);
-                            } else {
-                              _selectedTemplateIds.add(template.id);
-                            }
-                          });
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            color: isSelected
-                                ? const Color(
-                                    0xFFAC5DED,
-                                  ).withValues(alpha: 0.15)
-                                : Colors.white.withValues(alpha: 0.05),
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFFAC5DED)
-                                  : Colors.white.withValues(alpha: 0.1),
-                              width: 1.5,
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              FaIcon(
-                                template.icon as FaIconData?,
-                                size: 14,
-                                color: isSelected
-                                    ? const Color(0xFFAC5DED)
-                                    : Colors.white60,
-                              ),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  template.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.white70,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                if (hasWaterAndVitamins || hasReadAndPlanning) ...[
-                  const SizedBox(height: 10),
-                  const Text(
-                    "SUGGESTED CHAINS (OPT-IN)",
-                    style: TextStyle(
-                      color: Color(0xFF00E5FF),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  if (hasWaterAndVitamins)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Checkbox(
-                          value: _linkWaterVitamins,
-                          activeColor: const Color(0xFFAC5DED),
-                          onChanged: (val) {
-                            setState(() => _linkWaterVitamins = val ?? true);
-                          },
-                        ),
-                        const Flexible(
-                          child: Text(
-                            "Link 'Take Vitamins' after 'Drink Water'",
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  if (hasReadAndPlanning)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Checkbox(
-                          value: _linkReadPlanning,
-                          activeColor: const Color(0xFFAC5DED),
-                          onChanged: (val) {
-                            setState(() => _linkReadPlanning = val ?? true);
-                          },
-                        ),
-                        const Flexible(
-                          child: Text(
-                            "Link 'Plan Tomorrow' after 'Read 10 Pages'",
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassCard({
-    required Widget child,
-    required Color borderColor,
-    double borderRadius = 30,
-    double blur = 25,
-  }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.07),
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: borderColor.withValues(alpha: 0.3),
-              width: 1.5,
-            ),
-          ),
-          child: child,
         ),
       ),
     );

@@ -5,8 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../domain/models/habit.dart';
-import '../../../core/constants/habit_templates.dart';
 import '../../../providers/habit_provider.dart';
+import 'difficulty_selector.dart';
+import 'icon_selector_sheet.dart';
+import 'templates_sheet.dart';
+import 'timer_options.dart';
+import 'reminder_toggle.dart';
+import 'stack_picker.dart';
 
 class AddHabitForm extends StatefulWidget {
   final Habit? habit;
@@ -29,57 +34,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
   TimeOfDay _selectedTime = TimeOfDay.now();
   String? _selectedTriggerHabitId;
 
-  final Map<String, List<Map<String, dynamic>>> _habitLibrary = {
-    "Popular": [
-      {"name": "Coding", "icon": FontAwesomeIcons.code},
-      {"name": "Reading", "icon": FontAwesomeIcons.bookOpen},
-      {"name": "Gym", "icon": FontAwesomeIcons.dumbbell},
-      {"name": "Meditation", "icon": FontAwesomeIcons.brain},
-      {"name": "Running", "icon": FontAwesomeIcons.personRunning},
-      {"name": "Yoga", "icon": FontAwesomeIcons.spa},
-    ],
-    "Health": [
-      {"name": "Drink Water", "icon": FontAwesomeIcons.droplet},
-      {"name": "Morning Walk", "icon": FontAwesomeIcons.personWalking},
-      {"name": "Healthy Meal", "icon": FontAwesomeIcons.appleWhole},
-      {"name": "Skin Care", "icon": FontAwesomeIcons.faceGrinSquint},
-      {"name": "Bath/Shower", "icon": FontAwesomeIcons.bath},
-      {"name": "Sleep Well", "icon": FontAwesomeIcons.moon},
-      {"name": "No Sugar", "icon": FontAwesomeIcons.ban},
-    ],
-    "Productivity": [
-      {"name": "Deep Work", "icon": FontAwesomeIcons.laptopCode},
-      {"name": "Journaling", "icon": FontAwesomeIcons.penNib},
-      {"name": "Planning", "icon": FontAwesomeIcons.calendarCheck},
-      {"name": "Learning", "icon": FontAwesomeIcons.graduationCap},
-      {"name": "Inbox Zero", "icon": FontAwesomeIcons.inbox},
-      {"name": "Review Day", "icon": FontAwesomeIcons.clipboardCheck},
-    ],
-    "Self-Care": [
-      {"name": "Stretching", "icon": FontAwesomeIcons.childReaching},
-      {"name": "Nap", "icon": FontAwesomeIcons.bed},
-      {"name": "Music", "icon": FontAwesomeIcons.music},
-      {"name": "Prayer", "icon": FontAwesomeIcons.handsPraying},
-      {"name": "Quiet Time", "icon": FontAwesomeIcons.book},
-      {"name": "Nature Walk", "icon": FontAwesomeIcons.tree},
-    ],
-    "Skills": [
-      {"name": "Design", "icon": FontAwesomeIcons.palette},
-      {"name": "Writing", "icon": FontAwesomeIcons.pen},
-      {"name": "Language", "icon": FontAwesomeIcons.language},
-      {"name": "Gaming", "icon": FontAwesomeIcons.gamepad},
-      {"name": "Speaking", "icon": FontAwesomeIcons.microphone},
-      {"name": "Marketing", "icon": FontAwesomeIcons.chartLine},
-    ],
-    "Finance": [
-      {"name": "Save Money", "icon": FontAwesomeIcons.piggyBank},
-      {"name": "Track Spend", "icon": FontAwesomeIcons.wallet},
-      {"name": "Investments", "icon": FontAwesomeIcons.chartPie},
-      {"name": "Budgeting", "icon": FontAwesomeIcons.moneyBillWave},
-    ],
-  };
-
-  String _selectedCategory = "Popular";
   dynamic _currentIcon = FontAwesomeIcons.fontAwesome;
 
   @override
@@ -163,7 +117,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
       );
 
       if (widget.habit != null) {
-        // Edit Mode
         final updatedHabit = widget.habit!.copyWith(
           name: _nameController.text.trim(),
           difficulty: _selectedDifficulty,
@@ -174,7 +127,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
         );
         habitProvider.updateHabit(updatedHabit);
       } else {
-        // Create Mode
         final newHabit = Habit(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           name: _nameController.text.trim(),
@@ -201,120 +153,28 @@ class _AddHabitFormState extends State<AddHabitForm> {
   }
 
   void _showTemplatesBottomSheet(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final titleColor = isDark ? Colors.white : Colors.black;
-    final subtitleColor = isDark ? Colors.white70 : Colors.black54;
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => GlassmorphicContainer(
-        width: double.infinity,
-        height: 380,
-        borderRadius: 30,
-        blur: 20,
-        alignment: Alignment.center,
-        border: 2,
-        linearGradient: LinearGradient(
-          colors: [
-            isDark ? Colors.black.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.8),
-            isDark ? Colors.black.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.6),
-          ],
-        ),
-        borderGradient: const LinearGradient(
-          colors: [Color(0xFFAC5DED), Colors.white24],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              Text(
-                "SELECT PRESET TEMPLATE",
-                style: TextStyle(
-                  color: titleColor,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                "Tapping will pre-fill this creation form",
-                style: TextStyle(color: subtitleColor, fontSize: 10),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: GridView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 2.3,
-                  ),
-                  itemCount: HabitTemplates.presets.length,
-                  itemBuilder: (context, index) {
-                    final template = HabitTemplates.presets[index];
-                    return InkWell(
-                      onTap: () {
-                        setState(() {
-                          _nameController.text = template.name;
-                          _currentIcon = template.icon;
-                          _isReminderEnabled = true;
-                          _selectedTime = template.defaultReminderTime;
-                          
-                          // Autolink stacking triggers if parent exists in active habits
-                          if (template.suggestedTriggerHabitId != null) {
-                            final provider = context.read<HabitProvider>();
-                            try {
-                              final parent = provider.allHabits.firstWhere(
-                                (h) => h.name.toLowerCase().contains('water') || h.name.toLowerCase().contains('read'),
-                              );
-                              _selectedTriggerHabitId = parent.id;
-                            } catch (_) {}
-                          }
-                        });
-                        Navigator.pop(context);
-                      },
-                      borderRadius: BorderRadius.circular(15),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.04),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                        ),
-                        alignment: Alignment.center,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FaIcon(
-                              template.icon as FaIconData?,
-                              size: 14,
-                              color: const Color(0xFFAC5DED),
-                            ),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                template.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: titleColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+      builder: (context) => TemplatesSheet(
+        onTemplateSelected: (template) {
+          setState(() {
+            _nameController.text = template.name;
+            _currentIcon = template.icon;
+            _isReminderEnabled = true;
+            _selectedTime = template.defaultReminderTime;
+            
+            if (template.suggestedTriggerHabitId != null) {
+              final provider = context.read<HabitProvider>();
+              try {
+                final parent = provider.allHabits.firstWhere(
+                  (h) => h.name.toLowerCase().contains('water') || h.name.toLowerCase().contains('read'),
+                );
+                _selectedTriggerHabitId = parent.id;
+              } catch (_) {}
+            }
+          });
+        },
       ),
     );
   }
@@ -323,9 +183,9 @@ class _AddHabitFormState extends State<AddHabitForm> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
-
     final screenHeight = MediaQuery.of(context).size.height;
     final safeFormHeight = (screenHeight * 0.85).clamp(550.0, 900.0);
+    final habitProvider = context.read<HabitProvider>();
 
     return GlassmorphicContainer(
       width: double.infinity,
@@ -370,23 +230,29 @@ class _AddHabitFormState extends State<AddHabitForm> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildLabel("MISSION LIBRARY", isDark),
-                          TextButton.icon(
-                            onPressed: () => _showTemplatesBottomSheet(context),
-                            icon: const Icon(Icons.auto_awesome_motion_rounded, size: 14, color: Color(0xFFAC5DED)),
-                            label: const Text(
-                              "CHOOSE FROM TEMPLATES",
-                              style: TextStyle(
-                                color: Color(0xFFAC5DED),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
+                          Flexible(
+                            child: TextButton.icon(
+                              onPressed: () => _showTemplatesBottomSheet(context),
+                              icon: const Icon(Icons.auto_awesome_motion_rounded, size: 14, color: Color(0xFFAC5DED)),
+                              label: const Text(
+                                "CHOOSE FROM TEMPLATES",
+                                style: TextStyle(
+                                  color: Color(0xFFAC5DED),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      _buildCategorySelector(isDark),
-                      const SizedBox(height: 12),
-                      _buildPresetGrid(isDark, textColor),
+                      IconSelectorSheet(
+                        selectedPresetName: _nameController.text,
+                        onPresetSelected: _selectPreset,
+                        isDark: isDark,
+                        textColor: textColor,
+                      ),
                       const SizedBox(height: 25),
                       _buildLabel("CORE CONFIGURATION", isDark),
                       _buildGlassTextField(
@@ -400,14 +266,40 @@ class _AddHabitFormState extends State<AddHabitForm> {
                       const SizedBox(height: 20),
                       _buildDateTimeRow(context, isDark, textColor),
                       const SizedBox(height: 20),
-                      _buildReminderToggle(isDark, textColor),
+                      ReminderToggle(
+                        isReminderEnabled: _isReminderEnabled,
+                        isDark: isDark,
+                        textColor: textColor,
+                        onChanged: (val) => setState(() => _isReminderEnabled = val),
+                      ),
                       const SizedBox(height: 20),
-                      _buildStackPicker(isDark, textColor),
+                      StackPicker(
+                        habit: widget.habit,
+                        selectedTriggerHabitId: _selectedTriggerHabitId,
+                        isDark: isDark,
+                        textColor: textColor,
+                        habitProvider: habitProvider,
+                        onChanged: (val) => setState(() => _selectedTriggerHabitId = val),
+                      ),
                       const SizedBox(height: 30),
                       _buildLabel("INTENSITY & TIME", isDark),
-                      _buildGlassDropdown(isDark, textColor),
+                      DifficultySelector(
+                        selectedDifficulty: _selectedDifficulty,
+                        onChanged: (val) => setState(() => _selectedDifficulty = val),
+                        isDark: isDark,
+                        textColor: textColor,
+                      ),
                       const SizedBox(height: 15),
-                      _buildTimerOptions(isDark, textColor),
+                      TimerOptions(
+                        isDark: isDark,
+                        textColor: textColor,
+                        selectedMinutes: _selectedMinutes,
+                        isCustomTimer: _isCustomTimer,
+                        customTimeController: _customTimeController,
+                        onMinutesChanged: (val) => setState(() => _selectedMinutes = val),
+                        onCustomTimerChanged: (val) => setState(() => _isCustomTimer = val),
+                        buildGlassTextField: _buildGlassTextField,
+                      ),
                       const SizedBox(height: 30),
                     ],
                   ),
@@ -421,8 +313,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
       ),
     );
   }
-
-  // --- UI COMPONENTS ---
 
   Widget _buildHeader(Color textColor) {
     return Row(
@@ -444,105 +334,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildCategorySelector(bool isDark) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: _habitLibrary.keys.map((cat) {
-        bool isSelected = _selectedCategory == cat;
-        return GestureDetector(
-          onTap: () => setState(() => _selectedCategory = cat),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFFAC5DED)
-                  : (isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.black.withValues(alpha: 0.03)),
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
-                        blurRadius: 10,
-                      ),
-                    ]
-                  : [],
-            ),
-            child: Text(
-              cat.toUpperCase(),
-              style: TextStyle(
-                color: isSelected
-                    ? Colors.white
-                    : (isDark ? Colors.white54 : Colors.black54),
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildPresetGrid(bool isDark, Color textColor) {
-    final presets = _habitLibrary[_selectedCategory]!;
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: presets.map((item) {
-        bool isPicked = _nameController.text == item['name'];
-        return GestureDetector(
-          onTap: () => _selectPreset(item['name'], item['icon']),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: isPicked
-                  ? const Color(0xFFAC5DED).withValues(alpha: 0.15)
-                  : (isDark
-                        ? Colors.white.withValues(alpha: 0.03)
-                        : Colors.black.withValues(alpha: 0.02)),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: isPicked
-                    ? const Color(0xFFAC5DED)
-                    : Colors.transparent,
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FaIcon(
-                  item['icon'],
-                  size: 12,
-                  color: isPicked
-                      ? const Color(0xFFAC5DED)
-                      : (isDark ? Colors.white38 : Colors.black38),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  item['name'],
-                  style: TextStyle(
-                    color: isPicked
-                        ? const Color(0xFFAC5DED)
-                        : (isDark ? Colors.white70 : Colors.black87),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 
@@ -670,190 +461,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
     );
   }
 
-  Widget _buildReminderToggle(bool isDark, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.black.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                FaIcon(
-                  _isReminderEnabled
-                      ? FontAwesomeIcons.solidBell
-                      : FontAwesomeIcons.solidBellSlash,
-                  color: const Color(0xFFAC5DED),
-                  size: 18,
-                ),
-                const SizedBox(width: 15),
-                Flexible(
-                  child: Text(
-                    "SET REMINDER",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 11,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch.adaptive(
-            value: _isReminderEnabled,
-            activeThumbColor: const Color(0xFFAC5DED),
-            onChanged: (val) => setState(() => _isReminderEnabled = val),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGlassDropdown(bool isDark, Color textColor) {
-    return DropdownButtonFormField<HabitDifficulty>(
-      initialValue: _selectedDifficulty,
-      dropdownColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-      icon: const Icon(Icons.expand_more_rounded, color: Color(0xFFAC5DED)),
-      style: TextStyle(
-        color: textColor,
-        fontWeight: FontWeight.w600,
-        fontSize: 14,
-      ),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.black.withValues(alpha: 0.04),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-      ),
-      items: HabitDifficulty.values
-          .map(
-            (d) =>
-                DropdownMenuItem(value: d, child: Text(d.name.toUpperCase())),
-          )
-          .toList(),
-      onChanged: (val) => setState(() => _selectedDifficulty = val!),
-    );
-  }
-
-  Widget _buildTimerOptions(bool isDark, Color textColor) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            ...[10, 20, 30].map(
-              (mins) => Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: _choiceChip(
-                    "$mins m",
-                    !_isCustomTimer && _selectedMinutes == mins,
-                    () {
-                      setState(() {
-                        _isCustomTimer = false;
-                        _selectedMinutes = mins;
-                        _customTimeController.clear();
-                      });
-                    },
-                    isDark,
-                    textColor,
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: _choiceChip(
-                "CUSTOM",
-                _isCustomTimer,
-                () => setState(() => _isCustomTimer = true),
-                isDark,
-                textColor,
-              ),
-            ),
-          ],
-        ),
-        // --- NEW: Custom Input Field appears when _isCustomTimer is true ---
-        if (_isCustomTimer)
-          Padding(
-            padding: const EdgeInsets.only(top: 15),
-            child: _buildGlassTextField(
-              _customTimeController,
-              "Minutes (e.g. 45)",
-              FontAwesomeIcons.stopwatch,
-              isDark,
-              textColor,
-              isNumber: true,
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _choiceChip(
-    String label,
-    bool selected,
-    VoidCallback onSelected,
-    bool isDark,
-    Color textColor,
-  ) {
-    return GestureDetector(
-      onTap: onSelected,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFFAC5DED)
-              : (isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.04)),
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
-                    blurRadius: 8,
-                  ),
-                ]
-              : [],
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: selected
-                ? Colors.white
-                : (isDark ? Colors.white70 : Colors.black87),
-            fontWeight: FontWeight.w900,
-            fontSize: 11,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildSaveButton() {
     return Container(
       width: double.infinity,
@@ -890,67 +497,6 @@ class _AddHabitFormState extends State<AddHabitForm> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildStackPicker(bool isDark, Color textColor) {
-    final habitProvider = context.read<HabitProvider>();
-    final habits = habitProvider.allHabits;
-    final currentId = widget.habit?.id ?? '';
-
-    // Filter candidates to avoid circular references and self-triggering
-    final candidates = habits.where((h) {
-      if (widget.habit != null && h.id == currentId) return false;
-      return !habitProvider.isCircularChain(currentId, h.id);
-    }).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildLabel("STACK AFTER (OPTIONAL)", isDark),
-        DropdownButtonFormField<String?>(
-          initialValue: _selectedTriggerHabitId,
-          dropdownColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-          icon: const Icon(Icons.link_rounded, color: Color(0xFFAC5DED)),
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-          decoration: InputDecoration(
-            hintText: "Select cue habit...",
-            hintStyle: TextStyle(color: textColor.withValues(alpha: 0.4)),
-            filled: true,
-            fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.black.withValues(alpha: 0.04),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20),
-              borderSide: const BorderSide(color: Color(0xFFAC5DED), width: 1.5),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          ),
-          items: [
-            const DropdownMenuItem<String?>(
-              value: null,
-              child: Text("NONE (START OF CHAIN)"),
-            ),
-            ...candidates.map((h) => DropdownMenuItem<String?>(
-              value: h.id,
-              child: Text(h.name.toUpperCase()),
-            )),
-          ],
-          onChanged: (val) {
-            setState(() {
-              _selectedTriggerHabitId = val;
-            });
-          },
-        ),
-      ],
     );
   }
 

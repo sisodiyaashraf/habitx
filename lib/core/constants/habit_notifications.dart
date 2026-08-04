@@ -101,12 +101,12 @@ class HabitNotifications {
 
   // Get all categories as a map (useful for random category + random line selection)
   static Map<String, List<String>> get allCategories => {
-        'flirty': flirty,
-        'romantic': romantic,
-        'roast': roast,
-        'cute': cute,
-        'motivational': motivational,
-        'breakup': breakup,
-        'discipline': discipline,
-      };
+    'flirty': flirty,
+    'romantic': romantic,
+    'roast': roast,
+    'cute': cute,
+    'motivational': motivational,
+    'breakup': breakup,
+    'discipline': discipline,
+  };
 }

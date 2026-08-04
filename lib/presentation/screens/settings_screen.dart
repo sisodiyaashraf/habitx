@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../providers/habit_provider.dart';
-import '../../providers/theme_provider.dart';
-import '../../domain/models/shelby_persona.dart';
 import '../../data/services/notifications/habit_x_notification_service.dart';
 import '../../core/constants/notification_messages.dart';
 import '../widgets/shared/glass_background.dart';
 import '../widgets/shared/privacy_policy_dialog.dart';
 import '../widgets/shared/terms_of_service_dialog.dart';
+import '../widgets/settings/reset_confirm_dialog.dart';
+import '../widgets/settings/shelby_mood_dialog.dart';
+import '../widgets/settings/gender_tone_dialog.dart';
+import '../widgets/settings/settings_tile_components.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -24,30 +25,7 @@ class SettingsScreen extends StatelessWidget {
   void _handleReset(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text(
-          "RESET DATA?",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
-        ),
-        content: const Text(
-          "This will wipe all progress, XP, and habits. You cannot undo this.",
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("CANCEL"),
-          ),
-          TextButton(
-            onPressed: () {
-              context.read<HabitProvider>().resetUserIdentity();
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
-            child: const Text("RESET", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      builder: (context) => const ResetConfirmDialog(),
     );
   }
 
@@ -117,59 +95,57 @@ class SettingsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 120, 20, 40),
           children: [
-
-
-            _buildSectionHeader("APPEARANCE", subTextColor),
-            _buildSettingsGroup(
-              [_buildThemeSelector(context, textColor, subTextColor)],
+            SettingsSectionHeader(title: "APPEARANCE", subTextColor: subTextColor),
+            SettingsGroup(
+              tiles: [ThemeSelector(textColor: textColor, subTextColor: subTextColor)],
               height: 130,
               isDark: isDark,
             ),
 
             const SizedBox(height: 32),
 
-            _buildSectionHeader("PREFERENCES", subTextColor),
-            _buildSettingsGroup(
-              [
-                _switchSettingsTile(
-                  FontAwesomeIcons.fingerprint,
-                  "Tactile Feedback",
-                  "Enable haptic vibrations on screen interaction",
-                  provider.isHapticsEnabled,
-                  textColor,
-                  subTextColor,
+            SettingsSectionHeader(title: "PREFERENCES", subTextColor: subTextColor),
+            SettingsGroup(
+              tiles: [
+                SwitchSettingsTile(
+                  icon: FontAwesomeIcons.fingerprint,
+                  title: "Tactile Feedback",
+                  subtitle: "Enable haptic vibrations on screen interaction",
+                  value: provider.isHapticsEnabled,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onChanged: (val) {
                     provider.toggleHaptics(val);
                   },
                 ),
-                _switchSettingsTile(
-                  FontAwesomeIcons.envelopeOpenText,
-                  "Daily Motivations",
-                  "Receive routine briefings and check-ins",
-                  provider.isDailyMotivationEnabled,
-                  textColor,
-                  subTextColor,
+                SwitchSettingsTile(
+                  icon: FontAwesomeIcons.envelopeOpenText,
+                  title: "Daily Motivations",
+                  subtitle: "Receive routine briefings and check-ins",
+                  value: provider.isDailyMotivationEnabled,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onChanged: (val) {
                     provider.toggleDailyMotivation(val);
                   },
                 ),
-                _switchSettingsTile(
-                  FontAwesomeIcons.circleHalfStroke,
-                  "Reduce Motion & Effects",
-                  "Quiet animations, particles, and heavy rumble haptics",
-                  provider.isReduceMotionActive,
-                  textColor,
-                  subTextColor,
+                SwitchSettingsTile(
+                  icon: FontAwesomeIcons.circleHalfStroke,
+                  title: "Reduce Motion & Effects",
+                  subtitle: "Quiet animations, particles, and heavy rumble haptics",
+                  value: provider.isReduceMotionActive,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onChanged: (val) {
                     provider.toggleReduceMotion(val);
                   },
                 ),
-                _settingsTile(
-                  FontAwesomeIcons.bell,
-                  "System Alerts Permission",
-                  "Ensure system notifications are fully authorized",
-                  textColor,
-                  subTextColor,
+                SettingsTile(
+                  icon: FontAwesomeIcons.bell,
+                  title: "System Alerts Permission",
+                  subtitle: "Ensure system notifications are fully authorized",
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onTap: () async {
                     final granted = await HabitXNotificationService().requestPermissions();
                     if (!context.mounted) return;
@@ -190,28 +166,31 @@ class SettingsScreen extends StatelessWidget {
                     }
                   },
                 ),
-                _settingsTile(
-                  FontAwesomeIcons.circleUser,
-                  "Notification Theme",
-                  "Style: ${provider.userPersona}",
-                  textColor,
-                  subTextColor,
-                  onTap: () => _showNotificationThemeDialog(context, provider),
+                SettingsTile(
+                  icon: FontAwesomeIcons.circleUser,
+                  title: "Notification Theme",
+                  subtitle: "Style: ${provider.userPersona}",
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  onTap: () => showDialog(
+                    context: context,
+                    builder: (context) => const ShelbyMoodDialog(),
+                  ),
                 ),
-                _settingsTile(
-                  FontAwesomeIcons.venusMars,
-                  "Gender Voice Tone",
-                  "Tone: ${provider.userGender}",
-                  textColor,
-                  subTextColor,
-                  onTap: () => _showGenderDialog(context, provider),
+                SettingsTile(
+                  icon: FontAwesomeIcons.venusMars,
+                  title: "Gender Voice Tone",
+                  subtitle: "Tone: ${provider.userGender}",
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  onTap: () => GenderToneDialog.show(context, provider),
                 ),
-                _settingsTile(
-                  FontAwesomeIcons.solidBell,
-                  "Test Notification",
-                  "Send a test check-in notification immediately",
-                  textColor,
-                  subTextColor,
+                SettingsTile(
+                  icon: FontAwesomeIcons.solidBell,
+                  title: "Test Notification",
+                  subtitle: "Send a test check-in notification immediately",
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onTap: () async {
                     final String persona = provider.userPersona;
                     final String gender = provider.userGender;
@@ -236,31 +215,31 @@ class SettingsScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            _buildSectionHeader("SUPPORT & COMMUNITY", subTextColor),
-            _buildSettingsGroup(
-              [
-                _settingsTile(
-                  FontAwesomeIcons.shareNodes,
-                  "Invite Friends",
-                  "Share the mission",
-                  textColor,
-                  subTextColor,
+            SettingsSectionHeader(title: "SUPPORT & COMMUNITY", subTextColor: subTextColor),
+            SettingsGroup(
+              tiles: [
+                SettingsTile(
+                  icon: FontAwesomeIcons.shareNodes,
+                  title: "Invite Friends",
+                  subtitle: "Share the mission",
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onTap: _shareApp,
                 ),
-                _settingsTile(
-                  FontAwesomeIcons.star,
-                  "Rate HabitX",
-                  "Support us on Play Store",
-                  textColor,
-                  subTextColor,
+                SettingsTile(
+                  icon: FontAwesomeIcons.star,
+                  title: "Rate HabitX",
+                  subtitle: "Support us on Play Store",
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onTap: () => _rateApp(context),
                 ),
-                _settingsTile(
-                  FontAwesomeIcons.envelope,
-                  "Email Support",
-                  "Direct dev feedback",
-                  textColor,
-                  subTextColor,
+                SettingsTile(
+                  icon: FontAwesomeIcons.envelope,
+                  title: "Email Support",
+                  subtitle: "Direct dev feedback",
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onTap: _launchEmail,
                 ),
               ],
@@ -270,15 +249,15 @@ class SettingsScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            _buildSectionHeader("DANGER ZONE", Colors.red.withValues(alpha: 0.7)),
-            _buildSettingsGroup(
-              [
-                _settingsTile(
-                  FontAwesomeIcons.trashCan,
-                  "Reset Identity",
-                  "Wipe all local data",
-                  Colors.redAccent,
-                  subTextColor,
+            SettingsSectionHeader(title: "DANGER ZONE", subTextColor: Colors.red.withValues(alpha: 0.7)),
+            SettingsGroup(
+              tiles: [
+                SettingsTile(
+                  icon: FontAwesomeIcons.trashCan,
+                  title: "Reset Identity",
+                  subtitle: "Wipe all local data",
+                  textColor: Colors.redAccent,
+                  subTextColor: subTextColor,
                   onTap: () => _handleReset(context),
                 ),
               ],
@@ -288,23 +267,23 @@ class SettingsScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            _buildSectionHeader("LEGAL", subTextColor),
-            _buildSettingsGroup(
-              [
-                _settingsTile(
-                  FontAwesomeIcons.shieldHalved,
-                  "Privacy Policy",
-                  "Data protocols",
-                  textColor,
-                  subTextColor,
+            SettingsSectionHeader(title: "LEGAL", subTextColor: subTextColor),
+            SettingsGroup(
+              tiles: [
+                SettingsTile(
+                  icon: FontAwesomeIcons.shieldHalved,
+                  title: "Privacy Policy",
+                  subtitle: "Data protocols",
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onTap: () => PrivacyPolicyDialog.show(context),
                 ),
-                _settingsTile(
-                  FontAwesomeIcons.fileContract,
-                  "Terms of Service",
-                  "Usage protocols",
-                  textColor,
-                  subTextColor,
+                SettingsTile(
+                  icon: FontAwesomeIcons.fileContract,
+                  title: "Terms of Service",
+                  subtitle: "Usage protocols",
+                  textColor: textColor,
+                  subTextColor: subTextColor,
                   onTap: () => TermsOfServiceDialog.show(context),
                 ),
               ],
@@ -317,534 +296,4 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // --- Reusable Components ---
-
-  Widget _settingsTile(
-    dynamic icon,
-    String title,
-    String subtitle,
-    Color textColor,
-    Color subTextColor, {
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: FaIcon(
-          icon,
-          color: title.contains("Reset")
-              ? Colors.redAccent
-              : const Color(0xFFAC5DED),
-          size: 16,
-        ),
-      ),
-      title: Text(
-        title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-          color: textColor,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 10, color: subTextColor),
-      ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: subTextColor.withValues(alpha: 0.3),
-        size: 18,
-      ),
-    );
-  }
-
-  Widget _switchSettingsTile(
-    dynamic icon,
-    String title,
-    String subtitle,
-    bool value,
-    Color textColor,
-    Color subTextColor, {
-    required ValueChanged<bool> onChanged,
-  }) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFAC5DED).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: FaIcon(
-          icon,
-          color: const Color(0xFFAC5DED),
-          size: 16,
-        ),
-      ),
-      title: Text(
-        title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-          color: textColor,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 10, color: subTextColor),
-      ),
-      trailing: Switch.adaptive(
-        value: value,
-        activeThumbColor: const Color(0xFFAC5DED),
-        onChanged: onChanged,
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, Color subTextColor) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10, bottom: 12),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: subTextColor,
-          fontSize: 10,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingsGroup(
-    List<Widget> tiles, {
-    required double height,
-    required bool isDark,
-  }) {
-    return GlassmorphicContainer(
-      width: double.infinity,
-      height: height,
-      borderRadius: 25,
-      blur: 20,
-      alignment: Alignment.center,
-      border: 1.0,
-      linearGradient: LinearGradient(
-        colors: [
-          isDark
-              ? Colors.white.withValues(alpha: 0.05)
-              : Colors.white.withValues(alpha: 0.2),
-          isDark
-              ? Colors.white.withValues(alpha: 0.02)
-              : Colors.white.withValues(alpha: 0.05),
-        ],
-      ),
-      borderGradient: LinearGradient(
-        colors: [Colors.white.withValues(alpha: 0.1), Colors.transparent],
-      ),
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: tiles,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildThemeSelector(
-    BuildContext context,
-    Color textColor,
-    Color subTextColor,
-  ) {
-    final themeProvider = context.watch<ThemeProvider>();
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Theme Mode",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _themeOption(
-                context,
-                themeProvider,
-                ThemeMode.system,
-                Icons.settings_suggest_rounded,
-                "System",
-                textColor,
-              ),
-              const SizedBox(width: 8),
-              _themeOption(
-                context,
-                themeProvider,
-                ThemeMode.dark,
-                Icons.dark_mode_rounded,
-                "Dark",
-                textColor,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _themeOption(
-    BuildContext context,
-    ThemeProvider provider,
-    ThemeMode mode,
-    IconData icon,
-    String label,
-    Color textColor,
-  ) {
-    final isSelected = provider.themeMode == mode;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => provider.setTheme(mode),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFAC5DED) : Colors.transparent,
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(
-              color: isSelected
-                  ? const Color(0xFFAC5DED)
-                  : textColor.withValues(alpha: 0.1),
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: isSelected ? Colors.white : textColor.withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : textColor.withValues(alpha: 0.5),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showNotificationThemeDialog(
-    BuildContext context,
-    HabitProvider provider,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final dialogTextColor = isDark ? Colors.white : Colors.black;
-    final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
-
-    final displayPersonas = [
-      ShelbyPersona.professional,
-      ShelbyPersona.genz,
-      ShelbyPersona.overlord,
-      ShelbyPersona.flirty,
-      ShelbyPersona.roast,
-      ShelbyPersona.cute,
-      ShelbyPersona.romantic,
-      ShelbyPersona.breakup,
-    ];
-
-    showDialog(
-      context: context,
-      builder: (context) => Center(
-        child: Material(
-          color: Colors.transparent,
-          child: GlassmorphicContainer(
-            width: MediaQuery.of(context).size.width * 0.9,
-            height: 480,
-            borderRadius: 30,
-            blur: 20,
-            alignment: Alignment.center,
-            border: 2,
-            linearGradient: LinearGradient(
-              colors: [
-                Colors.white.withValues(alpha: 0.2),
-                Colors.white.withValues(alpha: 0.1),
-              ],
-            ),
-            borderGradient: const LinearGradient(
-              colors: [Color(0xFFAC5DED), Colors.white24],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  Text(
-                    "SHELBY PERSONALITY MOOD",
-                    style: TextStyle(
-                      color: dialogTextColor,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.5,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: displayPersonas.length,
-                      itemBuilder: (context, index) {
-                        final p = displayPersonas[index];
-                        final name = NotificationMessages.getPersonaDisplayName(p);
-                        return _buildThemeOptionBtn(context, provider, name, dialogTextColor);
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      "CLOSE",
-                      style: TextStyle(color: dialogSubTextColor),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildThemeOptionBtn(
-    BuildContext context,
-    HabitProvider provider,
-    String theme,
-    Color activeTextColor,
-  ) {
-    final String currentPersona = provider.userPersona;
-    bool isSelected = false;
-    if (theme.toLowerCase() == "shelby ai" || theme.toLowerCase() == "shelby" || theme.toLowerCase() == "overlord") {
-      isSelected = currentPersona == "SHELBY AI" ||
-          currentPersona.toLowerCase() == "shelby" ||
-          currentPersona.toLowerCase() == "overlord";
-    } else {
-      isSelected = currentPersona.toLowerCase() == theme.toLowerCase();
-    }
-
-    final IconData icon = NotificationMessages.getPersonaIcon(theme);
-    final String subtitle = NotificationMessages.getPersonaSubtitle(theme);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5.0),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            String savedTheme = theme;
-            if (theme == "SHELBY AI") {
-              savedTheme = "Overlord";
-            }
-            provider.updatePersona(savedTheme);
-            Navigator.pop(context);
-          },
-          borderRadius: BorderRadius.circular(15),
-          child: Ink(
-            decoration: BoxDecoration(
-              gradient: isSelected
-                  ? const LinearGradient(
-                      colors: [Color(0xFFAC5DED), Color(0xFF7B61FF)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: isSelected ? null : Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF00E5FF).withValues(alpha: 0.5)
-                    : Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFFAC5DED).withValues(alpha: 0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      )
-                    ]
-                  : [],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-              child: Row(
-                children: [
-                  Icon(
-                    icon,
-                    color: isSelected ? Colors.white : activeTextColor.withValues(alpha: 0.7),
-                    size: 24,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          theme,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : activeTextColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white70 : activeTextColor.withValues(alpha: 0.5),
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (isSelected)
-                    const Icon(
-                      Icons.check_circle_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showGenderDialog(BuildContext context, HabitProvider provider) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final dialogTextColor = isDark ? Colors.white : Colors.black;
-        final dialogSubTextColor = isDark ? Colors.white70 : Colors.black54;
-
-        return Center(
-          child: Material(
-            color: Colors.transparent,
-            child: GlassmorphicContainer(
-              width: MediaQuery.of(context).size.width * 0.85,
-              height: 280,
-              borderRadius: 30,
-              blur: 20,
-              alignment: Alignment.center,
-              border: 2,
-              linearGradient: LinearGradient(
-                colors: [
-                  Colors.white.withValues(alpha: 0.2),
-                  Colors.white.withValues(alpha: 0.1),
-                ],
-              ),
-              borderGradient: const LinearGradient(
-                colors: [Color(0xFFAC5DED), Colors.white24],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(
-                      "GENDER TONE",
-                      style: TextStyle(
-                        color: dialogTextColor,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildGenderBtn(context, provider, "Male", dialogTextColor),
-                    _buildGenderBtn(context, provider, "Female", dialogTextColor),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        "CLOSE",
-                        style: TextStyle(color: dialogSubTextColor),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGenderBtn(
-    BuildContext context,
-    HabitProvider provider,
-    String gender,
-    Color activeTextColor,
-  ) {
-    final bool isSelected = provider.userGender.toLowerCase() == gender.toLowerCase();
-
-    return Container(
-      width: double.infinity,
-      height: 48,
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: TextButton(
-        style: TextButton.styleFrom(
-          backgroundColor: isSelected
-              ? const Color(0xFFAC5DED).withValues(alpha: 0.2)
-              : Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: BorderSide(
-              color: isSelected ? const Color(0xFFAC5DED) : Colors.white12,
-            ),
-          ),
-        ),
-        onPressed: () {
-          provider.updateGender(gender);
-          Navigator.pop(context);
-        },
-        child: Text(
-          gender.toUpperCase(),
-          style: TextStyle(
-            color: isSelected ? const Color(0xFFAC5DED) : activeTextColor.withValues(alpha: 0.6),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
 }
