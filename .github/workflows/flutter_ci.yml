@@ -35,6 +35,18 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Verify Flutter version
+        run: |
+          echo "=================================="
+          flutter --version
+          echo "=================================="
+          FLUTTER_VER=$(flutter --version | head -n 1 | awk '{print $2}')
+          if [[ "$FLUTTER_VER" != "3.41.2" ]]; then
+            echo "ERROR: Expected Flutter 3.41.2 but got $FLUTTER_VER"
+            exit 1
+          fi
+          echo "Confirmed: running Flutter 3.41.2 as expected."
+
       - name: Install dependencies
         run: flutter pub get
 
