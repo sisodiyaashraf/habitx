@@ -6,6 +6,8 @@ import 'package:habitx/core/constants/habit_templates.dart';
 import 'package:habitx/core/constants/notification_messages.dart';
 import 'package:habitx/providers/habit_provider.dart';
 import 'package:habitx/data/services/notifications/habit_x_notification_service.dart';
+import 'package:habitx/domain/models/habit.dart';
+import 'package:habitx/core/utils/habit_completion_handler.dart';
 
 class MockHabitXNotificationService extends HabitXNotificationService {
   MockHabitXNotificationService._() : super.internal();
@@ -107,6 +109,57 @@ void main() {
       final water = HabitTemplates.presets.firstWhere((t) => t.id == 'template_water');
       expect(water.name, equals('Drink Water'));
       expect(water.suggestedFrequency, equals('daily'));
+    });
+  });
+
+  group('Feature 4 - HabitCompletionHandler Tests', () {
+    test('Toggle completion increases streak and XP when completed', () {
+      final habit = Habit(
+        id: 'test_habit',
+        name: 'Exercise',
+        difficulty: HabitDifficulty.medium, // 20 XP
+        lastCompleted: DateTime.now().subtract(const Duration(days: 2)),
+      );
+      final now = DateTime.now();
+
+      final result = HabitCompletionHandler.toggleCompletion(
+        allHabits: [habit],
+        habitId: 'test_habit',
+        currentXP: 10,
+        currentLevel: 1,
+        now: now,
+      );
+
+      expect(result.updatedHabit.isCompleted, isTrue);
+      expect(result.newXP, equals(30)); // 10 + 20
+      expect(result.updatedHabit.streak, equals(1));
+      expect(result.isNowCompleted, isTrue);
+    });
+
+    test('Toggle completion decreases streak and XP when toggled off', () {
+      final now = DateTime.now();
+      final habit = Habit(
+        id: 'test_habit',
+        name: 'Exercise',
+        isCompleted: true,
+        streak: 1,
+        difficulty: HabitDifficulty.medium, // 20 XP
+        lastCompleted: now,
+        completedDates: [now],
+      );
+
+      final result = HabitCompletionHandler.toggleCompletion(
+        allHabits: [habit],
+        habitId: 'test_habit',
+        currentXP: 30,
+        currentLevel: 1,
+        now: now,
+      );
+
+      expect(result.updatedHabit.isCompleted, isFalse);
+      expect(result.newXP, equals(10)); // 30 - 20
+      expect(result.updatedHabit.streak, equals(0));
+      expect(result.isNowCompleted, isFalse);
     });
   });
 }

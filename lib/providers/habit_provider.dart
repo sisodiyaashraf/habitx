@@ -14,8 +14,9 @@ import '../data/services/notifications/habit_x_notification_service.dart';
 import '../presentation/widgets/shared/level_up_overlay.dart';
 import '../core/constants/notification_messages.dart';
 import '../core/constants/avatar_constants.dart';
+import '../core/utils/habit_completion_handler.dart';
 
-class HabitProvider extends ChangeNotifier {
+class HabitProvider extends ChangeNotifier with WidgetsBindingObserver {
   // --- Core State ---
   final List<Habit> _allHabits = [];
   int _userXP = 0;
@@ -48,6 +49,7 @@ class HabitProvider extends ChangeNotifier {
 
   HabitProvider() {
     _generatePastWeekDates();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   // --- Real-Time Getters ---
@@ -534,69 +536,70 @@ class HabitProvider extends ChangeNotifier {
   }
 
   void toggleHabitCompletion(BuildContext? context, String id) {
-    final index = _allHabits.indexWhere((h) => h.id == id);
-    if (index == -1) return;
+    try {
+      final now = DateTime.now();
+      final oldLevel = _userLevel;
 
-    final habit = _allHabits[index];
-    final bool isNowCompleted = !habit.isCompleted;
-    final List<DateTime> updatedCompletedDates = List.from(habit.completedDates);
-    final now = DateTime.now();
-
-    int newStreak = StreakEngine.calculateNewStreak(
-      habit: habit,
-      isNowCompleted: isNowCompleted,
-      now: now,
-    );
-
-    if (isNowCompleted) {
-      if (_isHapticsEnabled) HapticHelper.success();
-      _applyGamification(habit.xpValue);
-      if (context != null) {
-        checkMilestones(context);
-      }
-
-      HabitXNotificationService().showInstantNotification(
-        title: "Mission Accomplished 🏆",
-        body: "Goal '${habit.name}' verified. XP secured.",
+      final result = HabitCompletionHandler.toggleCompletion(
+        allHabits: _allHabits,
+        habitId: id,
+        currentXP: _userXP,
+        currentLevel: _userLevel,
+        now: now,
       );
 
-      bool alreadyAdded = updatedCompletedDates.any((d) => d.isSameDay(now));
-      if (!alreadyAdded) {
-        updatedCompletedDates.add(now);
-      }
-    } else {
-      _reverseGamification(habit.xpValue);
-      updatedCompletedDates.removeWhere((d) => d.isSameDay(now));
+      final index = _allHabits.indexWhere((h) => h.id == id);
+      if (index == -1) return;
 
-      if (habit.reminderTime != null) {
-        HabitXNotificationService().scheduleHabitReminder(
-          habit.id,
-          habit.name,
-          habit.reminderTime!,
-          createdAt: habit.createdAt,
+      _allHabits[index] = result.updatedHabit;
+      _userXP = result.newXP;
+
+      if (result.newLevel > oldLevel) {
+        for (int l = oldLevel + 1; l <= result.newLevel; l++) {
+          if (_isHapticsEnabled) HapticHelper.levelUp();
+          if (navigatorKey.currentContext != null) {
+            LevelUpOverlay.show(navigatorKey.currentContext!, l);
+          }
+        }
+        _userLevel = result.newLevel;
+      }
+
+      _storage.saveProgress(_userXP, _userLevel);
+      _storage.saveHabits(_allHabits);
+
+      if (result.isNowCompleted) {
+        if (_isHapticsEnabled) HapticHelper.success();
+        if (context != null) {
+          checkMilestones(context);
+        }
+
+        HabitXNotificationService().showInstantNotification(
+          title: "Mission Accomplished 🏆",
+          body: "Goal '${result.updatedHabit.name}' verified. XP secured.",
         );
+
+        if (context != null) {
+          final stackedHabits = _allHabits.where((h) => h.triggerHabitId == id && !h.isCompleted).toList();
+          if (stackedHabits.isNotEmpty) {
+            _showStackedNudge(context, stackedHabits.first);
+          }
+        }
+      } else {
+        if (result.updatedHabit.reminderTime != null) {
+          HabitXNotificationService().scheduleHabitReminder(
+            result.updatedHabit.id,
+            result.updatedHabit.name,
+            result.updatedHabit.reminderTime!,
+            createdAt: result.updatedHabit.createdAt,
+          );
+        }
       }
+
+      _updateHomeWidget();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("HabitX Completion Toggle Error: $e");
     }
-
-    _allHabits[index] = habit.copyWith(
-      isCompleted: isNowCompleted,
-      streak: newStreak,
-      lastCompleted: now,
-      completedDates: updatedCompletedDates,
-    );
-
-    _storage.saveHabits(_allHabits);
-
-    // Stack nudge check
-    if (isNowCompleted && context != null) {
-      final stackedHabits = _allHabits.where((h) => h.triggerHabitId == id && !h.isCompleted).toList();
-      if (stackedHabits.isNotEmpty) {
-        _showStackedNudge(context, stackedHabits.first);
-      }
-    }
-
-    _updateHomeWidget();
-    notifyListeners();
   }
 
   void setAiTimer(int minutes) {
@@ -616,17 +619,25 @@ class HabitProvider extends ChangeNotifier {
   }
 
   void _updateHomeWidget() {
+    final now = DateTime.now();
+    final todayHabits = _allHabits.where((habit) {
+      return habit.createdAt.isBefore(
+        DateTime(now.year, now.month, now.day, 23, 59, 59),
+      );
+    }).toList();
+
     final int maxStreak = _allHabits.isEmpty
         ? 0
         : _allHabits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
-    final int completedCount = _allHabits.where((h) => h.isCompleted).length;
-    final int totalCount = _allHabits.length;
+    final int completedCount = todayHabits.where((h) => h.isCompleted).length;
+    final int totalCount = todayHabits.length;
 
     HomeWidgetService.updateWidget(
       streak: maxStreak,
       level: _userLevel,
       completedCount: completedCount,
       totalCount: totalCount,
+      habits: todayHabits,
     );
   }
 
@@ -721,7 +732,16 @@ class HabitProvider extends ChangeNotifier {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      debugPrint("HabitX Neural Resume: Re-syncing state from disk...");
+      init();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     super.dispose();
   }

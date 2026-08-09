@@ -1,11 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
+import 'storage_service.dart';
+import '../../domain/models/habit.dart';
+import '../../core/utils/habit_completion_handler.dart';
+import 'notifications/habit_x_notification_service.dart';
 
 class HomeWidgetService {
   // FIXED: Removed the package name prefix to prevent the ClassNotFound double-package error
   static const String _androidWidgetName = 'HabitWidgetProvider';
-  static const String _groupId = 'habitx_glass_data';
+  static const String _groupId = 'group.habitx_glass_data';
 
   /// Initializes the Home Widget service.
   static Future<void> init() async {
@@ -18,6 +23,7 @@ class HomeWidgetService {
     int level = 1,
     int completedCount = 0,
     int totalCount = 0,
+    List<Habit> habits = const [],
   }) async {
     try {
       final now = DateTime.now();
@@ -166,13 +172,33 @@ class HomeWidgetService {
         ),
       );
 
+      // Save basic data to shared preferences for widget access
+      await HomeWidget.saveWidgetData<int>('streak', streak);
+      await HomeWidget.saveWidgetData<int>('level', level);
+      await HomeWidget.saveWidgetData<int>('completedCount', completedCount);
+      await HomeWidget.saveWidgetData<int>('totalCount', totalCount);
+
+      // Serialize top 3 habits
+      final activeHabitsList = habits.take(3).map((h) => {
+        'id': h.id,
+        'name': h.name,
+        'isCompleted': h.isCompleted,
+        'streak': h.streak,
+      }).toList();
+      final String habitsJson = jsonEncode(activeHabitsList);
+      await HomeWidget.saveWidgetData<String>('habits_json', habitsJson);
+
       // FIXED: Dropped logicalSize to 100x100.
       // This is the "Safe Zone" for Android RemoteViews memory limits.
-      await HomeWidget.renderFlutterWidget(
-        renderWidget,
-        key: 'mascot_image',
-        logicalSize: const Size(100, 100),
-      );
+      try {
+        await HomeWidget.renderFlutterWidget(
+          renderWidget,
+          key: 'mascot_image',
+          logicalSize: const Size(100, 100),
+        );
+      } catch (renderError) {
+        debugPrint("HabitX Background: Mascot image rendering skipped or failed: $renderError");
+      }
 
       // FIXED: Using only the class name to prevent the package-doubling crash
       await HomeWidget.updateWidget(
@@ -183,6 +209,81 @@ class HomeWidgetService {
       debugPrint("HabitX: Home Widget Sync Complete.");
     } catch (e) {
       debugPrint("HabitX Widget Sync Error: $e");
+    }
+  }
+
+  /// Handles marking a habit complete from the interactive widget background isolate.
+  @pragma('vm:entry-point')
+  static Future<void> handleBackgroundCompletion(String habitId) async {
+    try {
+      final storage = StorageService();
+      final now = DateTime.now();
+
+      // Load data from StorageService (app's internal SharedPreferences)
+      final allHabits = await storage.loadHabits();
+      final progress = await storage.loadProgress();
+      final currentXP = progress['xp'] ?? 0;
+      final currentLevel = progress['level'] ?? 1;
+
+      // Run shared calculation
+      final result = HabitCompletionHandler.toggleCompletion(
+        allHabits: allHabits,
+        habitId: habitId,
+        currentXP: currentXP,
+        currentLevel: currentLevel,
+        now: now,
+      );
+
+      // Save updated data
+      await storage.saveHabits(result.updatedHabits);
+      await storage.saveProgress(result.newXP, result.newLevel);
+
+      // Update notifications
+      final notificationService = HabitXNotificationService();
+      await notificationService.init();
+      if (result.isNowCompleted) {
+        await notificationService.cancelReminder(result.updatedHabit.id);
+        await notificationService.showInstantNotification(
+          title: "Mission Accomplished 🏆",
+          body: "Goal '${result.updatedHabit.name}' verified. XP secured.",
+        );
+      } else {
+        if (result.updatedHabit.reminderTime != null) {
+          await notificationService.scheduleHabitReminder(
+            result.updatedHabit.id,
+            result.updatedHabit.name,
+            result.updatedHabit.reminderTime!,
+            createdAt: result.updatedHabit.createdAt,
+          );
+        }
+      }
+
+      // Update widget data & update widget UI
+      final todayHabits = result.updatedHabits.where((habit) {
+        return habit.createdAt.isBefore(
+          DateTime(now.year, now.month, now.day, 23, 59, 59),
+        );
+      }).toList();
+
+      final int maxStreak = result.updatedHabits.isEmpty
+          ? 0
+          : result.updatedHabits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
+      final int completedCount = todayHabits.where((h) => h.isCompleted).length;
+      final int totalCount = todayHabits.length;
+
+      // Update App Group ID and refresh native widget state
+      await HomeWidget.setAppGroupId(_groupId);
+      await updateWidget(
+        streak: maxStreak,
+        level: result.newLevel,
+        completedCount: completedCount,
+        totalCount: totalCount,
+        habits: todayHabits,
+      );
+
+      debugPrint("HabitX Background Completion Sync Successful for: $habitId");
+    } catch (e) {
+      debugPrint("HabitX Background Completion Sync Error: $e");
     }
   }
 }

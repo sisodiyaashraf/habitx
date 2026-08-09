@@ -9,6 +9,8 @@ import 'data/services/home_widget_service.dart';
 import 'providers/habit_provider.dart';
 import 'providers/theme_provider.dart';
 import 'core/constants/notification_messages.dart';
+import 'package:home_widget/home_widget.dart';
+
 
 // Screens
 import 'presentation/screens/home_screen.dart';
@@ -26,6 +28,9 @@ void main() async {
     // 🛰️ HOME WIDGET INITIALIZATION
     // Registers the background group ID for the daily image rotation
     await HomeWidgetService.init();
+    
+    // Register background callback for interactive widgets
+    await HomeWidget.registerInteractivityCallback(homeWidgetBackgroundCallback);
 
     // Sequential initialization: Database (SharedPreferences) must load first
     await habitProvider.init();
@@ -111,5 +116,16 @@ class HabitXApp extends StatelessWidget {
       },
       home: isNewUser ? const OnboardingScreen() : const HomeScreen(),
     );
+  }
+}
+
+@pragma('vm:entry-point')
+Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
+  if (uri == null) return;
+  if (uri.scheme == 'homeWidget' && uri.host == 'completeHabit') {
+    final habitId = uri.queryParameters['id'];
+    if (habitId != null) {
+      await HomeWidgetService.handleBackgroundCompletion(habitId);
+    }
   }
 }
