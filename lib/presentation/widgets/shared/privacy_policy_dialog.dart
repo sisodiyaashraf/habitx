@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'privacy_policy_text.dart';
 
 class PrivacyPolicyDialog extends StatelessWidget {
@@ -241,25 +242,48 @@ class PrivacyPolicyDialog extends StatelessWidget {
   }
 
   Widget _buildAcknowledgeButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Colors.black, width: 2),
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        ),
-        onPressed: () => Navigator.pop(context),
-        child: const Text(
-          "ACKNOWLEDGE PROTOCOL",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 11,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.0,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.black, width: 2),
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "ACKNOWLEDGE PROTOCOL",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.0,
+              ),
+            ),
           ),
         ),
-      ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: () async {
+            final uri = Uri.parse("https://www.freeprivacypolicy.com/live/d6768946-09d7-4e81-b0cd-1995ca26fdbf");
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            }
+          },
+          child: const Text(
+            "View Hosted Legal Document Online ↗",
+            style: TextStyle(
+              color: Color(0xFFAC5DED),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

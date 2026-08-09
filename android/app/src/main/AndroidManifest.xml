@@ -24,7 +24,7 @@
     <application
         android:label="HabitX"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:allowBackup="false"
         android:usesCleartextTraffic="false"
         android:enableOnBackInvokedCallback="true"> <!-- Optimizes back navigation -->

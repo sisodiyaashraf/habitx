@@ -41,6 +41,7 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/images/app_icon1.png"
   adaptive_icon_background: "#121212" # Matches your Dark Mode background
+  adaptive_icon_foreground: "assets/images/app_icon1.png"
 
 
 flutter:
