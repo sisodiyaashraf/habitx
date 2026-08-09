@@ -37,3 +37,11 @@ subprojects {
         }
     }
 }
+
+subprojects {
+    tasks.configureEach {
+        if (name.startsWith("strip") && name.endsWith("DebugSymbols")) {
+            enabled = false
+        }
+    }
+}
