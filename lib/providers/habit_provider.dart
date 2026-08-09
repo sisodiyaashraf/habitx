@@ -659,11 +659,6 @@ class HabitProvider extends ChangeNotifier with WidgetsBindingObserver {
     _updateHomeWidget();
   }
 
-  void _reverseGamification(int xp) {
-    _userXP = (_userXP - xp).clamp(0, 1000000);
-    _storage.saveProgress(_userXP, _userLevel);
-    _updateHomeWidget();
-  }
 
   // --- Elite Achievement UI ---
 

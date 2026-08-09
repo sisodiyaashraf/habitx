@@ -26,6 +26,7 @@ class HomeWidgetService {
     List<Habit> habits = const [],
   }) async {
     try {
+      await HomeWidget.setAppGroupId(_groupId);
       final now = DateTime.now();
 
       // Calculate Daily Image Index (1, 2, or 3)

@@ -63,17 +63,25 @@ void main() async {
       title: NotificationMessages.getStatusTitle(habitProvider.userPersona),
       body: NotificationMessages.getStatusBody(habitProvider.userPersona),
     );
+    final now = DateTime.now();
+    final todayHabits = habitProvider.allHabits.where((habit) {
+      return habit.createdAt.isBefore(
+        DateTime(now.year, now.month, now.day, 23, 59, 59),
+      );
+    }).toList();
+
     final int maxStreak = habitProvider.allHabits.isEmpty
         ? 0
         : habitProvider.allHabits.map((h) => h.streak).reduce((a, b) => a > b ? a : b);
-    final int completedCount = habitProvider.allHabits.where((h) => h.isCompleted).length;
-    final int totalCount = habitProvider.allHabits.length;
+    final int completedCount = todayHabits.where((h) => h.isCompleted).length;
+    final int totalCount = todayHabits.length;
 
     HomeWidgetService.updateWidget(
       streak: maxStreak,
       level: habitProvider.userLevel,
       completedCount: completedCount,
       totalCount: totalCount,
+      habits: todayHabits,
     );
   }
 

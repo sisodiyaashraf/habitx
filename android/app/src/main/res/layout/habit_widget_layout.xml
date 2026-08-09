@@ -1,186 +1,219 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:background="@drawable/widget_background"
-    android:padding="8dp"
-    android:gravity="center_vertical">
+    android:background="@drawable/widget_background">
 
-    <!-- Mascot Image / Status (Rendered by Flutter) -->
-    <FrameLayout
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center_vertical">
-        <ImageView
-            android:id="@+id/widget_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter"
-            android:clipToOutline="true" />
-    </FrameLayout>
-
-    <!-- Habits List Column -->
-    <LinearLayout
-        android:layout_width="0dp"
+    <!-- Background Mascot Image (Covers the widget fully) -->
+    <ImageView
+        android:id="@+id/widget_image"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
+        android:scaleType="centerCrop"
+        android:src="@drawable/habitx1" />
+
+    <!-- Semi-transparent overlay container to ensure text readability -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginStart="8dp"
-        android:gravity="center_vertical">
+        android:background="#B31A1A1A"
+        android:padding="12dp">
 
-        <!-- Header -->
-        <TextView
-            android:id="@+id/widget_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="MISSIONS"
-            android:textColor="#AC5DED"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp" />
-
-        <!-- Habit Row 1 -->
+        <!-- Header Row -->
         <LinearLayout
-            android:id="@+id/habit_row_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="2dp"
-            android:visibility="gone">
-            <ImageView
-                android:id="@+id/habit_check_1"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_checkbox_blank"
-                android:contentDescription="Checkmark 1"
-                android:clickable="true"
-                android:focusable="true" />
+            android:gravity="center_vertical">
+
+            <!-- Stats Info -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:layout_marginStart="6dp">
+                android:orientation="vertical">
+                
                 <TextView
-                    android:id="@+id/habit_name_1"
-                    android:layout_width="match_parent"
+                    android:id="@+id/widget_title"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Habit 1"
-                    android:textColor="#FFFFFF"
+                    android:text="MISSIONS"
+                    android:textColor="#AC5DED"
                     android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:ellipsize="end"
-                    android:maxLines="1" />
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/widget_stats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lvl 1 • 0/0 • 🔥 0"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="9.5sp"
+                    android:layout_marginTop="1dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Divider (Using FrameLayout instead of base View to prevent RemoteViews crash) -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#33FFFFFF"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Habits List Column -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <!-- Habit Row 1 -->
+            <LinearLayout
+                android:id="@+id/habit_row_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="2dp"
+                android:visibility="gone">
+                <ImageView
+                    android:id="@+id/habit_check_1"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_checkbox_blank"
+                    android:contentDescription="Checkmark 1" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+                    <TextView
+                        android:id="@+id/habit_name_1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Habit 1"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:ellipsize="end"
+                        android:maxLines="1" />
+                </LinearLayout>
                 <TextView
                     android:id="@+id/habit_streak_1"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Streak: 0"
-                    android:textColor="#B3FFFFFF"
-                    android:textSize="8sp" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Habit Row 2 -->
-        <LinearLayout
-            android:id="@+id/habit_row_2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="2dp"
-            android:layout_marginTop="4dp"
-            android:visibility="gone">
-            <ImageView
-                android:id="@+id/habit_check_2"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_checkbox_blank"
-                android:contentDescription="Checkmark 2"
-                android:clickable="true"
-                android:focusable="true" />
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:layout_marginStart="6dp">
-                <TextView
-                    android:id="@+id/habit_name_2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Habit 2"
-                    android:textColor="#FFFFFF"
-                    android:textSize="11sp"
+                    android:text="0 🔥"
+                    android:textColor="#FF5722"
+                    android:textSize="10sp"
                     android:textStyle="bold"
-                    android:ellipsize="end"
-                    android:maxLines="1" />
+                    android:layout_marginStart="4dp" />
+            </LinearLayout>
+
+            <!-- Habit Row 2 -->
+            <LinearLayout
+                android:id="@+id/habit_row_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="2dp"
+                android:layout_marginTop="5dp"
+                android:visibility="gone">
+                <ImageView
+                    android:id="@+id/habit_check_2"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_checkbox_blank"
+                    android:contentDescription="Checkmark 2" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+                    <TextView
+                        android:id="@+id/habit_name_2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Habit 2"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:ellipsize="end"
+                        android:maxLines="1" />
+                </LinearLayout>
                 <TextView
                     android:id="@+id/habit_streak_2"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Streak: 0"
-                    android:textColor="#B3FFFFFF"
-                    android:textSize="8sp" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Habit Row 3 -->
-        <LinearLayout
-            android:id="@+id/habit_row_3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="2dp"
-            android:layout_marginTop="4dp"
-            android:visibility="gone">
-            <ImageView
-                android:id="@+id/habit_check_3"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_checkbox_blank"
-                android:contentDescription="Checkmark 3"
-                android:clickable="true"
-                android:focusable="true" />
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:layout_marginStart="6dp">
-                <TextView
-                    android:id="@+id/habit_name_3"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Habit 3"
-                    android:textColor="#FFFFFF"
-                    android:textSize="11sp"
+                    android:text="0 🔥"
+                    android:textColor="#FF5722"
+                    android:textSize="10sp"
                     android:textStyle="bold"
-                    android:ellipsize="end"
-                    android:maxLines="1" />
+                    android:layout_marginStart="4dp" />
+            </LinearLayout>
+
+            <!-- Habit Row 3 -->
+            <LinearLayout
+                android:id="@+id/habit_row_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="2dp"
+                android:layout_marginTop="5dp"
+                android:visibility="gone">
+                <ImageView
+                    android:id="@+id/habit_check_3"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_checkbox_blank"
+                    android:contentDescription="Checkmark 3" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+                    <TextView
+                        android:id="@+id/habit_name_3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Habit 3"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:ellipsize="end"
+                        android:maxLines="1" />
+                </LinearLayout>
                 <TextView
                     android:id="@+id/habit_streak_3"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Streak: 0"
-                    android:textColor="#B3FFFFFF"
-                    android:textSize="8sp" />
+                    android:text="0 🔥"
+                    android:textColor="#FF5722"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="4dp" />
             </LinearLayout>
+
+            <!-- Fallback message if no habits -->
+            <TextView
+                android:id="@+id/widget_no_habits"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No active missions today."
+                android:textColor="#B3FFFFFF"
+                android:textSize="11sp"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:visibility="gone" />
+
         </LinearLayout>
-
-        <!-- Fallback message if no habits -->
-        <TextView
-            android:id="@+id/widget_no_habits"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="No active missions today."
-            android:textColor="#B3FFFFFF"
-            android:textSize="11sp"
-            android:visibility="gone" />
-
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>

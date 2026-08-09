@@ -47,32 +47,22 @@ struct HabitWidgetEntryView : View {
     var entry: Provider.Entry
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Left Column: Mascot Card
+        ZStack {
+            // Background Layer: Mascot image (Covers fully)
             if let path = entry.mascotImagePath,
                let uiImage = UIImage(contentsOfFile: path) {
                 Image(uiImage: uiImage)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 100, height: 100)
-                    .cornerRadius(16)
+                    .scaledToFill()
             } else {
-                // Fallback graphic
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(red: 0.1, green: 0.1, blue: 0.1))
-                    .frame(width: 100, height: 100)
-                    .overlay(
-                        VStack {
-                            Text("🔥")
-                                .font(.system(size: 24))
-                            Text("HABITX")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.white)
-                        }
-                    )
+                // Fallback background color
+                Color(red: 0.1, green: 0.1, blue: 0.1)
             }
 
-            // Right Column: Habits List
+            // Dark semi-transparent overlay to ensure text readability
+            Color.black.opacity(0.7)
+
+            // Content Layer
             VStack(alignment: .leading, spacing: 6) {
                 Text("MISSIONS")
                     .font(.system(size: 10, weight: .bold))
@@ -101,24 +91,23 @@ struct HabitWidgetEntryView : View {
                                     .foregroundColor(habit.isCompleted ? .green : .white.opacity(0.5))
                             }
 
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(habit.name)
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .lineLimit(1)
-                                Text("\(habit.streak) 🔥")
-                                    .font(.system(size: 8))
-                                    .foregroundColor(.white.opacity(0.7))
-                            }
+                            Text(habit.name)
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                            
+                            Spacer()
+                            
+                            Text("\(habit.streak) 🔥")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.orange)
                         }
                     }
                 }
                 Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
         }
-        .padding(12)
-        .background(Color(red: 0.1, green: 0.1, blue: 0.1))
     }
 }
 
