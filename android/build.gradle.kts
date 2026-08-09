@@ -38,10 +38,12 @@ subprojects {
     }
 }
 
-subprojects {
-    tasks.configureEach {
-        if (name.startsWith("strip") && name.endsWith("DebugSymbols")) {
-            enabled = false
+gradle.projectsEvaluated {
+    allprojects {
+        tasks.configureEach {
+            if (name.startsWith("strip") && name.endsWith("DebugSymbols")) {
+                enabled = false
+            }
         }
     }
 }
