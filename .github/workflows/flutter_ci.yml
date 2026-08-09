@@ -27,6 +27,11 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          # Pinned to 3.41.2 — Flutter 3.44.x has a confirmed open regression that breaks
+          # `flutter build appbundle --release` (strip-debug-symbols step fails after Gradle
+          # succeeds). See: https://github.com/flutter/flutter/issues/186810
+          # Safe to bump once that issue is closed/fixed in a later 3.44.x or 3.45.x release.
+          flutter-version: '3.41.2'
           channel: 'stable'
           cache: true
 
