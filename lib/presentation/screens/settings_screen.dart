@@ -6,8 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../providers/habit_provider.dart';
-import '../../data/services/notifications/habit_x_notification_service.dart';
-import '../../core/constants/notification_messages.dart';
 import '../widgets/shared/glass_background.dart';
 import '../widgets/shared/privacy_policy_dialog.dart';
 import '../widgets/shared/terms_of_service_dialog.dart';
@@ -141,32 +139,6 @@ class SettingsScreen extends StatelessWidget {
                   },
                 ),
                 SettingsTile(
-                  icon: FontAwesomeIcons.bell,
-                  title: "System Alerts Permission",
-                  subtitle: "Ensure system notifications are fully authorized",
-                  textColor: textColor,
-                  subTextColor: subTextColor,
-                  onTap: () async {
-                    final granted = await HabitXNotificationService().requestPermissions();
-                    if (!context.mounted) return;
-                    if (granted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Protocol Authorized: Notifications Active ⚡"),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Permissions Denied. Please check System Settings."),
-                          backgroundColor: Colors.redAccent,
-                        ),
-                      );
-                    }
-                  },
-                ),
-                SettingsTile(
                   icon: FontAwesomeIcons.circleUser,
                   title: "Notification Theme",
                   subtitle: "Style: ${provider.userPersona}",
@@ -177,7 +149,7 @@ class SettingsScreen extends StatelessWidget {
                     builder: (context) => const ShelbyMoodDialog(),
                   ),
                 ),
-                SettingsTile(
+                 SettingsTile(
                   icon: FontAwesomeIcons.venusMars,
                   title: "Gender Voice Tone",
                   subtitle: "Tone: ${provider.userGender}",
@@ -185,31 +157,8 @@ class SettingsScreen extends StatelessWidget {
                   subTextColor: subTextColor,
                   onTap: () => GenderToneDialog.show(context, provider),
                 ),
-                SettingsTile(
-                  icon: FontAwesomeIcons.solidBell,
-                  title: "Test Notification",
-                  subtitle: "Send a test check-in notification immediately",
-                  textColor: textColor,
-                  subTextColor: subTextColor,
-                  onTap: () async {
-                    final String persona = provider.userPersona;
-                    final String gender = provider.userGender;
-                    final String randomPrompt = NotificationMessages.getRandomPrompt(persona, gender: gender);
-                    await HabitXNotificationService().showInstantNotification(
-                      title: NotificationMessages.getStatusTitle(persona),
-                      body: randomPrompt,
-                    );
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Test check-in notification dispatched! 🔔"),
-                        backgroundColor: Color(0xFFAC5DED),
-                      ),
-                    );
-                  },
-                ),
               ],
-              height: 504,
+              height: 360,
               isDark: isDark,
             ),
 
