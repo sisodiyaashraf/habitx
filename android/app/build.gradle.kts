@@ -41,7 +41,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             ndk {
-                debugSymbolLevel = "NONE"
+                debugSymbolLevel = "none"
             }
             signingConfig = signingConfigs.getByName("debug")
         }
