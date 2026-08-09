@@ -59,5 +59,18 @@ jobs:
       - name: Run Flutter Doctor Diagnostics
         run: flutter doctor -v
 
+      - name: Diagnostic - Direct Gradle bundleRelease with stacktrace
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bundleRelease --stacktrace --info 2>&1 | tee gradle_diagnostic.log
+        continue-on-error: true
+
+      - name: Upload diagnostic log
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-diagnostic-log
+          path: android/gradle_diagnostic.log
+
       - name: Build Android Release App Bundle
         run: flutter build appbundle --release
