@@ -59,6 +59,15 @@ jobs:
       - name: Run Flutter Doctor Diagnostics
         run: flutter doctor -v
 
+      - name: Decode Android Keystore and Create key.properties
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/release-key.jks
+          echo "$KEYSTORE_PROPERTIES" > android/key.properties
+
       - name: Build release app bundle (ignore Flutter's broken post-build check, verify output directly)
         run: |
           flutter pub get
